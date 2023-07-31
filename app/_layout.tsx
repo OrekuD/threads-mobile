@@ -28,6 +28,7 @@ export default function RootLayout() {
     InterMedium: require("../assets/fonts/Inter-Medium.ttf"),
     InterLight: require("../assets/fonts/Inter-Light.ttf"),
     InterSemiBold: require("../assets/fonts/Inter-SemiBold.ttf"),
+    InterBold: require("../assets/fonts/Inter-Bold.ttf"),
     ...FontAwesome.font,
   });
 

@@ -1,6 +1,6 @@
 import { Tab } from "@/types";
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   ActivityActiveIcon,
@@ -14,9 +14,11 @@ import {
 } from "./Icons";
 import { useRouter } from "expo-router";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import useColors from "@/hooks/useColors";
 
 export default function TabBar(props: BottomTabBarProps) {
   const { bottom } = useSafeAreaInsets();
+  const colors = useColors();
   const router = useRouter();
 
   const tabs: Array<Tab> = [
@@ -59,6 +61,7 @@ export default function TabBar(props: BottomTabBarProps) {
         {
           paddingBottom: bottom || 20,
           height: (bottom || 20) + 60,
+          backgroundColor: colors.background,
         },
       ]}
     >
@@ -80,9 +83,9 @@ export default function TabBar(props: BottomTabBarProps) {
               style={styles.tab}
             >
               {isActive ? (
-                <ActiveIcon size={34} color="#fff" />
+                <ActiveIcon size={34} color={colors.tabIconSelected} />
               ) : (
-                <InActiveIcon size={34} color="#4D4D4D" />
+                <InActiveIcon size={34} color={colors.tabIconDefault} />
               )}
             </TouchableOpacity>
           );
@@ -98,7 +101,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     width: "100%",
-    backgroundColor: "#101010",
     paddingHorizontal: 22,
   },
   tab: {
