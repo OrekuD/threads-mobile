@@ -39,7 +39,7 @@ export default function Typography(props: React.PropsWithChildren<Props>) {
       case "title":
         return 24;
       case "heading":
-        return 32;
+        return 34;
       default:
         return 16;
     }
@@ -64,6 +64,7 @@ export default function Typography(props: React.PropsWithChildren<Props>) {
           fontFamily,
           fontSize,
           color,
+          lineHeight: fontSize * 1.6,
         },
         props.style,
       ]}

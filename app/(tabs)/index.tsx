@@ -4,17 +4,36 @@ import useColors from "@/hooks/useColors";
 import React from "react";
 import { ActivityIndicator, FlatList, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Animated, {
+  useSharedValue,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  interpolate,
+} from "react-native-reanimated";
 
 export default function HomeScreen() {
   const colors = useColors();
   const [isLoading, setIsLoading] = React.useState(true);
   const { top } = useSafeAreaInsets();
+  const scrollY = useSharedValue(0);
 
   React.useEffect(() => {
     setTimeout(() => {
       setIsLoading(false);
     }, 1000);
   }, []);
+
+  const onScroll = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
+
+  const headerAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(scrollY.value, [0, 60], [1, 0]),
+    };
+  });
 
   if (isLoading) {
     return (
@@ -23,11 +42,11 @@ export default function HomeScreen() {
           style={[
             styles.header,
             {
-              paddingTop: top + 6,
+              paddingTop: top + 12,
             },
           ]}
         >
-          <Logo size={32} color={colors.text} />
+          <Logo size={30} color={colors.text} />
         </View>
         <View
           style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
@@ -45,21 +64,23 @@ export default function HomeScreen() {
         backgroundColor: colors.background,
       }}
     >
-      <FlatList
+      <Animated.FlatList
         ListHeaderComponent={() => (
-          <View
+          <Animated.View
             style={[
               styles.header,
               {
-                paddingTop: top + 6,
-                marginBottom: 6,
+                paddingTop: top + 12,
               },
+              headerAnimatedStyle,
             ]}
           >
-            <Logo size={32} color={colors.text} />
-          </View>
+            <Logo size={30} color={colors.text} />
+          </Animated.View>
         )}
-        data={["3", "2", "1"]}
+        data={Array(10).fill("d")}
+        scrollEventThrottle={16}
+        onScroll={onScroll}
         keyExtractor={() => Math.random().toString()}
         renderItem={({ item }) => {
           return <Post />;
@@ -70,10 +91,10 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {},
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    marginBottom: 8,
   },
 });
