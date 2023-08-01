@@ -1,4 +1,4 @@
-import Svg, { Path } from "react-native-svg";
+import Svg, { ClipPath, Defs, G, Path, Rect } from "react-native-svg";
 
 export interface BaseSvgProps {
   size: number;
@@ -182,7 +182,41 @@ export const MenuIcon = ({ color, size }: SvgProps) => (
   </Svg>
 );
 
-// export const Icon = ({color, size}: SvgProps) => ()
+export const CancelIcon = ({ color, size }: SvgProps) => (
+  <Svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    strokeWidth={2}
+    stroke={color}
+  >
+    <Path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M6 18L18 6M6 6l12 12"
+    />
+  </Svg>
+);
+
+export const VerifiedIcon = ({ size }: BaseSvgProps) => (
+  <Svg width={size} height={size} viewBox="0 0 12 12" fill="none">
+    <G clipPath="url(#clip0_134_1899)">
+      <Path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M5.9994 0.9282L4.3914 0L3.4998 1.545H1.6296V3.4512L0 4.392L0.9282 6L0 7.6077L1.6296 8.5488V10.3203H3.4221L4.3914 12L5.9994 11.0718L7.6074 12L8.577 10.32H10.4256V8.517L12 7.6077L11.0715 6L12 4.3923L10.4256 3.4833V1.5453H8.4999L7.6074 0L5.9994 0.9282ZM8.2239 4.2957L8.9001 4.9818L5.4711 8.4318L3.4206 6.3528L4.0938 5.6754L5.4699 7.0497L8.2239 4.2957Z"
+        fill="#0095F6"
+      />
+    </G>
+    <Defs>
+      <ClipPath id="clip0_134_1899">
+        <Rect width={size} height={size} fill="white" />
+      </ClipPath>
+    </Defs>
+  </Svg>
+);
+
 // export const Icon = ({color, size}: SvgProps) => ()
 // export const Icon = ({color, size}: SvgProps) => ()
 // export const Icon = ({color, size}: SvgProps) => ()

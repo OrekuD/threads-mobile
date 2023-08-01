@@ -7,6 +7,7 @@ interface Props {
   fontWeight?: 300 | 400 | 500 | 600 | 700;
   color?: "primary" | "secondary" | Omit<string, "primary" | "secondary">;
   style?: TextStyle;
+  lineLimit?: number;
 }
 
 export default function Typography(props: React.PropsWithChildren<Props>) {
@@ -64,10 +65,11 @@ export default function Typography(props: React.PropsWithChildren<Props>) {
           fontFamily,
           fontSize,
           color,
-          lineHeight: fontSize * 1.6,
+          lineHeight: fontSize * 1.5,
         },
         props.style,
       ]}
+      numberOfLines={props.lineLimit}
     >
       {props.children}
     </Text>

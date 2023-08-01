@@ -1,4 +1,5 @@
 import { SearchIcon } from "@/components/Icons";
+import Profile from "@/components/Profile";
 import Typography from "@/components/Typography";
 import useColors from "@/hooks/useColors";
 import hexToRGBA from "@/util/hexToRGBA";
@@ -7,6 +8,7 @@ import {
   Dimensions,
   FlatList,
   Keyboard,
+  RefreshControl,
   StyleSheet,
   TextInput,
   TouchableOpacity,
@@ -22,6 +24,8 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { FlashList } from "@shopify/flash-list";
+import Recent from "@/components/Recent";
 
 export default function SearchScreen() {
   const { top } = useSafeAreaInsets();
@@ -32,6 +36,7 @@ export default function SearchScreen() {
   const searchView = useSharedValue(0);
   const [search, setSearch] = React.useState("");
   const [isSearchViewVisible, setIsSearchViewVisible] = React.useState(false);
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
   const { width, height } = Dimensions.get("screen");
 
   const scrollToOffset = React.useCallback((offset: number) => {
@@ -47,7 +52,7 @@ export default function SearchScreen() {
   }, []);
 
   const onScroll = useAnimatedScrollHandler({
-    onScroll: (event, ctx) => {
+    onScroll: (event) => {
       scrollY.value = event.contentOffset.y;
     },
     onEndDrag: (event) => {
@@ -61,7 +66,7 @@ export default function SearchScreen() {
     },
   });
 
-  const headerHeight = React.useMemo(() => top + 12 + 36 + 54, [top]);
+  const headerHeight = React.useMemo(() => top + 12 + 36 + 45, [top]);
 
   const headerAnimatedStyle = useAnimatedStyle(() => {
     return {
@@ -108,7 +113,7 @@ export default function SearchScreen() {
       width: interpolate(
         searchView.value,
         [0, 1],
-        [width - 32, width - 32 - 56],
+        [width - 32, (width - 32) * 0.8],
         Extrapolate.CLAMP
       ),
       transform: [
@@ -184,14 +189,37 @@ export default function SearchScreen() {
         ]}
         pointerEvents={isSearchViewVisible ? "auto" : "none"}
       >
-        <FlatList
-          data={Array(100).fill("d")}
-          keyExtractor={() => Math.random().toString()}
-          contentContainerStyle={{}}
-          renderItem={({ item }) => {
-            return <Typography variant="sm">jhokay</Typography>;
-          }}
-        />
+        {search.trim().length === 0 ? (
+          <View>
+            <View style={styles.recentHeader}>
+              <Typography variant="body" fontWeight={700}>
+                Recent
+              </Typography>
+              <TouchableOpacity activeOpacity={0.5}>
+                <Typography variant="sm" fontWeight={600}>
+                  Clear
+                </Typography>
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={Array(4).fill("d")}
+              keyExtractor={() => Math.random().toString()}
+              contentContainerStyle={{}}
+              renderItem={({ item }) => {
+                return <Recent />;
+              }}
+            />
+          </View>
+        ) : (
+          <FlatList
+            data={Array(10).fill("d")}
+            keyExtractor={() => Math.random().toString()}
+            contentContainerStyle={{}}
+            renderItem={({ item }) => {
+              return <Profile />;
+            }}
+          />
+        )}
       </Animated.View>
       <View
         style={{
@@ -205,6 +233,7 @@ export default function SearchScreen() {
             {
               paddingTop: top + 12,
               backgroundColor: colors.background,
+              // backgroundColor: "red",
               height: headerHeight,
             },
             headerAnimatedStyle,
@@ -251,7 +280,7 @@ export default function SearchScreen() {
                   searchContainerAnimatedStyle,
                 ]}
               >
-                <SearchIcon size={16} color={hexToRGBA(colors.text, 0.5)} />
+                <SearchIcon size={20} color={hexToRGBA(colors.text, 0.5)} />
                 <TextInput
                   style={[
                     styles.textInput,
@@ -298,16 +327,29 @@ export default function SearchScreen() {
           </View>
         </Animated.View>
         <Animated.FlatList
-          data={Array(100).fill("d")}
+          // estimatedItemSize={20}
+          data={Array(20).fill("d")}
           ref={scrollRef as any}
           onScroll={onScroll}
           keyExtractor={() => Math.random().toString()}
           contentContainerStyle={{
-            paddingTop: headerHeight,
+            paddingTop: headerHeight + 12,
           }}
+          refreshing={isRefreshing}
+          refreshControl={
+            <RefreshControl
+              progressViewOffset={headerHeight + 6}
+              refreshing={isRefreshing}
+              onRefresh={() => {
+                setTimeout(() => {
+                  setIsRefreshing(false);
+                }, 1000);
+              }}
+            />
+          }
           scrollEventThrottle={16}
           renderItem={({ item }) => {
-            return <Typography variant="sm">okay</Typography>;
+            return <Profile showFollowers />;
           }}
         />
       </View>
@@ -353,5 +395,13 @@ const styles = StyleSheet.create({
     left: 0,
     width: "100%",
     zIndex: 100,
+  },
+  recentHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 4,
   },
 });

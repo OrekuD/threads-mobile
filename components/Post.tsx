@@ -51,10 +51,10 @@ export default function Post() {
         <View style={styles.avatarContainer}>
           <Image
             style={styles.avatar}
-            source="https://picsum.photos/seed/696/3000/2000"
+            source="https://picsum.photos/44"
             placeholder={blurhash}
             contentFit="cover"
-            transition={1000}
+            transition={500}
           />
         </View>
         <View
@@ -86,7 +86,7 @@ export default function Post() {
                       ],
                     },
                   ]}
-                  source="https://picsum.photos/seed/696/3000/2000"
+                  source="https://picsum.photos/44"
                   placeholder={blurhash}
                   contentFit="cover"
                   transition={1000}
@@ -114,7 +114,7 @@ export default function Post() {
                         borderColor: colors.border,
                       },
                     ]}
-                    source="https://picsum.photos/seed/696/3000/2000"
+                    source="https://picsum.photos/44"
                     placeholder={blurhash}
                     contentFit="cover"
                     transition={1000}
