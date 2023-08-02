@@ -1,4 +1,4 @@
-import { Tab } from "@/types";
+import { BottomNavigationTab } from "@/types";
 import React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -21,7 +21,7 @@ export default function TabBar(props: BottomTabBarProps) {
   const colors = useColors();
   const router = useRouter();
 
-  const tabs: Array<Tab> = [
+  const tabs: Array<BottomNavigationTab> = [
     {
       inActiveIcon: HomeIcon,
       activeIcon: HomeActiveIcon,

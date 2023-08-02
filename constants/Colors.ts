@@ -8,6 +8,7 @@ export default {
     tabIconDefault: "#B8B8B8",
     tabIconSelected: "#000000",
     searchToolbarBackground: "#EEEEEE",
+    modalBackground: "#FFFFFF",
   },
   dark: {
     text: "#F3F4F6",
@@ -18,5 +19,6 @@ export default {
     tabIconDefault: "#4D4D4D",
     tabIconSelected: "#F3F4F6",
     searchToolbarBackground: "#252527",
+    modalBackground: "#181818",
   },
 };

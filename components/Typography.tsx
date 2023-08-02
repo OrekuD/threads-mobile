@@ -3,7 +3,7 @@ import React from "react";
 import { Text, TextStyle } from "react-native";
 
 interface Props {
-  variant: "tiny" | "sm" | "body" | "title" | "heading";
+  variant: "tiny" | "sm" | "body" | "body2" | "title" | "heading";
   fontWeight?: 300 | 400 | 500 | 600 | 700;
   color?: "primary" | "secondary" | Omit<string, "primary" | "secondary">;
   style?: TextStyle;
@@ -37,6 +37,8 @@ export default function Typography(props: React.PropsWithChildren<Props>) {
         return 14;
       case "body":
         return 16;
+      case "body2":
+        return 18;
       case "title":
         return 24;
       case "heading":

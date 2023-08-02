@@ -27,6 +27,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FlashList } from "@shopify/flash-list";
 import Recent from "@/components/Recent";
 
+const { width, height } = Dimensions.get("screen");
+
 export default function SearchScreen() {
   const { top } = useSafeAreaInsets();
   const scrollRef = React.useRef<FlatList>(null);
@@ -37,7 +39,6 @@ export default function SearchScreen() {
   const [search, setSearch] = React.useState("");
   const [isSearchViewVisible, setIsSearchViewVisible] = React.useState(false);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
-  const { width, height } = Dimensions.get("screen");
 
   const scrollToOffset = React.useCallback((offset: number) => {
     scrollRef.current?.scrollToOffset({ offset: offset, animated: true });
@@ -75,11 +76,18 @@ export default function SearchScreen() {
           translateY: interpolate(
             scrollY.value,
             [0, 100],
-            [0, -(top + 12)],
+            [0, -(top + 6)],
             Extrapolate.CLAMP
           ),
         },
       ],
+    };
+  });
+
+  const spacingAnimatedStyles = useAnimatedStyle(() => {
+    return {
+      height: interpolate(scrollY.value, [0, 100], [0, 44]),
+      // paddingTop: interpolate(searchView.value, [0, 1], [0, 44]),
     };
   });
 
@@ -181,9 +189,10 @@ export default function SearchScreen() {
         style={[
           styles.searchView,
           {
-            height: height - top - 36,
-            top: top + 36,
+            height: height - top - 42,
+            top: top + 42,
             backgroundColor: colors.background,
+            // backgroundColor: "red",
           },
           searchViewAnimatedStyle,
         ]}
@@ -233,7 +242,6 @@ export default function SearchScreen() {
             {
               paddingTop: top + 12,
               backgroundColor: colors.background,
-              // backgroundColor: "red",
               height: headerHeight,
             },
             headerAnimatedStyle,
@@ -332,10 +340,11 @@ export default function SearchScreen() {
           ref={scrollRef as any}
           onScroll={onScroll}
           keyExtractor={() => Math.random().toString()}
-          contentContainerStyle={{
-            paddingTop: headerHeight + 12,
-          }}
+          contentContainerStyle={[{ paddingTop: headerHeight + 6 }]}
           refreshing={isRefreshing}
+          ListHeaderComponent={() => (
+            <Animated.View style={[{ width: "100%" }, spacingAnimatedStyles]} />
+          )}
           refreshControl={
             <RefreshControl
               progressViewOffset={headerHeight + 6}
@@ -376,7 +385,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     gap: 6,
     paddingHorizontal: 10,
-    marginTop: 2,
+    marginTop: 6,
     zIndex: 4,
   },
   textInput: {
