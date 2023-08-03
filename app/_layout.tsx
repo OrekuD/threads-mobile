@@ -1,4 +1,5 @@
 import Typography from "@/components/Typography";
+import CameraContextProvider from "@/context/CameraContext";
 import useColors from "@/hooks/useColors";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import {
@@ -9,7 +10,12 @@ import {
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack, useRouter } from "expo-router";
 import { useEffect } from "react";
-import { TouchableOpacity, useColorScheme } from "react-native";
+import {
+  ActivityIndicator,
+  TouchableOpacity,
+  View,
+  useColorScheme,
+} from "react-native";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -33,6 +39,7 @@ export default function RootLayout() {
     InterBold: require("../assets/fonts/Inter-Bold.ttf"),
     ...FontAwesome.font,
   });
+  const colors = useColors();
 
   // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
@@ -46,7 +53,18 @@ export default function RootLayout() {
   }, [loaded]);
 
   if (!loaded) {
-    return null;
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: colors.background,
+        }}
+      >
+        <ActivityIndicator size="small" color={colors.text} />
+      </View>
+    );
   }
 
   return <RootLayoutNav />;
@@ -59,25 +77,18 @@ function RootLayoutNav() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="create"
-          options={{
-            presentation: "modal",
-            headerTitle: "New thread",
-            headerTintColor: colors.text,
-            headerLeft: (props) => (
-              <TouchableOpacity activeOpacity={0.8} onPress={router.back}>
-                <Typography variant="body2">Cancel</Typography>
-              </TouchableOpacity>
-            ),
-            headerStyle: {
-              backgroundColor: colors.modalBackground,
-            },
-          }}
-        />
-      </Stack>
+      <CameraContextProvider>
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="create"
+            options={{
+              presentation: "modal",
+              headerShown: false,
+            }}
+          />
+        </Stack>
+      </CameraContextProvider>
     </ThemeProvider>
   );
 }

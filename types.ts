@@ -8,6 +8,25 @@ export interface BottomNavigationTab {
   index: number;
 }
 
+export interface CameraContextType {
+  hasCameraPermission: boolean;
+  setHasCameraPermission: (hasCameraPermission: boolean) => void;
+}
+
+export interface CreateThread {
+  text: string;
+  media: CreateThreadMedia[];
+  replyTo: string;
+  threadId: string;
+}
+
+export interface CreateThreadMedia {
+  url: string;
+  aspectRatio: number;
+  width: number;
+  height: number;
+}
+
 export class NotificationTab {
   public static readonly ALL = 0;
   public static readonly FOLLOWS = 1;

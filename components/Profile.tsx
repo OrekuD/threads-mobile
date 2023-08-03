@@ -23,9 +23,6 @@ function Profile(props: Props) {
           },
         ]}
         source={{ uri: "https://picsum.photos/44" }}
-        // placeholder={blurhash}
-        // contentFit="cover"
-        // transition={1000}
       />
       <View
         style={[

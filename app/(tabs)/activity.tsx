@@ -89,7 +89,7 @@ export default function ActivityScreen() {
     },
   });
 
-  const headerHeight = React.useMemo(() => top + 12 + 38 + 45, [top]);
+  const headerHeight = React.useMemo(() => top + 12 + 36 + 45, [top]);
 
   React.useEffect(() => {
     setIsFetchingData(true);
@@ -290,13 +290,13 @@ const styles = StyleSheet.create({
   },
   tabsContainer: {
     width: "100%",
-    height: 38,
+    height: 36,
     marginTop: 6,
     zIndex: 10,
   },
   tab: {
     width: 90,
-    height: 38,
+    height: 36,
     borderRadius: 12,
     borderWidth: 1,
     alignItems: "center",
