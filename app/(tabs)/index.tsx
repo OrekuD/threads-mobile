@@ -64,13 +64,14 @@ export default function HomeScreen() {
         backgroundColor: colors.background,
       }}
     >
+      <View style={{ width: "100%", height: top }} />
       <Animated.FlatList
         ListHeaderComponent={() => (
           <Animated.View
             style={[
               styles.header,
               {
-                paddingTop: top + 12,
+                paddingTop: 12,
               },
               headerAnimatedStyle,
             ]}

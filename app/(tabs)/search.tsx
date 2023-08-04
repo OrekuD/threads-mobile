@@ -26,6 +26,7 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FlashList } from "@shopify/flash-list";
 import Recent from "@/components/Recent";
+import useScreensize from "@/hooks/useScreensize";
 
 const { width, height } = Dimensions.get("screen");
 
@@ -39,6 +40,8 @@ export default function SearchScreen() {
   const [search, setSearch] = React.useState("");
   const [isSearchViewVisible, setIsSearchViewVisible] = React.useState(false);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
+
+  const { isBigDevice } = useScreensize();
 
   const scrollToOffset = React.useCallback((offset: number) => {
     scrollRef.current?.scrollToOffset({ offset: offset, animated: true });
@@ -58,10 +61,10 @@ export default function SearchScreen() {
     },
     onEndDrag: (event) => {
       if (event.contentOffset.y < 50) {
-        scrollY.value = withTiming(0, { duration: 300 });
+        scrollY.value = withTiming(0, { duration: 200 });
         runOnJS(scrollToOffset)(0);
       } else if (event.contentOffset.y >= 50 && event.contentOffset.y < 100) {
-        scrollY.value = withTiming(100, { duration: 300 });
+        scrollY.value = withTiming(100, { duration: 200 });
         runOnJS(scrollToOffset)(100);
       }
     },
@@ -86,10 +89,9 @@ export default function SearchScreen() {
 
   const spacingAnimatedStyles = useAnimatedStyle(() => {
     return {
-      height: interpolate(scrollY.value, [0, 100], [0, 44]),
-      // paddingTop: interpolate(searchView.value, [0, 1], [0, 44]),
+      height: interpolate(scrollY.value, [0, 100], [0, isBigDevice ? 36 : 44]),
     };
-  });
+  }, [isBigDevice]);
 
   const headingAnimatedStyle = useAnimatedStyle(() => {
     return {
@@ -340,7 +342,9 @@ export default function SearchScreen() {
           ref={scrollRef as any}
           onScroll={onScroll}
           keyExtractor={() => Math.random().toString()}
-          contentContainerStyle={[{ paddingTop: headerHeight + 6 }]}
+          contentContainerStyle={[
+            { paddingTop: headerHeight + (isBigDevice ? 12 : 6) },
+          ]}
           refreshing={isRefreshing}
           ListHeaderComponent={() => (
             <Animated.View style={[{ width: "100%" }, spacingAnimatedStyles]} />

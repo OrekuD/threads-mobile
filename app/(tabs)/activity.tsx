@@ -1,18 +1,14 @@
-import { SearchIcon } from "@/components/Icons";
 import Profile from "@/components/Profile";
 import Typography from "@/components/Typography";
 import useColors from "@/hooks/useColors";
+import useScreensize from "@/hooks/useScreensize";
 import { NotificationTab } from "@/types";
-import hexToRGBA from "@/util/hexToRGBA";
 import React from "react";
 import {
   ActivityIndicator,
-  Dimensions,
   FlatList,
-  Keyboard,
   RefreshControl,
   StyleSheet,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -69,6 +65,7 @@ export default function ActivityScreen() {
     NotificationTab.ALL
   );
   const [isFetchingData, setIsFetchingData] = React.useState(false);
+  const { isBigDevice } = useScreensize();
 
   const scrollToOffset = React.useCallback((offset: number) => {
     scrollRef.current?.scrollToOffset({ offset: offset, animated: true });
@@ -115,10 +112,9 @@ export default function ActivityScreen() {
 
   const spacingAnimatedStyles = useAnimatedStyle(() => {
     return {
-      height: interpolate(scrollY.value, [0, 100], [0, 44]),
-      // paddingTop: interpolate(searchView.value, [0, 1], [0, 44]),
+      height: interpolate(scrollY.value, [0, 100], [0, isBigDevice ? 36 : 44]),
     };
-  }, []);
+  }, [isBigDevice]);
 
   const headingAnimatedStyle = useAnimatedStyle(() => {
     return {
@@ -246,7 +242,9 @@ export default function ActivityScreen() {
           ref={scrollRef as any}
           onScroll={onScroll}
           keyExtractor={() => Math.random().toString()}
-          contentContainerStyle={[{ paddingTop: headerHeight + 6 }]}
+          contentContainerStyle={[
+            { paddingTop: headerHeight + (isBigDevice ? 12 : 6) },
+          ]}
           refreshing={isRefreshing}
           ListHeaderComponent={() => (
             <Animated.View style={[{ width: "100%" }, spacingAnimatedStyles]} />

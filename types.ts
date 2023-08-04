@@ -8,9 +8,8 @@ export interface BottomNavigationTab {
   index: number;
 }
 
-export interface CameraContextType {
-  hasCameraPermission: boolean;
-  setHasCameraPermission: (hasCameraPermission: boolean) => void;
+export interface ToastContextType {
+  showToast: () => void;
 }
 
 export interface CreateThread {
