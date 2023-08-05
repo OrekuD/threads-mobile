@@ -11,6 +11,7 @@ export default function TabLayout() {
         headerShown: false,
       }}
       tabBar={(props) => <TabBar {...props} />}
+      initialRouteName="profile"
     >
       <Tabs.Screen name="index" />
       <Tabs.Screen name="search" />

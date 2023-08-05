@@ -1,6 +1,6 @@
-import Typography from "@/components/Typography";
 import useColors from "@/hooks/useColors";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { PortalProvider } from "@gorhom/portal";
 import {
   DarkTheme,
   DefaultTheme,
@@ -9,12 +9,8 @@ import {
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack, useRouter } from "expo-router";
 import { useEffect } from "react";
-import {
-  ActivityIndicator,
-  TouchableOpacity,
-  View,
-  useColorScheme,
-} from "react-native";
+import { ActivityIndicator, View, useColorScheme } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -76,16 +72,30 @@ function RootLayoutNav() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="create"
-          options={{
-            presentation: "modal",
-            headerShown: false,
-          }}
-        />
-      </Stack>
+      <GestureHandlerRootView
+        style={{
+          flex: 1,
+        }}
+      >
+        <PortalProvider>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="create"
+              options={{
+                presentation: "modal",
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="thread"
+              options={{
+                headerShown: false,
+              }}
+            />
+          </Stack>
+        </PortalProvider>
+      </GestureHandlerRootView>
     </ThemeProvider>
   );
 }

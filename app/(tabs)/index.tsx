@@ -1,8 +1,8 @@
 import { Logo } from "@/components/Icons";
-import Post from "@/components/Post";
+import Thread from "@/components/Thread";
 import useColors from "@/hooks/useColors";
 import React from "react";
-import { ActivityIndicator, FlatList, StyleSheet, View } from "react-native";
+import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   useSharedValue,
@@ -84,7 +84,7 @@ export default function HomeScreen() {
         onScroll={onScroll}
         keyExtractor={() => Math.random().toString()}
         renderItem={({ item }) => {
-          return <Post />;
+          return <Thread />;
         }}
       />
     </View>
