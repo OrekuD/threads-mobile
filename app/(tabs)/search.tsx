@@ -27,6 +27,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FlashList } from "@shopify/flash-list";
 import Recent from "@/components/Recent";
 import useScreensize from "@/hooks/useScreensize";
+import { isAndroid } from "@/constants/Platform";
 
 export default function SearchScreen() {
   const { top } = useSafeAreaInsets();
@@ -86,7 +87,11 @@ export default function SearchScreen() {
 
   const spacingAnimatedStyles = useAnimatedStyle(() => {
     return {
-      height: interpolate(scrollY.value, [0, 100], [0, isBigDevice ? 36 : 44]),
+      height: interpolate(
+        scrollY.value,
+        [0, 100],
+        [0, isAndroid ? 76 : isBigDevice ? 36 : 44]
+      ),
     };
   }, [isBigDevice]);
 
@@ -189,7 +194,7 @@ export default function SearchScreen() {
           styles.searchView,
           {
             height: height - top - 42,
-            top: top + 42,
+            top: top + (isAndroid ? 80 : 42),
             backgroundColor: colors.background,
             // backgroundColor: "red",
           },

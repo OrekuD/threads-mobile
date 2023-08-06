@@ -1,5 +1,7 @@
+import Header from "@/components/Header";
 import { CancelIcon } from "@/components/Icons";
 import Typography from "@/components/Typography";
+import { isAndroid } from "@/constants/Platform";
 import useColors from "@/hooks/useColors";
 import useIsDarkMode from "@/hooks/useIsDarkMode";
 import useKeyboard from "@/hooks/useKeyboard";
@@ -18,7 +20,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function EditBioScreen() {
   const colors = useColors();
   const isDarkMode = useIsDarkMode();
-  const router = useRouter();
   const [value, setValue] = React.useState("");
   const { bottom } = useSafeAreaInsets();
   const { keyboardHeight } = useKeyboard();
@@ -35,51 +36,19 @@ export default function EditBioScreen() {
       bottom: interpolate(
         animation.value,
         [0, 1],
-        [(bottom || 20) + 6, keyboardHeight]
+        [(bottom || 20) + 6, isAndroid ? 0 : keyboardHeight]
       ),
     };
   }, [keyboardHeight, bottom]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.modalBackground }}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          activeOpacity={0.5}
-          style={[
-            styles.button,
-            {
-              left: 16,
-            },
-          ]}
-          onPress={router.back}
-        >
-          <Typography variant="body2">Cancel</Typography>
-        </TouchableOpacity>
-        <Typography
-          variant="body2"
-          fontWeight={600}
-          style={{
-            fontSize: 20,
-            lineHeight: 20 * 1.5,
-          }}
-        >
-          Edit bio
-        </Typography>
-        <TouchableOpacity
-          activeOpacity={0.5}
-          style={[
-            styles.button,
-            {
-              right: 16,
-            },
-          ]}
-          onPress={router.back}
-        >
-          <Typography variant="body2" fontWeight={600} color="#16A1FB">
-            Done
-          </Typography>
-        </TouchableOpacity>
-      </View>
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: isAndroid ? colors.background : colors.modalBackground,
+      }}
+    >
+      <Header title="Edit bio" centerTitle hasCheckIcon />
       <View style={styles.container}>
         <View
           style={[
@@ -115,6 +84,7 @@ export default function EditBioScreen() {
               styles.textInput,
               {
                 color: colors.text,
+                verticalAlign: "top",
               },
             ]}
             value={value}
@@ -143,17 +113,6 @@ export default function EditBioScreen() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    width: "100%",
-    paddingVertical: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-  },
-  button: {
-    position: "absolute",
-    top: 16,
-  },
   container: {
     flex: 1,
     paddingHorizontal: 16,

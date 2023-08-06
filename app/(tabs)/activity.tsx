@@ -1,5 +1,6 @@
 import Profile from "@/components/Profile";
 import Typography from "@/components/Typography";
+import { isAndroid } from "@/constants/Platform";
 import useColors from "@/hooks/useColors";
 import useScreensize from "@/hooks/useScreensize";
 import { NotificationTab } from "@/types";
@@ -112,7 +113,11 @@ export default function ActivityScreen() {
 
   const spacingAnimatedStyles = useAnimatedStyle(() => {
     return {
-      height: interpolate(scrollY.value, [0, 100], [0, isBigDevice ? 36 : 44]),
+      height: interpolate(
+        scrollY.value,
+        [0, 100],
+        [0, isAndroid ? 76 : isBigDevice ? 36 : 44]
+      ),
     };
   }, [isBigDevice]);
 

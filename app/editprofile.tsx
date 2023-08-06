@@ -9,12 +9,15 @@ import React from "react";
 import {
   ActionSheetIOS,
   ActivityIndicator,
+  Platform,
   Pressable,
   StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import Header from "@/components/Header";
+import { isAndroid } from "@/constants/Platform";
 
 export default function EditProfile() {
   const colors = useColors();
@@ -48,55 +51,25 @@ export default function EditProfile() {
     );
   }, []);
 
+  const backgroundColor = React.useMemo(() => {
+    if (isAndroid) {
+      return "#181818";
+    }
+    return isDarkMode ? "#121112" : colors.modalBackground;
+  }, [isDarkMode, colors.modalBackground]);
+
   return (
-    <View style={{ flex: 1, backgroundColor: isDarkMode ? "#000" : "#F9F9F9" }}>
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: colors.modalBackground,
-            borderBottomWidth: isDarkMode ? 0 : 1,
-            borderColor: "#E6E6E6",
-          },
-        ]}
-      >
-        <TouchableOpacity
-          activeOpacity={0.5}
-          style={[
-            styles.button,
-            {
-              left: 16,
-            },
-          ]}
-          onPress={router.back}
-        >
-          <Typography variant="body2">Cancel</Typography>
-        </TouchableOpacity>
-        <Typography
-          variant="body2"
-          fontWeight={600}
-          style={{
-            fontSize: 20,
-            lineHeight: 20 * 1.5,
-          }}
-        >
-          Edit profile
-        </Typography>
-        <TouchableOpacity
-          activeOpacity={0.5}
-          style={[
-            styles.button,
-            {
-              right: 16,
-            },
-          ]}
-          onPress={router.back}
-        >
-          <Typography variant="body2" fontWeight={600} color="#16A1FB">
-            Done
-          </Typography>
-        </TouchableOpacity>
-      </View>
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: isAndroid
+          ? colors.background
+          : isDarkMode
+          ? "#000000"
+          : "#F9F9F9",
+      }}
+    >
+      <Header backgroundColor={colors.modalBackground} title="Edit profile" />
       <View style={styles.container}>
         {isLoading ? (
           <ActivityIndicator size="large" color={colors.text} />
@@ -106,9 +79,7 @@ export default function EditProfile() {
               styles.content,
               {
                 borderColor: borderColor,
-                backgroundColor: isDarkMode
-                  ? "#121112"
-                  : colors.modalBackground,
+                backgroundColor,
               },
             ]}
           >
@@ -220,17 +191,6 @@ export default function EditProfile() {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    width: "100%",
-    paddingVertical: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-  },
-  button: {
-    position: "absolute",
-    top: 16,
-  },
   container: {
     flex: 1,
     alignItems: "center",

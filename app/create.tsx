@@ -31,6 +31,8 @@ import uuid from "react-native-uuid";
 import * as ImagePicker from "expo-image-picker";
 import { useNavigation } from "expo-router";
 import useScreensize from "@/hooks/useScreensize";
+import { isAndroid } from "@/constants/Platform";
+import Header from "@/components/Header";
 
 const threadId = uuid.v4().toString();
 
@@ -90,6 +92,7 @@ export default function CreateScreen() {
   }, [isKeyboardVisible]);
 
   React.useEffect(() => {
+    // if (isAndroid) return;
     scrollRef.current?.scrollToEnd({ animated: true });
   }, [threads]);
 
@@ -99,12 +102,20 @@ export default function CreateScreen() {
     });
   }, [showPopupMenu]);
 
-  const toolbarHeight = React.useMemo(() => bottom + 16 + 28, [bottom]);
+  const toolbarHeight = React.useMemo(() => 16 + 32, [bottom]);
 
   const toolbarAnimatedStyle = useAnimatedStyle(() => {
     return {
-      bottom: interpolate(toolbarAnimation.value, [0, 1], [0, keyboardHeight]),
-      paddingBottom: interpolate(toolbarAnimation.value, [0, 1], [bottom, 16]),
+      bottom: interpolate(
+        toolbarAnimation.value,
+        [0, 1],
+        [0, isAndroid ? 0 : keyboardHeight]
+      ),
+      paddingBottom: interpolate(
+        toolbarAnimation.value,
+        [0, 1],
+        [(bottom || 20) + 6, 16]
+      ),
     };
   }, [keyboardHeight, bottom]);
 
@@ -113,7 +124,7 @@ export default function CreateScreen() {
       bottom: interpolate(
         toolbarAnimation.value,
         [0, 1],
-        [toolbarHeight - 6, keyboardHeight + toolbarHeight - 6]
+        [70, (isAndroid ? 0 : keyboardHeight) + 52]
       ),
       transform: [
         { translateX: -MENU_WIDTH / 2 },
@@ -126,10 +137,10 @@ export default function CreateScreen() {
     };
   }, [keyboardHeight, bottom, toolbarHeight]);
 
-  const activeThread = React.useMemo(
-    () => threads.find(({ threadId }) => threadId === activeThreadId),
-    [activeThreadId, threads]
-  );
+  // const activeThread = React.useMemo(
+  //   () => threads.find(({ threadId }) => threadId === activeThreadId),
+  //   [activeThreadId, threads]
+  // );
 
   const selectImages = React.useCallback(async (threadId: string) => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -243,8 +254,9 @@ export default function CreateScreen() {
         style={[
           styles.toolbar,
           {
-            height: toolbarHeight,
+            // height: toolbarHeight,
             backgroundColor: colors.modalBackground,
+            paddingTop: 14,
           },
           toolbarAnimatedStyle,
         ]}
@@ -263,42 +275,22 @@ export default function CreateScreen() {
             opacity: hasCreatedThreads ? 1 : 0.5,
           }}
         >
-          <Typography variant="body2" fontWeight={600} color="#17A2FC">
+          <Typography variant="sm" fontWeight={600} color="#17A2FC">
             Post
           </Typography>
         </TouchableOpacity>
       </Animated.View>
-      <View style={{ flex: 1 }}>
-        <View
-          style={[
-            styles.header,
-            {
-              borderColor: colors.cardBorder,
-            },
-          ]}
-        >
-          <TouchableOpacity
-            activeOpacity={0.5}
-            style={styles.cancelButton}
-            onPress={onCancelButtonPressed}
-          >
-            <Typography variant="body2">Cancel</Typography>
-          </TouchableOpacity>
-          <Typography
-            variant="body2"
-            fontWeight={600}
-            style={{
-              fontSize: 20,
-              lineHeight: 20 * 1.5,
-            }}
-          >
-            New thread
-          </Typography>
-        </View>
+      <View style={{ flex: 1, zIndex: 4 }}>
+        <Header
+          title="New thread"
+          hasBorder
+          hideRightButton
+          onCancelButtonPressed={onCancelButtonPressed}
+        />
         <ScrollView
           contentContainerStyle={{
             paddingTop: 12,
-            paddingBottom: keyboardHeight + 68,
+            paddingBottom: isAndroid ? 64 : keyboardHeight + 94,
           }}
           ref={scrollRef}
         >
@@ -382,93 +374,7 @@ export default function CreateScreen() {
                         }}
                         onFocus={() => setShowPopupMenu(false)}
                       />
-                      {thread.media.length > 0 ? (
-                        <View
-                          style={[
-                            styles.imageContainer,
-                            {
-                              width,
-                              transform: [
-                                {
-                                  translateX: -70,
-                                },
-                              ],
-                            },
-                          ]}
-                        >
-                          <FlatList
-                            data={thread.media}
-                            keyExtractor={() => Math.random().toString()}
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            contentContainerStyle={{
-                              gap: 8,
-                              paddingLeft: 70,
-                              paddingRight: 16,
-                            }}
-                            renderItem={({ item }) => {
-                              const imageWidth =
-                                thread.media.length === 1
-                                  ? width - 70 - 8
-                                  : width - 70 - 24;
-                              return (
-                                <TouchableOpacity
-                                  activeOpacity={0.8}
-                                  style={{
-                                    borderRadius: 8,
-                                    overflow: "hidden",
-                                    width: imageWidth,
-                                    height:
-                                      thread.media.length > 1 ? 200 : undefined,
-                                    aspectRatio:
-                                      thread.media.length > 1
-                                        ? undefined
-                                        : item.aspectRatio,
-                                  }}
-                                  onPress={() => selectImages(thread.threadId)}
-                                >
-                                  <TouchableOpacity
-                                    activeOpacity={0.8}
-                                    style={styles.closeButton}
-                                    onPress={() => {
-                                      setThreads((prevThreads) => {
-                                        const index = prevThreads.findIndex(
-                                          ({ threadId }) =>
-                                            thread.threadId === threadId
-                                        );
-
-                                        if (index !== -1) {
-                                          const newThreads = [...prevThreads];
-                                          newThreads.splice(index, 1, {
-                                            ...thread,
-                                            media: thread.media.filter(
-                                              (media) => media.url !== item.url
-                                            ),
-                                          });
-
-                                          return newThreads;
-                                        }
-                                        return prevThreads;
-                                      });
-                                    }}
-                                  >
-                                    <CancelIcon size={20} color="#fff" />
-                                  </TouchableOpacity>
-                                  <Image
-                                    source={{ uri: item.url }}
-                                    style={{
-                                      borderRadius: 8,
-                                      width: "100%",
-                                      height: "100%",
-                                      resizeMode: "cover",
-                                    }}
-                                  />
-                                </TouchableOpacity>
-                              );
-                            }}
-                          />
-                        </View>
-                      ) : (
+                      {thread.media.length === 0 ? (
                         <TouchableOpacity
                           activeOpacity={0.8}
                           onPress={() => selectImages(thread.threadId)}
@@ -479,23 +385,118 @@ export default function CreateScreen() {
                             color={colors.textSecondary}
                           />
                         </TouchableOpacity>
+                      ) : (
+                        <></>
                       )}
                     </>
                   ) : (
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      onPress={() => setActiveThreadId(thread.threadId)}
-                      style={{
-                        marginTop: 6,
-                      }}
-                    >
-                      <Typography
-                        variant="sm"
-                        color={thread.text ? colors.text : colors.textSecondary}
+                    <>
+                      <TouchableOpacity
+                        activeOpacity={0.8}
+                        onPress={() => setActiveThreadId(thread.threadId)}
+                        style={{
+                          marginTop: 6,
+                        }}
                       >
-                        {thread.text ? thread.text : "Start a thread..."}
-                      </Typography>
-                    </TouchableOpacity>
+                        <Typography
+                          variant="sm"
+                          color={
+                            thread.text ? colors.text : colors.textSecondary
+                          }
+                        >
+                          {thread.text ? thread.text : "Start a thread..."}
+                        </Typography>
+                      </TouchableOpacity>
+                    </>
+                  )}
+                  {thread.media.length > 0 ? (
+                    <View
+                      style={[
+                        styles.imageContainer,
+                        {
+                          width,
+                          transform: [
+                            {
+                              translateX: -70,
+                            },
+                          ],
+                        },
+                      ]}
+                    >
+                      <FlatList
+                        data={thread.media}
+                        keyExtractor={() => Math.random().toString()}
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={{
+                          gap: 8,
+                          paddingLeft: 70,
+                          paddingRight: 16,
+                        }}
+                        renderItem={({ item }) => {
+                          const imageWidth =
+                            thread.media.length === 1
+                              ? width - 70 - 8
+                              : width - 70 - 24;
+                          return (
+                            <TouchableOpacity
+                              activeOpacity={0.8}
+                              style={{
+                                borderRadius: 8,
+                                overflow: "hidden",
+                                width: imageWidth,
+                                height:
+                                  thread.media.length > 1 ? 200 : undefined,
+                                aspectRatio:
+                                  thread.media.length > 1
+                                    ? undefined
+                                    : item.aspectRatio,
+                              }}
+                              onPress={() => selectImages(thread.threadId)}
+                            >
+                              <TouchableOpacity
+                                activeOpacity={0.8}
+                                style={styles.closeButton}
+                                onPress={() => {
+                                  setThreads((prevThreads) => {
+                                    const index = prevThreads.findIndex(
+                                      ({ threadId }) =>
+                                        thread.threadId === threadId
+                                    );
+
+                                    if (index !== -1) {
+                                      const newThreads = [...prevThreads];
+                                      newThreads.splice(index, 1, {
+                                        ...thread,
+                                        media: thread.media.filter(
+                                          (media) => media.url !== item.url
+                                        ),
+                                      });
+
+                                      return newThreads;
+                                    }
+                                    return prevThreads;
+                                  });
+                                }}
+                              >
+                                <CancelIcon size={20} color="#fff" />
+                              </TouchableOpacity>
+                              <Image
+                                source={{ uri: item.url }}
+                                style={{
+                                  borderRadius: 8,
+                                  width: "100%",
+                                  height: "100%",
+                                  resizeMode: "cover",
+                                }}
+                              />
+                            </TouchableOpacity>
+                          );
+                        }}
+                      />
+                    </View>
+                  ) : (
+                    <></>
                   )}
                 </View>
               </Animated.View>
@@ -522,7 +523,7 @@ export default function CreateScreen() {
                 },
               ]);
               setActiveThreadId(id);
-              scrollRef.current?.scrollToEnd({ animated: true });
+              // scrollRef.current?.scrollToEnd({ animated: true });
             }}
           >
             <View
@@ -563,8 +564,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 0,
     width: "100%",
-    padding: 16,
-    backgroundColor: "red",
+    paddingHorizontal: 16,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -632,19 +632,6 @@ const styles = StyleSheet.create({
     height: 14,
     borderRadius: 14 / 2,
     resizeMode: "cover",
-  },
-  header: {
-    width: "100%",
-    borderBottomWidth: 1,
-    paddingVertical: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-  },
-  cancelButton: {
-    position: "absolute",
-    left: 16,
-    top: 16,
   },
   closeButton: {
     position: "absolute",

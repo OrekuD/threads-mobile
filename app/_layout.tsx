@@ -6,8 +6,7 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { SplashScreen, Stack, useRouter } from "expo-router";
-// import {} from ""
+import { SplashScreen, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { useEffect } from "react";
@@ -18,6 +17,7 @@ import {
   useColorScheme,
 } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Text, TextInput } from "react-native";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -31,6 +31,15 @@ export const unstable_settings = {
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+
+// @ts-ignore
+Text.defaultProps = Text.defaultProps || {};
+// @ts-ignore
+Text.defaultProps.allowFontScaling = false;
+// @ts-ignore
+TextInput.defaultProps = TextInput.defaultProps || {};
+// @ts-ignore
+TextInput.defaultProps.allowFontScaling = false;
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
