@@ -1,20 +1,23 @@
 import React from "react";
-import { Dimensions } from "react-native";
+import { useWindowDimensions } from "react-native";
 
 export default function useScreensize() {
+  const { width, height } = useWindowDimensions();
   const [values, setValues] = React.useState(getValues());
+
+  // console.log({ scale, fontScale });
 
   function getValues() {
     return {
-      isBigDevice: Dimensions.get("screen").width >= 393,
+      width,
+      height,
+      isBigDevice: width >= 393,
     };
   }
 
-  Dimensions.addEventListener("change", (event) => {
-    setValues({
-      isBigDevice: event.screen.width >= 393,
-    });
-  });
+  React.useEffect(() => {
+    setValues(getValues());
+  }, [width, height]);
 
   return values;
 }

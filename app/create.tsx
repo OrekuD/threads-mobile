@@ -30,10 +30,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import uuid from "react-native-uuid";
 import * as ImagePicker from "expo-image-picker";
 import { useNavigation } from "expo-router";
+import useScreensize from "@/hooks/useScreensize";
 
 const threadId = uuid.v4().toString();
-
-const { width } = Dimensions.get("screen");
 
 const privateProfileMenuOptions = [
   "Your followers",
@@ -59,7 +58,7 @@ export default function CreateScreen() {
   const { bottom } = useSafeAreaInsets();
   const toolbarAnimation = useSharedValue(0);
   const popmenuAnimation = useSharedValue(0);
-  const navigation = useNavigation();
+  const { width } = useScreensize();
   const router = useRouter();
   const colorScheme = useColorScheme();
   const [threads, setThreads] = React.useState<Array<CreateThread>>([

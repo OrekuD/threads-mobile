@@ -1,32 +1,57 @@
-import React, { useCallback, useMemo, useRef } from "react";
+import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import BottomSheet from "@gorhom/bottom-sheet";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  useAnimatedScrollHandler,
+  interpolate,
+  Extrapolate,
+} from "react-native-reanimated";
+
+const HEADER_HEIGHT = 100;
+const INITIAL_OFFSET = 200;
 
 const SettingsScreen = () => {
-  // ref
-  const bottomSheetRef = useRef<BottomSheet>(null);
+  const scrollY = useSharedValue(0);
 
-  // variables
-  const snapPoints = useMemo(() => ["25%", "50%"], []);
+  const onScroll = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
 
-  // callbacks
-  const handleSheetChanges = useCallback((index: number) => {
-    console.log("handleSheetChanges", index);
-  }, []);
+  const animatedHeaderStyle = useAnimatedStyle(() => {
+    const translateY = scrollY.value >= INITIAL_OFFSET ? -INITIAL_OFFSET : 0;
 
-  // renders
+    return {
+      transform: [{ translateY: translateY }],
+    };
+  });
+
+  const contentStyle = useAnimatedStyle(() => {
+    return {
+      paddingTop: HEADER_HEIGHT - scrollY.value,
+    };
+  });
+
   return (
     <View style={styles.container}>
-      <BottomSheet
-        ref={bottomSheetRef}
-        index={1}
-        snapPoints={snapPoints}
-        onChange={handleSheetChanges}
+      <Animated.ScrollView
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+        contentContainerStyle={styles.contentContainer}
       >
-        <View style={styles.contentContainer}>
-          <Text>Awesome 🎉</Text>
+        <Animated.View style={[styles.header, animatedHeaderStyle]}>
+          <Text style={styles.headerText}>Sticky Header</Text>
+        </Animated.View>
+        <View style={styles.content}>
+          {Array(50)
+            .fill(null)
+            .map((_, index) => (
+              <Text key={index}>Item {index + 1}</Text>
+            ))}
         </View>
-      </BottomSheet>
+      </Animated.ScrollView>
     </View>
   );
 };
@@ -34,12 +59,22 @@ const SettingsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
-    backgroundColor: "grey",
   },
   contentContainer: {
-    flex: 1,
+    paddingTop: INITIAL_OFFSET,
+  },
+  header: {
+    height: HEADER_HEIGHT,
+    backgroundColor: "lightblue",
+    justifyContent: "center",
     alignItems: "center",
+  },
+  headerText: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  content: {
+    padding: 20,
   },
 });
 

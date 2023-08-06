@@ -112,6 +112,20 @@ export const ProfileIcon = ({ color, size, style }: SvgProps) => (
   </Svg>
 );
 
+export const PlusIcon = ({ color, size, style }: SvgProps) => (
+  <Svg
+    width={size}
+    height={size}
+    style={style}
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={4}
+    stroke={color}
+  >
+    <Path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m6-6H6" />
+  </Svg>
+);
+
 export const ActivityIcon = ({ color, size, style }: SvgProps) => (
   <Svg
     width={size * 1.03125}

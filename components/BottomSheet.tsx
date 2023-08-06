@@ -4,7 +4,6 @@ import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Portal } from "@gorhom/portal";
 import useIsDarkMode from "@/hooks/useIsDarkMode";
 import useColors from "@/hooks/useColors";
-import Animated from "react-native-reanimated";
 
 interface Props {
   isOpen: boolean;
@@ -13,9 +12,6 @@ interface Props {
   snapPoints?: Array<string | number>;
   initialSnapIndex?: number;
 }
-
-const AnimatedTouchableOpacity =
-  Animated.createAnimatedComponent(TouchableOpacity);
 
 export default function BottomSheet(props: React.PropsWithChildren<Props>) {
   const bottomSheetRef = React.useRef<GBottomSheet>(null);
@@ -52,9 +48,9 @@ export default function BottomSheet(props: React.PropsWithChildren<Props>) {
         handleIndicatorStyle={{
           backgroundColor: isDarkMode ? "#555555" : "#DBDBDB",
         }}
-        backdropComponent={() => (
-          <Backdrop sheetIndex={sheetIndex} onClose={props.onClose} />
-        )}
+        backdropComponent={() => {
+          return <Backdrop sheetIndex={sheetIndex} onClose={props.onClose} />;
+        }}
       >
         <View
           style={{
@@ -77,7 +73,7 @@ function Backdrop(props: BackdropProps) {
   if (props.sheetIndex < 0) return null;
 
   return (
-    <AnimatedTouchableOpacity
+    <TouchableOpacity
       activeOpacity={1}
       onPress={props.onClose}
       style={styles.backdrop}

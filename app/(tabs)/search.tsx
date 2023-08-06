@@ -28,8 +28,6 @@ import { FlashList } from "@shopify/flash-list";
 import Recent from "@/components/Recent";
 import useScreensize from "@/hooks/useScreensize";
 
-const { width, height } = Dimensions.get("screen");
-
 export default function SearchScreen() {
   const { top } = useSafeAreaInsets();
   const scrollRef = React.useRef<FlatList>(null);
@@ -40,8 +38,7 @@ export default function SearchScreen() {
   const [search, setSearch] = React.useState("");
   const [isSearchViewVisible, setIsSearchViewVisible] = React.useState(false);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
-
-  const { isBigDevice } = useScreensize();
+  const { isBigDevice, width, height } = useScreensize();
 
   const scrollToOffset = React.useCallback((offset: number) => {
     scrollRef.current?.scrollToOffset({ offset: offset, animated: true });

@@ -51,9 +51,7 @@ function Recent(props: Props) {
           </Typography>
         </View>
         <TouchableOpacity activeOpacity={0.5} style={[styles.cancelButton]}>
-          <Typography variant="sm" fontWeight={500}>
-            <CancelIcon size={18} color={colors.textSecondary} />
-          </Typography>
+          <CancelIcon size={18} color={colors.textSecondary} />
         </TouchableOpacity>
       </View>
     </Pressable>

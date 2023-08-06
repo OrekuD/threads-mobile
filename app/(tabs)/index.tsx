@@ -79,7 +79,7 @@ export default function HomeScreen() {
             <Logo size={30} color={colors.text} />
           </Animated.View>
         )}
-        data={Array(10).fill("d")}
+        data={Array(5).fill("d")}
         scrollEventThrottle={16}
         onScroll={onScroll}
         keyExtractor={() => Math.random().toString()}

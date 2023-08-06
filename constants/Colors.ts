@@ -13,7 +13,7 @@ export default {
   dark: {
     text: "#F3F4F6",
     textSecondary: "#767776",
-    border: "#323232",
+    border: "#2B2C2C",
     cardBorder: "#2F2F2F",
     background: "#101010",
     tabIconDefault: "#4D4D4D",

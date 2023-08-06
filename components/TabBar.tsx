@@ -59,8 +59,8 @@ export default function TabBar(props: BottomTabBarProps) {
       style={[
         styles.container,
         {
-          paddingBottom: bottom || 20,
-          height: (bottom || 20) + 60,
+          paddingBottom: bottom || 4,
+          height: (bottom || 4) + 60,
           backgroundColor: colors.background,
         },
       ]}

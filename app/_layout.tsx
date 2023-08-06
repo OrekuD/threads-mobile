@@ -1,5 +1,4 @@
 import useColors from "@/hooks/useColors";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { PortalProvider } from "@gorhom/portal";
 import {
   DarkTheme,
@@ -8,8 +7,16 @@ import {
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack, useRouter } from "expo-router";
+// import {} from ""
+import { StatusBar } from "expo-status-bar";
+import React from "react";
 import { useEffect } from "react";
-import { ActivityIndicator, View, useColorScheme } from "react-native";
+import {
+  ActivityIndicator,
+  Platform,
+  View,
+  useColorScheme,
+} from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export {
@@ -32,7 +39,6 @@ export default function RootLayout() {
     InterLight: require("../assets/fonts/Inter-Light.ttf"),
     InterSemiBold: require("../assets/fonts/Inter-SemiBold.ttf"),
     InterBold: require("../assets/fonts/Inter-Bold.ttf"),
-    ...FontAwesome.font,
   });
   const colors = useColors();
 
@@ -65,32 +71,66 @@ export default function RootLayout() {
   return <RootLayoutNav />;
 }
 
+const isAndroid = Platform.OS === "android";
+
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const colors = useColors();
-  const router = useRouter();
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+    <ThemeProvider
+      // value={DarkTheme}
+      value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+    >
+      <StatusBar animated backgroundColor={colors.background} translucent />
       <GestureHandlerRootView
         style={{
           flex: 1,
         }}
       >
         <PortalProvider>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack
+            screenOptions={{
+              headerShown: false,
+            }}
+          >
+            <Stack.Screen
+              name="thread/[id]"
+              getId={({ params }) => String(Date.now())}
+            />
             <Stack.Screen
               name="create"
               options={{
-                presentation: "modal",
-                headerShown: false,
+                presentation: isAndroid ? undefined : "modal",
+                animation: isAndroid ? "fade_from_bottom" : undefined,
               }}
             />
             <Stack.Screen
-              name="thread"
+              name="follows"
               options={{
-                headerShown: false,
+                presentation: isAndroid ? undefined : "modal",
+                animation: isAndroid ? "fade_from_bottom" : undefined,
+              }}
+            />
+            <Stack.Screen
+              name="editprofile"
+              options={{
+                presentation: isAndroid ? undefined : "modal",
+                animation: isAndroid ? "fade_from_bottom" : undefined,
+              }}
+            />
+            <Stack.Screen
+              name="editbio"
+              options={{
+                presentation: isAndroid ? undefined : "modal",
+                animation: isAndroid ? "fade_from_bottom" : undefined,
+              }}
+            />
+            <Stack.Screen
+              name="editlink"
+              options={{
+                presentation: isAndroid ? undefined : "modal",
+                animation: isAndroid ? "fade_from_bottom" : undefined,
               }}
             />
           </Stack>

@@ -2,6 +2,7 @@ import {
   Dimensions,
   FlatList,
   StyleSheet,
+  Text,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -18,11 +19,11 @@ import React from "react";
 import { blurhash } from "@/constants/Blurhash";
 import Typography from "./Typography";
 import { Link } from "expo-router";
-
-const { width } = Dimensions.get("screen");
+import useScreensize from "@/hooks/useScreensize";
 
 export default function Thread() {
   const colors = useColors();
+  const { width } = useScreensize();
 
   const buttons = React.useMemo(
     () => [
@@ -47,12 +48,18 @@ export default function Thread() {
   }, []);
 
   return (
-    <Link href="/thread">
+    <Link
+      href={{
+        pathname: "/thread/[id]",
+        params: { id: Math.random().toString() },
+      }}
+    >
       <View
         style={[
           styles.container,
           {
             borderColor: colors.cardBorder,
+            width,
           },
         ]}
       >
@@ -149,7 +156,14 @@ export default function Thread() {
             </TouchableOpacity>
           </View>
           <View style={styles.content}>
-            <Typography variant="sm">
+            <Typography
+              variant="sm"
+              style={
+                {
+                  // width: "100%",
+                }
+              }
+            >
               Fugiat occaecat adipisicing est ullamco officia commodo nisi
               consequat id. Eiusmod officia dolor aute deserunt. consequat id.
               Eiusmod officia dolor aute deserunt.
@@ -207,8 +221,8 @@ export default function Thread() {
                           borderRadius: 8,
                           width: "100%",
                           height: "100%",
-                          resizeMode: "cover",
                         }}
+                        contentFit="cover"
                       />
                     </TouchableOpacity>
                   );
