@@ -4,7 +4,6 @@ import TextInput from "@/components/TextInput";
 import Typography from "@/components/Typography";
 import useColors from "@/hooks/useColors";
 import useIsDarkMode from "@/hooks/useIsDarkMode";
-import { Link, useRouter } from "expo-router";
 import React from "react";
 import {
   ActionSheetIOS,
@@ -18,11 +17,14 @@ import Header from "@/components/Header";
 import { isAndroid } from "@/constants/Platform";
 import SetupHeader from "@/components/SetupHeader";
 import useScreensize from "@/hooks/useScreensize";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { RootStackParamList } from "@/types";
 
-export default function Profile() {
+interface Props extends NativeStackScreenProps<RootStackParamList> {}
+
+export default function SetupProfileScreen(props: Props) {
   const colors = useColors();
   const isDarkMode = useIsDarkMode();
-  const router = useRouter();
   const [isLoading, setIsLoading] = React.useState(true);
   const { height } = useScreensize();
 
@@ -72,7 +74,7 @@ export default function Profile() {
     >
       <SetupHeader
         onNext={() => {
-          router.push("/(tabs)/_layout");
+          props.navigation.navigate("MainScreen");
         }}
       />
       <View style={styles.container}>
@@ -177,7 +179,7 @@ export default function Profile() {
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => {
-                  router.push("/editbio");
+                  props.navigation.navigate("EditBioScreen");
                 }}
               >
                 <TextInput
@@ -190,7 +192,7 @@ export default function Profile() {
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => {
-                  router.push("/editlink");
+                  props.navigation.navigate("EditLinkScreen");
                 }}
               >
                 <TextInput

@@ -5,7 +5,8 @@ import { isAndroid } from "@/constants/Platform";
 import useColors from "@/hooks/useColors";
 import useIsDarkMode from "@/hooks/useIsDarkMode";
 import useKeyboard from "@/hooks/useKeyboard";
-import { useRouter } from "expo-router";
+import { RootStackParamList } from "@/types";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import React from "react";
 import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
 import Animated, {
@@ -17,7 +18,10 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export default function EditBioScreen() {
+interface Props
+  extends NativeStackScreenProps<RootStackParamList, "EditLinkScreen"> {}
+
+export default function EditLinkScreen() {
   const colors = useColors();
   const isDarkMode = useIsDarkMode();
   const [value, setValue] = React.useState("");
@@ -48,7 +52,7 @@ export default function EditBioScreen() {
         backgroundColor: isAndroid ? colors.background : colors.modalBackground,
       }}
     >
-      <Header title="Edit bio" centerTitle hasCheckIcon />
+      <Header title="Edit link" centerTitle hasCheckIcon />
       <View style={styles.container}>
         <View
           style={[
@@ -83,14 +87,14 @@ export default function EditBioScreen() {
             style={[
               styles.textInput,
               {
-                color: colors.text,
+                color: "#008AF5",
                 verticalAlign: "top",
               },
             ]}
             value={value}
             onChangeText={setValue}
             placeholderTextColor={colors.textSecondary}
-            placeholder="Write a bio..."
+            placeholder="https://www.example.com/"
             multiline
           />
         </View>

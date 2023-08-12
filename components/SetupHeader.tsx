@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ArrowLeftIcon, ChevronLeftIcon } from "./Icons";
 import Typography from "./Typography";
 import useColors from "@/hooks/useColors";
-import { useRouter } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
 
 interface Props {
   //   hasNextButton?: boolean;
@@ -14,7 +14,7 @@ interface Props {
 export default function SetupHeader(props: Props) {
   const { top } = useSafeAreaInsets();
   const colors = useColors();
-  const router = useRouter();
+  const navigation = useNavigation();
 
   if (isAndroid) {
     return (
@@ -32,7 +32,7 @@ export default function SetupHeader(props: Props) {
           style={{
             padding: 8,
           }}
-          onPress={router.back}
+          onPress={navigation.goBack}
         >
           <ArrowLeftIcon size={24} color={colors.text} />
         </TouchableOpacity>
@@ -71,7 +71,7 @@ export default function SetupHeader(props: Props) {
       <TouchableOpacity
         activeOpacity={0.8}
         style={styles.row}
-        onPress={router.back}
+        onPress={navigation.goBack}
       >
         <ChevronLeftIcon size={10} color={colors.text} />
         <Typography variant="body2" fontWeight={500}>

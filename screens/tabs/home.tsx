@@ -10,7 +10,6 @@ import Animated, {
   useAnimatedStyle,
   interpolate,
 } from "react-native-reanimated";
-import { Link } from "expo-router";
 
 export default function HomeScreen() {
   const colors = useColors();
@@ -85,16 +84,7 @@ export default function HomeScreen() {
         onScroll={onScroll}
         keyExtractor={() => Math.random().toString()}
         renderItem={({ item }) => {
-          return (
-            <Link
-              href={{
-                pathname: "/thread/[id]",
-                params: { id: Math.random().toString() },
-              }}
-            >
-              <Thread variant="list-thread" />
-            </Link>
-          );
+          return <Thread variant="list-thread" />;
         }}
       />
     </View>

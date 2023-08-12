@@ -20,13 +20,10 @@ import {
 // import { Image } from "expo-image";
 import useColors from "@/hooks/useColors";
 import React from "react";
-import { blurhash } from "@/constants/Blurhash";
 import Typography from "./Typography";
 import useScreensize from "@/hooks/useScreensize";
 import { Portal } from "@gorhom/portal";
 import Animated from "react-native-reanimated";
-import { useRouter } from "expo-router";
-import { isAndroid } from "@/constants/Platform";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface Props {
@@ -35,7 +32,6 @@ interface Props {
 
 export default function Thread(props: Props) {
   const colors = useColors();
-  const router = useRouter();
   const { top } = useSafeAreaInsets();
   const { width } = useScreensize();
   const [showImages, setShowImages] = React.useState(false);

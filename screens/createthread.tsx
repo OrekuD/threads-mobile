@@ -2,8 +2,7 @@ import { AttachmentIcon, CancelIcon } from "@/components/Icons";
 import Typography from "@/components/Typography";
 import useColors from "@/hooks/useColors";
 import useKeyboard from "@/hooks/useKeyboard";
-import { CreateThread } from "@/types";
-import { useRouter } from "expo-router";
+import { CreateThread, RootStackParamList } from "@/types";
 import React from "react";
 import {
   Alert,
@@ -33,6 +32,7 @@ import useScreensize from "@/hooks/useScreensize";
 import { isAndroid } from "@/constants/Platform";
 import Header from "@/components/Header";
 import useIsDarkMode from "@/hooks/useIsDarkMode";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 const threadId = uuid.v4().toString();
 
@@ -52,7 +52,10 @@ const MENU_WIDTH = isAndroid ? 160 : 240;
 const MENU_ITEM_HEIGHT = isAndroid ? 42 : 38;
 const MENU_HEIGHT = MENU_ITEM_HEIGHT * 3;
 
-export default function CreateScreen() {
+interface Props
+  extends NativeStackScreenProps<RootStackParamList, "CreateThreadScreen"> {}
+
+export default function CreateThreadScreen(props: Props) {
   const { keyboardHeight, isKeyboardVisible } = useKeyboard();
   const isPrivateAccount = false;
   const colors = useColors();
@@ -61,7 +64,6 @@ export default function CreateScreen() {
   const toolbarAnimation = useSharedValue(0);
   const popmenuAnimation = useSharedValue(0);
   const { width } = useScreensize();
-  const router = useRouter();
   const isDarkMode = useIsDarkMode();
   const [threads, setThreads] = React.useState<Array<CreateThread>>([
     {
@@ -192,7 +194,7 @@ export default function CreateScreen() {
 
   const onCancelButtonPressed = React.useCallback(() => {
     if (!hasCreatedThreads) {
-      router.back();
+      props.navigation.goBack();
     } else {
       Alert.alert("Discard thread?", "", [
         {
@@ -202,7 +204,7 @@ export default function CreateScreen() {
         {
           style: "destructive",
           text: "Discard",
-          onPress: router.back,
+          onPress: props.navigation.goBack,
         },
       ]);
     }

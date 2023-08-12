@@ -2,7 +2,6 @@ import { ChevronLeftIcon } from "@/components/Icons";
 import Thread from "@/components/Thread";
 import Typography from "@/components/Typography";
 import useColors from "@/hooks/useColors";
-import { useRouter } from "expo-router";
 import React from "react";
 import {
   Image,
@@ -24,6 +23,7 @@ import * as Haptics from "expo-haptics";
 import useIsDarkMode from "@/hooks/useIsDarkMode";
 import { isAndroid } from "@/constants/Platform";
 import Header from "@/components/Header";
+import { useNavigation } from "@react-navigation/native";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -33,7 +33,7 @@ export default function ThreadScreen() {
   const { top, bottom } = useSafeAreaInsets();
   const scrollY = useSharedValue(0);
   const press = useSharedValue(0);
-  const router = useRouter();
+  const navigation = useNavigation();
 
   const onScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -83,7 +83,7 @@ export default function ThreadScreen() {
           <TouchableOpacity
             activeOpacity={0.5}
             style={styles.backButton}
-            onPress={router.back}
+            onPress={navigation.goBack}
           >
             <ChevronLeftIcon size={10} color={colors.text} />
             <Typography variant="body2" fontWeight={500}>

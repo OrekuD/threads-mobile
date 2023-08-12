@@ -1,11 +1,28 @@
-import { StaticRoutes } from "expo-router";
 import { HomeIcon } from "./components/Icons";
 import { Dispatch, SetStateAction } from "react";
+
+export type RootStackParamList = {
+  LandingScreen: undefined;
+  MainScreen: undefined;
+  SetupProfileScreen: undefined;
+  EditBioScreen: undefined;
+  EditLinkScreen: undefined;
+  CreateThreadScreen: undefined;
+  FollowsScreen: undefined;
+  EditProfileScreen: undefined;
+};
+
+export type BottomTabParamList = {
+  HomeScreen: undefined;
+  SearchScreen: undefined;
+  ActivityScreen: undefined;
+  ProfileScreen: undefined;
+};
 
 export interface BottomNavigationTab {
   inActiveIcon: typeof HomeIcon;
   activeIcon: typeof HomeIcon;
-  href: StaticRoutes;
+  href: keyof BottomTabParamList | "CreateThreadScreen";
   index: number;
 }
 

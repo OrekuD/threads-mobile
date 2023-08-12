@@ -23,7 +23,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Typography from "@/components/Typography";
 import useIsDarkMode from "@/hooks/useIsDarkMode";
 import BottomSheet from "@/components/BottomSheet";
-import { useRouter } from "expo-router";
 import Animated, {
   Extrapolate,
   interpolate,
@@ -32,14 +31,17 @@ import Animated, {
   useSharedValue,
 } from "react-native-reanimated";
 import useScreensize from "@/hooks/useScreensize";
+import { NativeStackScreenProps } from "@react-navigation/native-stack/lib/typescript/src/types";
+import { RootStackParamList } from "@/types";
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
-export default function ProfileScreen() {
+interface Props extends NativeStackScreenProps<RootStackParamList> {}
+
+export default function ProfileScreen(props: Props) {
   const colors = useColors();
   const { top } = useSafeAreaInsets();
   const isDarkMode = useIsDarkMode();
-  const router = useRouter();
   const [isThreadsBottomSheetOpen, setIsThreadsBottomSheetOpen] =
     React.useState(false);
   const scrollY = useSharedValue(0);
@@ -202,10 +204,7 @@ export default function ProfileScreen() {
             >
               <InstagramIcon size={24} color={colors.text} />
             </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => router.push("/settings")}
-            >
+            <TouchableOpacity activeOpacity={0.8} onPress={() => {}}>
               <HamburgerIcon size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
@@ -252,7 +251,7 @@ export default function ProfileScreen() {
           </View>
           <TouchableOpacity
             activeOpacity={0.8}
-            onPress={() => router.push("/follows")}
+            onPress={() => props.navigation.navigate("FollowsScreen")}
             style={[
               styles.row,
               {
@@ -311,7 +310,7 @@ export default function ProfileScreen() {
                   borderColor: colors.border,
                 },
               ]}
-              onPress={() => router.push("/editprofile")}
+              onPress={() => props.navigation.navigate("EditProfileScreen")}
             >
               <Typography variant="sm" fontWeight={600}>
                 Edit profile

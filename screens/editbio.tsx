@@ -5,7 +5,6 @@ import { isAndroid } from "@/constants/Platform";
 import useColors from "@/hooks/useColors";
 import useIsDarkMode from "@/hooks/useIsDarkMode";
 import useKeyboard from "@/hooks/useKeyboard";
-import { useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
 import Animated, {
@@ -17,10 +16,9 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export default function EditLinkScreen() {
+export default function EditBioScreen() {
   const colors = useColors();
   const isDarkMode = useIsDarkMode();
-  const router = useRouter();
   const [value, setValue] = React.useState("");
   const { bottom } = useSafeAreaInsets();
   const { keyboardHeight } = useKeyboard();
@@ -49,7 +47,7 @@ export default function EditLinkScreen() {
         backgroundColor: isAndroid ? colors.background : colors.modalBackground,
       }}
     >
-      <Header title="Edit link" centerTitle hasCheckIcon />
+      <Header title="Edit bio" centerTitle hasCheckIcon />
       <View style={styles.container}>
         <View
           style={[
@@ -84,14 +82,14 @@ export default function EditLinkScreen() {
             style={[
               styles.textInput,
               {
-                color: "#008AF5",
+                color: colors.text,
                 verticalAlign: "top",
               },
             ]}
             value={value}
             onChangeText={setValue}
             placeholderTextColor={colors.textSecondary}
-            placeholder="https://www.example.com/"
+            placeholder="Write a bio..."
             multiline
           />
         </View>

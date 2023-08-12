@@ -1,10 +1,10 @@
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import Typography from "./Typography";
-import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ArrowLeftIcon, CancelIcon, CheckIcon } from "./Icons";
 import useColors from "@/hooks/useColors";
 import { isAndroid } from "@/constants/Platform";
+import { useNavigation } from "@react-navigation/native";
 
 interface Props {
   title: string;
@@ -18,7 +18,7 @@ interface Props {
 }
 
 export default function Header(props: Props) {
-  const router = useRouter();
+  const navigation = useNavigation();
   const colors = useColors();
   const { top } = useSafeAreaInsets();
 
@@ -38,7 +38,7 @@ export default function Header(props: Props) {
       >
         <TouchableOpacity
           activeOpacity={0.8}
-          onPress={props.onCancelButtonPressed || router.back}
+          onPress={props.onCancelButtonPressed || navigation.goBack}
         >
           {props.hasArrowIcon ? (
             <ArrowLeftIcon size={24} color={colors.text} />
@@ -59,7 +59,7 @@ export default function Header(props: Props) {
         {props.hideRightButton ? (
           <></>
         ) : (
-          <TouchableOpacity activeOpacity={0.8} onPress={router.back}>
+          <TouchableOpacity activeOpacity={0.8} onPress={navigation.goBack}>
             {props.hasCheckIcon ? (
               <CheckIcon size={24} color={colors.text} />
             ) : (
@@ -90,7 +90,7 @@ export default function Header(props: Props) {
             left: 16,
           },
         ]}
-        onPress={props.onCancelButtonPressed || router.back}
+        onPress={props.onCancelButtonPressed || navigation.goBack}
       >
         <Typography variant="body2">Cancel</Typography>
       </TouchableOpacity>
@@ -105,7 +105,7 @@ export default function Header(props: Props) {
             right: 16,
           },
         ]}
-        onPress={router.back}
+        onPress={navigation.goBack}
       >
         <Typography variant="body2" fontWeight={600} color="#16A1FB">
           Done

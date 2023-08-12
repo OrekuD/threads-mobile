@@ -12,44 +12,46 @@ import {
   ProfileIcon,
   SearchIcon,
 } from "./Icons";
-import { useRouter } from "expo-router";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import useColors from "@/hooks/useColors";
 
-export default function TabBar(props: BottomTabBarProps) {
+interface Props {
+  tabbBarProps: BottomTabBarProps;
+}
+
+export default function TabBar(props: Props) {
   const { bottom } = useSafeAreaInsets();
   const colors = useColors();
-  const router = useRouter();
 
   const tabs: Array<BottomNavigationTab> = [
     {
       inActiveIcon: HomeIcon,
       activeIcon: HomeActiveIcon,
-      href: "/(tabs)/",
+      href: "HomeScreen",
       index: 0,
     },
     {
       inActiveIcon: SearchIcon,
       activeIcon: SearchIcon,
-      href: "/(tabs)/search",
+      href: "SearchScreen",
       index: 1,
     },
     {
       inActiveIcon: CreateIcon,
       activeIcon: CreateIcon,
-      href: "/create",
+      href: "CreateThreadScreen",
       index: -1,
     },
     {
       inActiveIcon: ActivityIcon,
       activeIcon: ActivityActiveIcon,
-      href: "/(tabs)/activity",
+      href: "ActivityScreen",
       index: 2,
     },
     {
       inActiveIcon: ProfileIcon,
       activeIcon: ProfileActiveIcon,
-      href: "/(tabs)/profile",
+      href: "ProfileScreen",
       index: 3,
     },
   ];
@@ -72,13 +74,13 @@ export default function TabBar(props: BottomTabBarProps) {
           href,
           index,
         }) => {
-          const isActive = index == props.state.index;
+          const isActive = index == props.tabbBarProps.state.index;
           return (
             <TouchableOpacity
               activeOpacity={0.8}
-              key={href}
+              key={index}
               onPress={() => {
-                router.push(href);
+                props.tabbBarProps.navigation.navigate(href);
               }}
               style={styles.tab}
             >

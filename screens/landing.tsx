@@ -7,7 +7,6 @@ import Typography from "@/components/Typography";
 import useColors from "@/hooks/useColors";
 import useIsDarkMode from "@/hooks/useIsDarkMode";
 import useScreensize from "@/hooks/useScreensize";
-import { useRouter } from "expo-router";
 import React from "react";
 import {
   ActivityIndicator,
@@ -16,10 +15,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { RootStackParamList } from "@/types";
 
-export default function LoginScreen() {
+interface Props extends NativeStackScreenProps<RootStackParamList> {}
+
+export default function LandingScreen(props: Props) {
   const colors = useColors();
-  const router = useRouter();
   const { width } = useScreensize();
   const isDarkMode = useIsDarkMode();
   const [isLoading, setIsLoading] = React.useState(false);
@@ -52,12 +54,9 @@ export default function LoginScreen() {
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={() => {
-              router.push("/profile");
-
-              return;
               setIsLoading(true);
               setTimeout(() => {
-                router.push("/profile");
+                props.navigation.navigate("SetupProfileScreen");
                 setIsLoading(false);
               }, 1000);
             }}

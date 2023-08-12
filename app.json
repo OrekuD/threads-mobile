@@ -34,7 +34,6 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router",
       [
         "expo-image-picker",
         {
@@ -43,8 +42,7 @@
       ]
     ],
     "experiments": {
-      "tsconfigPaths": true,
-      "typedRoutes": true
+      "tsconfigPaths": true
     }
   }
 }

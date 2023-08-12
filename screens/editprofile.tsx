@@ -4,7 +4,6 @@ import TextInput from "@/components/TextInput";
 import Typography from "@/components/Typography";
 import useColors from "@/hooks/useColors";
 import useIsDarkMode from "@/hooks/useIsDarkMode";
-import { Link, useRouter } from "expo-router";
 import React from "react";
 import {
   ActionSheetIOS,
@@ -18,11 +17,15 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import Header from "@/components/Header";
 import { isAndroid } from "@/constants/Platform";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { RootStackParamList } from "@/types";
 
-export default function EditProfile() {
+interface Props
+  extends NativeStackScreenProps<RootStackParamList, "EditProfileScreen"> {}
+
+export default function EditProfileScreen(props: Props) {
   const colors = useColors();
   const isDarkMode = useIsDarkMode();
-  const router = useRouter();
   const [isLoading, setIsLoading] = React.useState(true);
 
   const borderColor = isDarkMode ? "#343535" : "#D6D6D6";
@@ -145,7 +148,7 @@ export default function EditProfile() {
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => {
-                router.push("/editbio");
+                props.navigation.navigate("EditBioScreen");
               }}
             >
               <TextInput
@@ -158,7 +161,7 @@ export default function EditProfile() {
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => {
-                router.push("/editlink");
+                props.navigation.navigate("EditLinkScreen");
               }}
             >
               <TextInput
