@@ -1,5 +1,5 @@
 import Header from "@/components/Header";
-import { CancelIcon } from "@/components/Icons";
+import { CancelIcon, ImportIcon } from "@/components/Icons";
 import Typography from "@/components/Typography";
 import { isAndroid } from "@/constants/Platform";
 import useColors from "@/hooks/useColors";
@@ -95,14 +95,9 @@ export default function EditBioScreen() {
           />
         </View>
         <Animated.View style={[styles.importButton, importButtonAnimatedStyle]}>
-          <TouchableOpacity
-            style={{
-              paddingVertical: 14,
-              paddingHorizontal: 8,
-            }}
-            activeOpacity={0.8}
-          >
-            <Typography variant="sm" color={colors.text} fontWeight={500}>
+          <TouchableOpacity style={styles.row} activeOpacity={0.8}>
+            <ImportIcon size={18} color={colors.text} />
+            <Typography variant="body" color={colors.text} fontWeight={500}>
               Import bio from Instagram
             </Typography>
           </TouchableOpacity>
@@ -147,9 +142,14 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 16,
     width: "100%",
-    flexDirection: "row",
-    justifyContent: "center",
     alignItems: "center",
     zIndex: 10,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingVertical: 14,
+    paddingHorizontal: 8,
   },
 });

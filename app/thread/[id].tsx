@@ -22,6 +22,8 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import useIsDarkMode from "@/hooks/useIsDarkMode";
+import { isAndroid } from "@/constants/Platform";
+import Header from "@/components/Header";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -53,7 +55,7 @@ export default function ThreadScreen() {
     return {
       transform: [
         {
-          scale: interpolate(press.value, [0, 1], [1, 0.98]),
+          scale: interpolate(press.value, [0, 1], [1, isAndroid ? 0.9 : 0.98]),
         },
       ],
     };
@@ -66,42 +68,47 @@ export default function ThreadScreen() {
         backgroundColor: colors.background,
       }}
     >
-      <Animated.View
-        style={[
-          styles.header,
-          {
-            paddingTop: top + 14,
-          },
-          headerAnimatedStyle,
-        ]}
-      >
-        <TouchableOpacity
-          activeOpacity={0.5}
-          style={styles.backButton}
-          onPress={router.back}
+      {isAndroid ? (
+        <Header title="Thread" hideRightButton hasBorder hasArrowIcon />
+      ) : (
+        <Animated.View
+          style={[
+            styles.header,
+            {
+              paddingTop: top + 14,
+            },
+            headerAnimatedStyle,
+          ]}
         >
-          <ChevronLeftIcon size={11} color={colors.text} />
-          <Typography variant="body">Back</Typography>
-        </TouchableOpacity>
-        <Typography variant="body2" fontWeight={700}>
-          Thread
-        </Typography>
-      </Animated.View>
+          <TouchableOpacity
+            activeOpacity={0.5}
+            style={styles.backButton}
+            onPress={router.back}
+          >
+            <ChevronLeftIcon size={10} color={colors.text} />
+            <Typography variant="body2" fontWeight={500}>
+              Back
+            </Typography>
+          </TouchableOpacity>
+          <Typography variant="body2" fontWeight={700}>
+            Thread
+          </Typography>
+        </Animated.View>
+      )}
       <Animated.FlatList
-        ListHeaderComponent={() => <Thread />}
+        ListHeaderComponent={() => <Thread variant="thread" />}
         scrollEventThrottle={16}
         onScroll={onScroll}
-        data={[""]}
+        data={Array(3).fill("d")}
         renderItem={({ item }) => {
-          return <></>;
+          return <Thread variant="reply" />;
         }}
       />
       <View
         style={[
           styles.footer,
           {
-            paddingBottom: (bottom || 20) + 16,
-            // borderColor: "#2B2C2C",
+            paddingBottom: bottom + 16,
             borderColor: colors.border,
           },
         ]}

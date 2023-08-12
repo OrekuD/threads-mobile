@@ -1,5 +1,6 @@
 import { StaticRoutes } from "expo-router";
 import { HomeIcon } from "./components/Icons";
+import { Dispatch, SetStateAction } from "react";
 
 export interface BottomNavigationTab {
   inActiveIcon: typeof HomeIcon;
@@ -10,6 +11,11 @@ export interface BottomNavigationTab {
 
 export interface ToastContextType {
   showToast: () => void;
+}
+
+export interface AuthContextType {
+  isAuthenticated: boolean;
+  setAuthenticated: Dispatch<SetStateAction<boolean>>;
 }
 
 export interface CreateThread {

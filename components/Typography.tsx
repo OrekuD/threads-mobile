@@ -1,3 +1,4 @@
+import { isAndroid } from "@/constants/Platform";
 import useColors from "@/hooks/useColors";
 import React from "react";
 import { Text, TextStyle } from "react-native";
@@ -8,6 +9,7 @@ interface Props {
   color?: "primary" | "secondary" | Omit<string, "primary" | "secondary">;
   style?: TextStyle;
   lineLimit?: number;
+  textAlign?: "left" | "center" | "right";
 }
 
 export default function Typography(props: React.PropsWithChildren<Props>) {
@@ -32,19 +34,19 @@ export default function Typography(props: React.PropsWithChildren<Props>) {
   const fontSize = React.useMemo(() => {
     switch (props.variant) {
       case "tiny":
-        return 12;
+        return isAndroid ? 12 : 10;
       case "sm":
-        return 14;
+        return isAndroid ? 15 : 12;
       case "body":
-        return 16;
+        return isAndroid ? 16 : 14;
       case "body2":
-        return 18;
+        return isAndroid ? 18 : 16;
       case "title":
-        return 24;
+        return isAndroid ? 24 : 22;
       case "heading":
-        return 34;
+        return isAndroid ? 34 : 30;
       default:
-        return 16;
+        return isAndroid ? 16 : 14;
     }
   }, [props.variant]);
 
@@ -68,6 +70,7 @@ export default function Typography(props: React.PropsWithChildren<Props>) {
           fontSize,
           color,
           lineHeight: fontSize * 1.5,
+          textAlign: props.textAlign,
         },
         props.style,
       ]}

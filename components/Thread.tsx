@@ -5,25 +5,53 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Image,
+  Pressable,
+  Share,
 } from "react-native";
 import {
+  CancelIcon,
   HeartIcon,
   MenuIcon,
   MessageIcon,
   RepostIcon,
   SendIcon,
 } from "./Icons";
-import { Image } from "expo-image";
+// import { Image } from "expo-image";
 import useColors from "@/hooks/useColors";
 import React from "react";
 import { blurhash } from "@/constants/Blurhash";
 import Typography from "./Typography";
-import { Link } from "expo-router";
 import useScreensize from "@/hooks/useScreensize";
+import { Portal } from "@gorhom/portal";
+import Animated from "react-native-reanimated";
+import { useRouter } from "expo-router";
+import { isAndroid } from "@/constants/Platform";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export default function Thread() {
+interface Props {
+  variant: "reply" | "thread" | "list-thread";
+}
+
+export default function Thread(props: Props) {
   const colors = useColors();
+  const router = useRouter();
+  const { top } = useSafeAreaInsets();
   const { width } = useScreensize();
+  const [showImages, setShowImages] = React.useState(false);
+
+  const [dimensions, setDimensions] = React.useState({
+    width: width,
+    height: 0,
+  });
+
+  React.useEffect(() => {
+    Image.getSize("https://picsum.photos/250", (imageWidth, imageHeight) => {
+      const scaleFactor = imageWidth / width;
+      const height = imageHeight / scaleFactor;
+      setDimensions({ width, height });
+    });
+  }, [width]);
 
   const buttons = React.useMemo(
     () => [
@@ -48,12 +76,46 @@ export default function Thread() {
   }, []);
 
   return (
-    <Link
-      href={{
-        pathname: "/thread/[id]",
-        params: { id: Math.random().toString() },
-      }}
-    >
+    <>
+      <Portal>
+        <View
+          style={{
+            position: "absolute",
+            width: "100%",
+            height: "100%",
+            top: 0,
+            left: 0,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "transparent",
+            opacity: showImages ? 1 : 0,
+          }}
+          pointerEvents={showImages ? undefined : "none"}
+        >
+          <TouchableOpacity
+            activeOpacity={0.8}
+            style={[
+              styles.closeButton,
+              {
+                top: top,
+              },
+            ]}
+            onPress={() => setShowImages(false)}
+          >
+            <CancelIcon size={20} color="#ffffff" />
+          </TouchableOpacity>
+          <Animated.Image
+            source={{ uri: "https://picsum.photos/250" }}
+            style={[
+              dimensions,
+              {
+                resizeMode: "contain",
+              },
+            ]}
+            // sharedTransitionTag={isAndroid ? undefined : "image-0"}
+          />
+        </View>
+      </Portal>
       <View
         style={[
           styles.container,
@@ -63,95 +125,119 @@ export default function Thread() {
           },
         ]}
       >
-        <View style={styles.leftContainer}>
-          <View style={styles.avatarContainer}>
-            <Image
-              style={styles.avatar}
-              source="https://picsum.photos/44"
-              placeholder={blurhash}
-              contentFit="cover"
-              transition={500}
-            />
-          </View>
-          <View
-            style={[
-              styles.line,
-              {
-                backgroundColor: colors.border,
-              },
-            ]}
-          />
-          {images.length === 3 ? (
-            <View style={styles.threeImages}>
-              {images.map((_, index) => {
-                return (
-                  <Image
-                    key={index}
-                    style={[
-                      styles.smallAvatar,
-                      {
-                        borderColor: colors.border,
-                        transform: [
-                          { scale: 1 - index * 0.15 },
-                          {
-                            translateX:
-                              index === 2 ? 0 : index === 0 ? 10 : -10,
-                          },
-                          {
-                            translateY:
-                              index === 2 ? -20 : index === 0 ? 3 : -10,
-                          },
-                        ],
-                      },
-                    ]}
-                    source="https://picsum.photos/44"
-                    placeholder={blurhash}
-                    contentFit="cover"
-                    transition={1000}
-                  />
-                );
-              })}
+        {props.variant === "thread" ? (
+          <></>
+        ) : (
+          <View style={styles.leftContainer}>
+            <View style={styles.avatarContainer}>
+              <Image
+                style={styles.avatar}
+                source={{ uri: "https://picsum.photos/44" }}
+                // placeholder={blurhash}
+                // contentFit="cover"
+                // transition={500}
+              />
             </View>
-          ) : (
-            <View style={styles.twoImages}>
-              {images.map((_, index) => {
-                return (
-                  <View
-                    key={index}
-                    style={[
-                      styles.smallAvatarContainer,
-                      {
-                        backgroundColor: colors.background,
-                      },
-                    ]}
-                  >
+            <View
+              style={[
+                styles.line,
+                {
+                  backgroundColor: colors.border,
+                },
+              ]}
+            />
+            {images.length === 3 ? (
+              <View style={styles.threeImages}>
+                {images.map((_, index) => {
+                  return (
                     <Image
+                      key={index}
                       style={[
                         styles.smallAvatar,
                         {
                           borderColor: colors.border,
+                          transform: [
+                            { scale: 1 - index * 0.15 },
+                            {
+                              translateX:
+                                index === 2 ? 0 : index === 0 ? 10 : -10,
+                            },
+                            {
+                              translateY:
+                                index === 2 ? -20 : index === 0 ? 3 : -10,
+                            },
+                          ],
                         },
                       ]}
-                      source="https://picsum.photos/44"
-                      placeholder={blurhash}
-                      contentFit="cover"
-                      transition={1000}
+                      source={{ uri: "https://picsum.photos/44" }}
+                      // placeholder={blurhash}
+                      // contentFit="cover"
+                      // transition={1000}
                     />
-                  </View>
-                );
-              })}
-            </View>
-          )}
-        </View>
+                  );
+                })}
+              </View>
+            ) : (
+              <View style={styles.twoImages}>
+                {images.map((_, index) => {
+                  return (
+                    <View
+                      key={index}
+                      style={[
+                        styles.smallAvatarContainer,
+                        {
+                          backgroundColor: colors.background,
+                        },
+                      ]}
+                    >
+                      <Image
+                        style={[
+                          styles.smallAvatar,
+                          {
+                            borderColor: colors.border,
+                          },
+                        ]}
+                        source={{ uri: "https://picsum.photos/44" }}
+                        // placeholder={blurhash}
+                        // contentFit="cover"
+                        // transition={1000}
+                      />
+                    </View>
+                  );
+                })}
+              </View>
+            )}
+          </View>
+        )}
         <View style={{ flex: 1 }}>
           <View style={styles.top}>
+            {props.variant === "thread" ? (
+              <View
+                style={[
+                  styles.avatarContainer,
+                  {
+                    marginRight: 6,
+                  },
+                ]}
+              >
+                <Image
+                  style={styles.avatar}
+                  source={{ uri: "https://picsum.photos/4" }}
+                  // placeholder={blurhash}
+                  // contentFit="cover"
+                  // transition={500}
+                />
+              </View>
+            ) : (
+              <></>
+            )}
             <Typography variant="sm" fontWeight={600} style={{ flex: 1 }}>
               oreku_
             </Typography>
             <Typography variant="sm" color="secondary">
               33m
             </Typography>
-            <TouchableOpacity activeOpacity={0.5} style={styles.menuButton}>
+            <TouchableOpacity activeOpacity={0.5}>
               <MenuIcon size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
@@ -169,7 +255,7 @@ export default function Thread() {
               Eiusmod officia dolor aute deserunt.
             </Typography>
           </View>
-          {Math.random() >= 0.5 ? (
+          {true ? (
             <View
               style={[
                 styles.imageContainer,
@@ -177,30 +263,29 @@ export default function Thread() {
                   width,
                   transform: [
                     {
-                      translateX: -70,
+                      translateX: props.variant === "thread" ? 0 : -70,
                     },
                   ],
                 },
               ]}
             >
               <FlatList
-                data={Array(3).fill("9")}
+                data={Array(1).fill("9")}
                 keyExtractor={() => Math.random().toString()}
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={{
                   gap: 8,
-                  paddingLeft: 70,
-                  paddingRight: 16,
+                  paddingLeft: props.variant === "thread" ? 8 : 70,
+                  paddingRight: props.variant === "thread" ? 8 : 16,
                 }}
-                renderItem={({ item }) => {
+                renderItem={({ item, index }) => {
                   // const imageWidth =
                   //   thread.media.length === 1
                   //     ? width - 70 - 8
                   //     : width - 70 - 24;
                   return (
-                    <TouchableOpacity
-                      activeOpacity={0.8}
+                    <Pressable
                       style={{
                         borderRadius: 8,
                         overflow: "hidden",
@@ -214,17 +299,28 @@ export default function Thread() {
                         //     ? undefined
                         //     : item.aspectRatio,
                       }}
+                      onPress={() => {
+                        // router.setParams({ q: "search" });
+                        // router.push("/thread/images/");
+                        setShowImages(true);
+                      }}
+                      onLongPress={() => {
+                        Share.share({
+                          message: "",
+                        });
+                      }}
                     >
-                      <Image
+                      <Animated.Image
                         source={{ uri: "https://picsum.photos/250" }}
                         style={{
                           borderRadius: 8,
                           width: "100%",
                           height: "100%",
+                          resizeMode: "cover",
                         }}
-                        contentFit="cover"
+                        // sharedTransitionTag={isAndroid ? undefined : `image-0`}
                       />
-                    </TouchableOpacity>
+                    </Pressable>
                   );
                 }}
               />
@@ -260,7 +356,7 @@ export default function Thread() {
           </Typography>
         </View>
       </View>
-    </Link>
+    </>
   );
 }
 
@@ -301,13 +397,12 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 36 / 2,
+    resizeMode: "cover",
   },
   top: {
     flexDirection: "row",
     alignItems: "center",
-  },
-  menuButton: {
-    marginLeft: 6,
+    gap: 6,
   },
   content: {
     paddingVertical: 4,
@@ -337,8 +432,19 @@ const styles = StyleSheet.create({
     height: 16,
     borderRadius: 16 / 2,
     borderWidth: 1,
+    resizeMode: "cover",
   },
   imageContainer: {
     marginVertical: 8,
+  },
+  closeButton: {
+    position: "absolute",
+    left: 16,
+    width: 38,
+    height: 38,
+    borderRadius: 38 / 2,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#1E1E1E",
   },
 });

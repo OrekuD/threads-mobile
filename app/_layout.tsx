@@ -10,14 +10,12 @@ import { SplashScreen, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import { useEffect } from "react";
-import {
-  ActivityIndicator,
-  Platform,
-  View,
-  useColorScheme,
-} from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Text, TextInput } from "react-native";
+import { isAndroid } from "@/constants/Platform";
+import useIsDarkMode from "@/hooks/useIsDarkMode";
+import AuthContextProvider, { useAuthContext } from "@/context/AuthContext";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -26,7 +24,7 @@ export {
 
 export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: "(tabs)",
+  initialRouteName: "index",
 };
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -77,20 +75,20 @@ export default function RootLayout() {
     );
   }
 
-  return <RootLayoutNav />;
+  return (
+    <AuthContextProvider>
+      <RootLayoutNav />
+    </AuthContextProvider>
+  );
 }
 
-const isAndroid = Platform.OS === "android";
-
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+  const auth = useAuthContext();
+  const isDarkMode = useIsDarkMode();
   const colors = useColors();
 
   return (
-    <ThemeProvider
-      // value={DarkTheme}
-      value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-    >
+    <ThemeProvider value={isDarkMode ? DarkTheme : DefaultTheme}>
       <StatusBar animated backgroundColor={colors.background} translucent />
       <GestureHandlerRootView
         style={{
@@ -102,7 +100,9 @@ function RootLayoutNav() {
             screenOptions={{
               headerShown: false,
             }}
+            // initialRouteName={auth.isAuthenticated ? "(tabs)" : "index"}
           >
+            <Stack.Screen name="index" />
             <Stack.Screen
               name="thread/[id]"
               getId={({ params }) => String(Date.now())}

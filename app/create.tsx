@@ -29,10 +29,10 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import uuid from "react-native-uuid";
 import * as ImagePicker from "expo-image-picker";
-import { useNavigation } from "expo-router";
 import useScreensize from "@/hooks/useScreensize";
 import { isAndroid } from "@/constants/Platform";
 import Header from "@/components/Header";
+import useIsDarkMode from "@/hooks/useIsDarkMode";
 
 const threadId = uuid.v4().toString();
 
@@ -48,8 +48,8 @@ const publicProfileMenuOptions = [
   "Mentioned only",
 ];
 
-const MENU_WIDTH = 240;
-const MENU_ITEM_HEIGHT = 38;
+const MENU_WIDTH = isAndroid ? 160 : 240;
+const MENU_ITEM_HEIGHT = isAndroid ? 42 : 38;
 const MENU_HEIGHT = MENU_ITEM_HEIGHT * 3;
 
 export default function CreateScreen() {
@@ -62,7 +62,7 @@ export default function CreateScreen() {
   const popmenuAnimation = useSharedValue(0);
   const { width } = useScreensize();
   const router = useRouter();
-  const colorScheme = useColorScheme();
+  const isDarkMode = useIsDarkMode();
   const [threads, setThreads] = React.useState<Array<CreateThread>>([
     {
       media: [],
@@ -211,7 +211,7 @@ export default function CreateScreen() {
   return (
     <Pressable
       style={{
-        backgroundColor: colors.modalBackground,
+        backgroundColor: isAndroid ? colors.background : colors.modalBackground,
         flex: 1,
       }}
       onPress={() => setShowPopupMenu(false)}
@@ -220,9 +220,12 @@ export default function CreateScreen() {
         style={[
           styles.menu,
           {
-            backgroundColor: colorScheme === "dark" ? "#292929" : "#F5F4F5",
-            bottom: toolbarHeight,
-            shadowColor: colorScheme === "dark" ? "transparent" : "#000",
+            backgroundColor: isAndroid
+              ? colors.modalBackground
+              : isDarkMode
+              ? "#292929"
+              : "#F5F4F5",
+            shadowColor: isDarkMode ? "transparent" : "#000",
           },
           menuAnimatedStyle,
         ]}
@@ -240,12 +243,17 @@ export default function CreateScreen() {
                 styles.menuItem,
                 {
                   borderTopWidth: index === 0 ? 0 : 1,
-                  borderTopColor:
-                    colorScheme === "dark" ? "#535152" : "#CDCCCC",
+                  borderTopColor: isAndroid
+                    ? colors.border
+                    : isDarkMode
+                    ? "#535152"
+                    : "#CDCCCC",
                 },
               ]}
             >
-              <Typography variant="sm">{option}</Typography>
+              <Typography variant={isAndroid ? "tiny" : "sm"}>
+                {option}
+              </Typography>
             </TouchableOpacity>
           );
         })}
@@ -255,7 +263,9 @@ export default function CreateScreen() {
           styles.toolbar,
           {
             // height: toolbarHeight,
-            backgroundColor: colors.modalBackground,
+            backgroundColor: isAndroid
+              ? colors.background
+              : colors.modalBackground,
             paddingTop: 14,
           },
           toolbarAnimatedStyle,
@@ -576,11 +586,12 @@ const styles = StyleSheet.create({
     width: MENU_WIDTH,
     height: MENU_HEIGHT,
     zIndex: 11,
-    borderRadius: 12,
+    borderRadius: isAndroid ? 8 : 12,
     shadowColor: "#000",
     shadowOffset: { height: 1.5, width: 1.5 },
     shadowOpacity: 0.5,
     shadowRadius: 100,
+    elevation: 10,
   },
   menuItem: {
     paddingHorizontal: 16,

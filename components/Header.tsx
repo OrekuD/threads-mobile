@@ -1,21 +1,21 @@
-import { Platform, StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import Typography from "./Typography";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { CancelIcon, CheckIcon } from "./Icons";
+import { ArrowLeftIcon, CancelIcon, CheckIcon } from "./Icons";
 import useColors from "@/hooks/useColors";
+import { isAndroid } from "@/constants/Platform";
 
 interface Props {
   title: string;
   backgroundColor?: string;
   centerTitle?: boolean;
   hasCheckIcon?: boolean;
+  hasArrowIcon?: boolean;
   hideRightButton?: boolean;
   hasBorder?: boolean;
   onCancelButtonPressed?: () => void;
 }
-
-const isAndroid = Platform.OS === "android";
 
 export default function Header(props: Props) {
   const router = useRouter();
@@ -30,7 +30,7 @@ export default function Header(props: Props) {
           {
             paddingTop: top + 14,
             paddingBottom: 16,
-            borderColor: colors.cardBorder,
+            borderColor: colors.border,
             borderBottomWidth: props.hasBorder ? 1 : 0,
             // backgroundColor: "red",
           },
@@ -40,7 +40,11 @@ export default function Header(props: Props) {
           activeOpacity={0.8}
           onPress={props.onCancelButtonPressed || router.back}
         >
-          <CancelIcon size={24} color={colors.text} />
+          {props.hasArrowIcon ? (
+            <ArrowLeftIcon size={24} color={colors.text} />
+          ) : (
+            <CancelIcon size={24} color={colors.text} />
+          )}
         </TouchableOpacity>
         <Typography
           variant="body2"
@@ -88,7 +92,7 @@ export default function Header(props: Props) {
         ]}
         onPress={props.onCancelButtonPressed || router.back}
       >
-        <Typography variant="body">Cancel</Typography>
+        <Typography variant="body2">Cancel</Typography>
       </TouchableOpacity>
       <Typography variant="body2" fontWeight={600}>
         {props.title}
@@ -103,7 +107,7 @@ export default function Header(props: Props) {
         ]}
         onPress={router.back}
       >
-        <Typography variant="body" fontWeight={600} color="#16A1FB">
+        <Typography variant="body2" fontWeight={600} color="#16A1FB">
           Done
         </Typography>
       </TouchableOpacity>

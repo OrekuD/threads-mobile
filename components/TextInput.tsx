@@ -9,6 +9,7 @@ interface Props {
   value?: string;
   borderColor?: string;
   editable?: boolean;
+  noBorder?: boolean;
 }
 
 export default function TextInput(props: Props) {
@@ -19,6 +20,7 @@ export default function TextInput(props: Props) {
         styles.container,
         {
           borderColor: props.borderColor || colors.border,
+          borderBottomWidth: props.noBorder ? 0 : 1,
         },
       ]}
     >
