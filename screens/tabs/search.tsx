@@ -28,6 +28,7 @@ import { FlashList } from "@shopify/flash-list";
 import Recent from "@/components/Recent";
 import useScreensize from "@/hooks/useScreensize";
 import { isAndroid } from "@/constants/Platform";
+import Store from "@/store/Store";
 
 export default function SearchScreen() {
   const { top } = useSafeAreaInsets();
@@ -229,7 +230,7 @@ export default function SearchScreen() {
             keyExtractor={() => Math.random().toString()}
             contentContainerStyle={{}}
             renderItem={({ item }) => {
-              return <Profile />;
+              return <Profile user={Store.createUser()} />;
             }}
           />
         )}
@@ -364,7 +365,7 @@ export default function SearchScreen() {
           }
           scrollEventThrottle={16}
           renderItem={({ item }) => {
-            return <Profile showFollowers />;
+            return <Profile showFollowers user={Store.createUser()} />;
           }}
         />
       </View>

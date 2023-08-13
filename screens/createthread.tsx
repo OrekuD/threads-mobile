@@ -33,6 +33,7 @@ import { isAndroid } from "@/constants/Platform";
 import Header from "@/components/Header";
 import useIsDarkMode from "@/hooks/useIsDarkMode";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useUserContext } from "@/context/UserContext";
 
 const threadId = uuid.v4().toString();
 
@@ -60,6 +61,7 @@ export default function CreateThreadScreen(props: Props) {
   const isPrivateAccount = false;
   const colors = useColors();
   const scrollRef = React.useRef<ScrollView>(null);
+  const userContext = useUserContext();
   const { bottom } = useSafeAreaInsets();
   const toolbarAnimation = useSharedValue(0);
   const popmenuAnimation = useSharedValue(0);
@@ -318,7 +320,11 @@ export default function CreateThreadScreen(props: Props) {
                         borderColor: colors.border,
                       },
                     ]}
-                    source={{ uri: "https://picsum.photos/44" }}
+                    source={
+                      userContext.state.user?.avatar
+                        ? { uri: userContext.state.user.avatar }
+                        : require("../assets/images/no-avatar.jpeg")
+                    }
                   />
                   <View
                     style={[
@@ -332,7 +338,7 @@ export default function CreateThreadScreen(props: Props) {
                 <View style={styles.content}>
                   <View style={styles.top}>
                     <Typography variant="sm" fontWeight={600}>
-                      oreku__
+                      {userContext.state.user?.username}
                     </Typography>
                     {threads.length === 1 ? (
                       <></>
@@ -548,7 +554,11 @@ export default function CreateThreadScreen(props: Props) {
             >
               <Image
                 style={[styles.smallAvatar]}
-                source={{ uri: "https://picsum.photos/44" }}
+                source={
+                  userContext.state.user?.avatar
+                    ? { uri: userContext.state.user.avatar }
+                    : require("../assets/images/no-avatar.jpeg")
+                }
               />
             </View>
             <View

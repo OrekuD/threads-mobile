@@ -1,5 +1,4 @@
 import { ImportIcon, PlusIcon, ProfileActiveIcon } from "@/components/Icons";
-import Switch from "@/components/Switch";
 import TextInput from "@/components/TextInput";
 import Typography from "@/components/Typography";
 import useColors from "@/hooks/useColors";
@@ -13,12 +12,12 @@ import {
   View,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import Header from "@/components/Header";
 import { isAndroid } from "@/constants/Platform";
 import SetupHeader from "@/components/SetupHeader";
 import useScreensize from "@/hooks/useScreensize";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "@/types";
+import { useUserContext } from "@/context/UserContext";
 
 interface Props extends NativeStackScreenProps<RootStackParamList> {}
 
@@ -27,6 +26,7 @@ export default function SetupProfileScreen(props: Props) {
   const isDarkMode = useIsDarkMode();
   const [isLoading, setIsLoading] = React.useState(true);
   const { height } = useScreensize();
+  const userContext = useUserContext();
 
   const borderColor = isDarkMode ? "#343535" : "#D6D6D6";
 
@@ -74,6 +74,7 @@ export default function SetupProfileScreen(props: Props) {
     >
       <SetupHeader
         onNext={() => {
+          userContext.dispatch({ type: "SETUP_PROFILE" });
           props.navigation.navigate("MainScreen");
         }}
       />
@@ -131,7 +132,7 @@ export default function SetupProfileScreen(props: Props) {
                     placeholder="+ Add username"
                     borderColor={borderColor}
                     editable={false}
-                    value="@oreku__"
+                    value={`@${userContext.state.user?.username || ""}`}
                   />
                 </View>
                 <TouchableOpacity

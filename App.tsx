@@ -4,21 +4,15 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
-import {
-  NativeStackNavigationOptions,
-  createNativeStackNavigator,
-} from "@react-navigation/native-stack";
 import { ActivityIndicator, Text, View, TextInput } from "react-native";
-import { RootStackParamList } from "./types";
 import React from "react";
 import useColors from "./hooks/useColors";
 import { useFonts } from "expo-font";
-import { isAndroid } from "./constants/Platform";
 import { PortalProvider } from "@gorhom/portal";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import useIsDarkMode from "./hooks/useIsDarkMode";
 import RootNavigation from "./navigation/RootNavigation";
-import AuthContextProvider from "./context/AuthContext";
+import UserContextProvider from "./context/UserContext";
 
 // @ts-ignore
 Text.defaultProps = Text.defaultProps || {};
@@ -42,7 +36,6 @@ export default function App() {
   const colors = useColors();
   const isDarkMode = useIsDarkMode();
 
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   React.useEffect(() => {
     if (error) throw error;
   }, [error]);
@@ -77,9 +70,9 @@ export default function App() {
         }}
       >
         <PortalProvider>
-          <AuthContextProvider>
+          <UserContextProvider>
             <RootNavigation />
-          </AuthContextProvider>
+          </UserContextProvider>
         </PortalProvider>
       </GestureHandlerRootView>
     </ThemeProvider>

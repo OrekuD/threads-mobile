@@ -17,6 +17,8 @@ import {
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "@/types";
+import { useUserContext } from "@/context/UserContext";
+import Store from "@/store/Store";
 
 interface Props extends NativeStackScreenProps<RootStackParamList> {}
 
@@ -25,6 +27,8 @@ export default function LandingScreen(props: Props) {
   const { width } = useScreensize();
   const isDarkMode = useIsDarkMode();
   const [isLoading, setIsLoading] = React.useState(false);
+  const userContext = useUserContext();
+  const [user, setUser] = React.useState(Store.createUser(true));
 
   return (
     <View
@@ -56,8 +60,10 @@ export default function LandingScreen(props: Props) {
             onPress={() => {
               setIsLoading(true);
               setTimeout(() => {
-                props.navigation.navigate("SetupProfileScreen");
+                userContext.dispatch({ type: "ADD_USER", payload: user });
+                userContext.dispatch({ type: "SIGN_IN" });
                 setIsLoading(false);
+                props.navigation.navigate("SetupProfileScreen");
               }, 1000);
             }}
             style={[
@@ -82,14 +88,24 @@ export default function LandingScreen(props: Props) {
                     lineHeight: undefined,
                   }}
                 >
-                  randomusername
+                  {user.username}
                 </Typography>
-                <VerifiedIcon size={14} />
+                {user.isVerified ? <VerifiedIcon size={14} /> : null}
               </View>
             </View>
             <InstagramColorIcon size={32} />
           </TouchableOpacity>
-          <TouchableOpacity activeOpacity={0.8} style={styles.switchAccounts}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            style={styles.switchAccounts}
+            onPress={() => {
+              setIsLoading(true);
+              setTimeout(() => {
+                setUser(Store.createUser(true));
+                setIsLoading(false);
+              }, 300);
+            }}
+          >
             <Typography variant="body" color="secondary" fontWeight={500}>
               Switch acocunts
             </Typography>

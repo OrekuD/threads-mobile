@@ -5,8 +5,6 @@ export default function useScreensize() {
   const { width, height } = useWindowDimensions();
   const [values, setValues] = React.useState(getValues());
 
-  // console.log({ scale, fontScale });
-
   function getValues() {
     return {
       width,

@@ -3,6 +3,7 @@ import Typography from "@/components/Typography";
 import { isAndroid } from "@/constants/Platform";
 import useColors from "@/hooks/useColors";
 import useScreensize from "@/hooks/useScreensize";
+import Store from "@/store/Store";
 import { NotificationTab } from "@/types";
 import React from "react";
 import {
@@ -267,7 +268,7 @@ export default function ActivityScreen() {
           }
           scrollEventThrottle={16}
           renderItem={({ item }) => {
-            return <Profile showFollowers />;
+            return <Profile showFollowers user={Store.createUser()} />;
           }}
         />
       </View>

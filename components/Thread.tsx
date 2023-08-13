@@ -25,6 +25,10 @@ import useScreensize from "@/hooks/useScreensize";
 import { Portal } from "@gorhom/portal";
 import Animated from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "@/types";
+import { isAndroid } from "@/constants/Platform";
 
 interface Props {
   variant: "reply" | "thread" | "list-thread";
@@ -35,6 +39,8 @@ export default function Thread(props: Props) {
   const { top } = useSafeAreaInsets();
   const { width } = useScreensize();
   const [showImages, setShowImages] = React.useState(false);
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const [dimensions, setDimensions] = React.useState({
     width: width,
@@ -73,45 +79,6 @@ export default function Thread(props: Props) {
 
   return (
     <>
-      <Portal>
-        <View
-          style={{
-            position: "absolute",
-            width: "100%",
-            height: "100%",
-            top: 0,
-            left: 0,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "transparent",
-            opacity: showImages ? 1 : 0,
-          }}
-          pointerEvents={showImages ? undefined : "none"}
-        >
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={[
-              styles.closeButton,
-              {
-                top: top,
-              },
-            ]}
-            onPress={() => setShowImages(false)}
-          >
-            <CancelIcon size={20} color="#ffffff" />
-          </TouchableOpacity>
-          <Animated.Image
-            source={{ uri: "https://picsum.photos/250" }}
-            style={[
-              dimensions,
-              {
-                resizeMode: "contain",
-              },
-            ]}
-            // sharedTransitionTag={isAndroid ? undefined : "image-0"}
-          />
-        </View>
-      </Portal>
       <View
         style={[
           styles.container,
@@ -129,9 +96,6 @@ export default function Thread(props: Props) {
               <Image
                 style={styles.avatar}
                 source={{ uri: "https://picsum.photos/44" }}
-                // placeholder={blurhash}
-                // contentFit="cover"
-                // transition={500}
               />
             </View>
             <View
@@ -238,14 +202,7 @@ export default function Thread(props: Props) {
             </TouchableOpacity>
           </View>
           <View style={styles.content}>
-            <Typography
-              variant="sm"
-              style={
-                {
-                  // width: "100%",
-                }
-              }
-            >
+            <Typography variant="sm">
               Fugiat occaecat adipisicing est ullamco officia commodo nisi
               consequat id. Eiusmod officia dolor aute deserunt. consequat id.
               Eiusmod officia dolor aute deserunt.
@@ -296,9 +253,9 @@ export default function Thread(props: Props) {
                         //     : item.aspectRatio,
                       }}
                       onPress={() => {
-                        // router.setParams({ q: "search" });
-                        // router.push("/thread/images/");
-                        setShowImages(true);
+                        navigation.navigate("ThreadImagesScreen", {
+                          threadId: "8",
+                        });
                       }}
                       onLongPress={() => {
                         Share.share({
@@ -306,7 +263,7 @@ export default function Thread(props: Props) {
                         });
                       }}
                     >
-                      <Animated.Image
+                      <Image
                         source={{ uri: "https://picsum.photos/250" }}
                         style={{
                           borderRadius: 8,
@@ -314,7 +271,6 @@ export default function Thread(props: Props) {
                           height: "100%",
                           resizeMode: "cover",
                         }}
-                        // sharedTransitionTag={isAndroid ? undefined : `image-0`}
                       />
                     </Pressable>
                   );

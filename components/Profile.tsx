@@ -6,9 +6,12 @@ import { Pressable, StyleSheet, TouchableOpacity, View } from "react-native";
 import Typography from "./Typography";
 import { VerifiedIcon } from "./Icons";
 import { Image } from "react-native";
+import { User } from "@/types";
+import formatNumber from "@/util/formatNumber";
 
 interface Props {
   showFollowers?: boolean;
+  user: User;
 }
 
 function Profile(props: Props) {
@@ -22,7 +25,11 @@ function Profile(props: Props) {
             borderColor: colors.border,
           },
         ]}
-        source={{ uri: "https://picsum.photos/44" }}
+        source={
+          props.user.avatar
+            ? { uri: props.user.avatar }
+            : require("../assets/images/no-avatar.jpeg")
+        }
       />
       <View
         style={[
@@ -46,12 +53,12 @@ function Profile(props: Props) {
               }}
               lineLimit={1}
             >
-              username
+              {props.user.username}
             </Typography>
-            <VerifiedIcon size={12} />
+            {props.user.isVerified ? <VerifiedIcon size={12} /> : <></>}
           </View>
           <Typography variant="sm" color="secondary" lineLimit={1}>
-            Fan page for FC Barcelona Fan page for FC Barcelona
+            {props.user.name}
           </Typography>
           {props?.showFollowers ? (
             <Typography
@@ -62,7 +69,7 @@ function Profile(props: Props) {
                 marginTop: 8,
               }}
             >
-              2.3k followers
+              {formatNumber(props.user.followersCount)} followers
             </Typography>
           ) : (
             <></>

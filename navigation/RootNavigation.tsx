@@ -14,7 +14,11 @@ import FollowsScreen from "../screens/follows";
 import CreateThreadScreen from "../screens/createthread";
 import BottomTabNavigation from "./BottomTabNavigation";
 import SetupProfileScreen from "@/screens/setupprofile";
-import { useAuthContext } from "@/context/AuthContext";
+import ThreadImagesScreen from "@/screens/threadimages";
+import ThreadScreen from "@/screens/thread";
+import { useUserContext } from "@/context/UserContext";
+import { ActivityIndicator, View } from "react-native";
+import useColors from "@/hooks/useColors";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -24,7 +28,23 @@ const modalNavigationOptions: NativeStackNavigationOptions = {
 };
 
 export default function RootNavigation() {
-  const authContext = useAuthContext();
+  const userContext = useUserContext();
+  const colors = useColors();
+
+  if (userContext.state.isInitializing) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: colors.background,
+        }}
+      >
+        <ActivityIndicator size="small" color={colors.text} />
+      </View>
+    );
+  }
 
   return (
     <NavigationContainer>
@@ -33,40 +53,57 @@ export default function RootNavigation() {
           headerShown: false,
         }}
         initialRouteName={
-          authContext.isAuthenticated ? "MainScreen" : "LandingScreen"
+          userContext.state.isAuthenticated
+            ? userContext.state.isProfileSetup
+              ? "MainScreen"
+              : "SetupProfileScreen"
+            : "LandingScreen"
         }
       >
-        <Stack.Screen name="LandingScreen" component={LandingScreen} />
-        <Stack.Screen name="MainScreen" component={BottomTabNavigation} />
-        <Stack.Screen
-          name="SetupProfileScreen"
-          component={SetupProfileScreen}
-        />
-        <Stack.Screen
-          name="EditBioScreen"
-          component={EditBioScreen}
-          options={modalNavigationOptions}
-        />
-        <Stack.Screen
-          name="EditLinkScreen"
-          component={EditLinkScreen}
-          options={modalNavigationOptions}
-        />
-        <Stack.Screen
-          name="CreateThreadScreen"
-          component={CreateThreadScreen}
-          options={modalNavigationOptions}
-        />
-        <Stack.Screen
-          name="FollowsScreen"
-          component={FollowsScreen}
-          options={modalNavigationOptions}
-        />
-        <Stack.Screen
-          name="EditProfileScreen"
-          component={EditProfileScreen}
-          options={modalNavigationOptions}
-        />
+        <>
+          {userContext.state.isAuthenticated ? (
+            <>
+              <Stack.Screen name="MainScreen" component={BottomTabNavigation} />
+              <Stack.Screen
+                name="SetupProfileScreen"
+                component={SetupProfileScreen}
+              />
+            </>
+          ) : (
+            <></>
+          )}
+          <Stack.Screen name="LandingScreen" component={LandingScreen} />
+          <Stack.Screen name="ThreadScreen" component={ThreadScreen} />
+          <Stack.Screen
+            name="ThreadImagesScreen"
+            component={ThreadImagesScreen}
+          />
+          <Stack.Screen
+            name="EditBioScreen"
+            component={EditBioScreen}
+            options={modalNavigationOptions}
+          />
+          <Stack.Screen
+            name="EditLinkScreen"
+            component={EditLinkScreen}
+            options={modalNavigationOptions}
+          />
+          <Stack.Screen
+            name="CreateThreadScreen"
+            component={CreateThreadScreen}
+            options={modalNavigationOptions}
+          />
+          <Stack.Screen
+            name="FollowsScreen"
+            component={FollowsScreen}
+            options={modalNavigationOptions}
+          />
+          <Stack.Screen
+            name="EditProfileScreen"
+            component={EditProfileScreen}
+            options={modalNavigationOptions}
+          />
+        </>
       </Stack.Navigator>
     </NavigationContainer>
   );

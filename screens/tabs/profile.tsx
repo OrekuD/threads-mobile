@@ -33,6 +33,9 @@ import Animated, {
 import useScreensize from "@/hooks/useScreensize";
 import { NativeStackScreenProps } from "@react-navigation/native-stack/lib/typescript/src/types";
 import { RootStackParamList } from "@/types";
+import { useUserContext } from "@/context/UserContext";
+import { faker } from "@faker-js/faker";
+import formatNumber from "@/util/formatNumber";
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
@@ -49,6 +52,12 @@ export default function ProfileScreen(props: Props) {
   const { width } = useScreensize();
   const scrollXRef = React.useRef<ScrollView>(null);
   const [headerHeight, setHeaderHeight] = React.useState(0);
+  const userContext = useUserContext();
+
+  const user = React.useMemo(
+    () => userContext.state.user,
+    [userContext.state.user]
+  );
 
   const onScrollY = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -77,7 +86,11 @@ export default function ProfileScreen(props: Props) {
     return {
       transform: [
         {
-          translateX: interpolate(scrollX.value, [0, width], [0, width / 2]),
+          translateX: interpolate(
+            scrollX.value,
+            [0, width],
+            [0, (width - 32) / 2]
+          ),
         },
       ],
     };
@@ -155,7 +168,7 @@ export default function ProfileScreen(props: Props) {
             your full username,
           </Typography>
           <Typography variant="sm" color="secondary" fontWeight={700}>
-            @oreku__@threads.net.
+            @{user?.username}@threads.net.
           </Typography>
         </View>
       </BottomSheet>
@@ -204,14 +217,17 @@ export default function ProfileScreen(props: Props) {
             >
               <InstagramIcon size={24} color={colors.text} />
             </TouchableOpacity>
-            <TouchableOpacity activeOpacity={0.8} onPress={() => {}}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() => userContext.dispatch({ type: "SIGN_OUT" })}
+            >
               <HamburgerIcon size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
           <View style={styles.details}>
             <View>
-              <Typography variant="title" fontWeight={700}>
-                oreku__
+              <Typography variant="title" fontWeight={700} lineLimit={1}>
+                {user?.username}
               </Typography>
               <View
                 style={[
@@ -221,7 +237,9 @@ export default function ProfileScreen(props: Props) {
                   },
                 ]}
               >
-                <Typography variant="body">oreku__</Typography>
+                <Typography variant="body" lineLimit={1}>
+                  {user?.username}
+                </Typography>
                 <TouchableOpacity
                   activeOpacity={0.8}
                   style={[
@@ -245,13 +263,34 @@ export default function ProfileScreen(props: Props) {
               </View>
             </View>
             <Image
-              source={{ uri: "https://picsum.photos/80" }}
+              source={
+                user?.avatar
+                  ? { uri: user.avatar }
+                  : require("../../assets/images/no-avatar.jpeg")
+              }
               style={styles.avatar}
             />
           </View>
+          {Boolean(user?.bio) ? (
+            <Typography
+              variant="sm"
+              style={{
+                marginTop: 8,
+              }}
+            >
+              {user?.bio}
+            </Typography>
+          ) : (
+            <></>
+          )}
           <TouchableOpacity
             activeOpacity={0.8}
-            onPress={() => props.navigation.navigate("FollowsScreen")}
+            onPress={() =>
+              props.navigation.navigate("FollowsScreen", {
+                followersCount: user?.followersCount || 0,
+                followingCount: user?.followingCount || 0,
+              })
+            }
             style={[
               styles.row,
               {
@@ -275,7 +314,7 @@ export default function ProfileScreen(props: Props) {
                   return (
                     <Image
                       source={{
-                        uri: "https://picsum.photos/24",
+                        uri: faker.internet.avatar(),
                       }}
                       style={[
                         styles.smallAvatar,
@@ -289,7 +328,7 @@ export default function ProfileScreen(props: Props) {
                 })}
             </View>
             <Typography variant="sm" color="secondary">
-              15 followers
+              {formatNumber(user?.followersCount || 0)} followers
             </Typography>
           </TouchableOpacity>
           <View
@@ -488,6 +527,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderBottomWidth: 1,
     position: "relative",
+    paddingHorizontal: 16,
   },
   tab: {
     flex: 1,
@@ -501,8 +541,8 @@ const styles = StyleSheet.create({
   },
   activeIndicator: {
     position: "absolute",
-    left: 0,
-    bottom: 0,
+    left: 16,
+    bottom: -1,
     width: "50%",
     height: 1.64,
   },
