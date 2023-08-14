@@ -21,6 +21,7 @@ import { ActivityIndicator, View } from "react-native";
 import useColors from "@/hooks/useColors";
 import UserProfileScreen from "@/screens/userprofile";
 import WebViewScreen from "@/screens/webview";
+import UserProfileModalScreen from "@/screens/userprofilemodal";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -75,15 +76,25 @@ export default function RootNavigation() {
             <></>
           )}
           <Stack.Screen name="LandingScreen" component={LandingScreen} />
-          <Stack.Screen name="ThreadScreen" component={ThreadScreen} />
+          <Stack.Screen
+            name="ThreadScreen"
+            component={ThreadScreen}
+            getId={({ params }) => params.threadId}
+          />
           <Stack.Screen
             name="UserProfileScreen"
             component={UserProfileScreen}
-            getId={({ params }) => params?.user.id}
+            getId={({ params }) => params.user.id}
           />
           <Stack.Screen
             name="ThreadImagesScreen"
             component={ThreadImagesScreen}
+          />
+          <Stack.Screen
+            name="UserProfileModalScreen"
+            component={UserProfileModalScreen}
+            options={modalNavigationOptions}
+            getId={({ params }) => params.user.id}
           />
           <Stack.Screen
             name="EditBioScreen"
@@ -109,6 +120,7 @@ export default function RootNavigation() {
             name="FollowsScreen"
             component={FollowsScreen}
             options={modalNavigationOptions}
+            getId={({ params }) => params.username}
           />
           <Stack.Screen
             name="EditProfileScreen"

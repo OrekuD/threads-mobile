@@ -443,7 +443,7 @@ export default function CreateThreadScreen(props: Props) {
                     >
                       <FlatList
                         data={thread.media}
-                        keyExtractor={() => Math.random().toString()}
+                        keyExtractor={({ url }) => url}
                         horizontal
                         showsHorizontalScrollIndicator={false}
                         contentContainerStyle={{

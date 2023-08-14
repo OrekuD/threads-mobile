@@ -88,7 +88,7 @@ export default function HomeScreen() {
         data={threadsContext.state.list}
         scrollEventThrottle={16}
         onScroll={onScroll}
-        keyExtractor={() => Math.random().toString()}
+        keyExtractor={({ id }) => id}
         onEndReached={() => {
           setIsFetchingMoreThreads(true);
           setTimeout(() => {

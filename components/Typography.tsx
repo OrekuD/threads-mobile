@@ -34,19 +34,26 @@ export default function Typography(props: React.PropsWithChildren<Props>) {
   const fontSize = React.useMemo(() => {
     switch (props.variant) {
       case "tiny":
-        return isAndroid ? 12 : 10;
+        // return isAndroid ? 12 : 10;
+        return 10;
       case "sm":
-        return isAndroid ? 15 : 12;
+        // return isAndroid ? 14 : 12;
+        return 12;
       case "body":
-        return isAndroid ? 16 : 14;
+        // return isAndroid ? 16 : 14;
+        return 14;
       case "body2":
-        return isAndroid ? 18 : 16;
+        // return isAndroid ? 18 : 16;
+        return 16;
       case "title":
-        return isAndroid ? 24 : 22;
+        // return isAndroid ? 24 : 22;
+        return 22;
       case "heading":
-        return isAndroid ? 34 : 30;
+        // return isAndroid ? 34 : 30;
+        return 30;
       default:
-        return isAndroid ? 16 : 14;
+        // return isAndroid ? 16 : 14;
+        return 14;
     }
   }, [props.variant]);
 

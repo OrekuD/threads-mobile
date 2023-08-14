@@ -47,6 +47,7 @@ const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 interface Props {
   user: User;
+  isModal?: boolean;
 }
 
 export default function ProfileView(props: Props) {
@@ -216,7 +217,7 @@ export default function ProfileView(props: Props) {
             styles.header,
             {
               backgroundColor: colors.background,
-              paddingTop: top + 12,
+              paddingTop: props.isModal ? 24 : top + 12,
               paddingHorizontal: 16,
             },
           ]}
@@ -267,7 +268,7 @@ export default function ProfileView(props: Props) {
             setHeaderHeight(
               isCurrentUser
                 ? e.nativeEvent.layout.height
-                : e.nativeEvent.layout.height + top - 6
+                : e.nativeEvent.layout.height + top - (isAndroid ? 0 : 6)
             );
           }}
         >
@@ -303,9 +304,14 @@ export default function ProfileView(props: Props) {
             <></>
           )}
           <View style={styles.details}>
-            <View>
-              <Typography variant="title" fontWeight={700} lineLimit={1}>
-                {props.user.username}
+            <View
+              style={{
+                flex: 1,
+                paddingRight: 24,
+              }}
+            >
+              <Typography variant="title" fontWeight={700} lineLimit={2}>
+                {props.user.name}
               </Typography>
               <View
                 style={[
@@ -376,6 +382,7 @@ export default function ProfileView(props: Props) {
                   followersCount: props.user.followersCount || 0,
                   followingCount: props.user.followingCount || 0,
                   username: props.user.username,
+                  isModal: props.isModal,
                 })
               }
               style={[

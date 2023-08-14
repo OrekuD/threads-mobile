@@ -346,7 +346,7 @@ export default function SearchScreen() {
           data={list}
           ref={scrollRef as any}
           onScroll={onScroll}
-          keyExtractor={() => Math.random().toString()}
+          keyExtractor={({ id }) => id}
           contentContainerStyle={[
             { paddingTop: headerHeight + (isBigDevice ? 12 : 6) },
           ]}

@@ -10,7 +10,6 @@ export default async function loadAsyncStorageValue<T>(
       return JSON.parse(savedState);
     }
   } catch (error) {
-    // console.log({ error });
     return null;
   }
   return null;

@@ -12,11 +12,13 @@ export type RootStackParamList = {
     followersCount: number;
     followingCount: number;
     username: string;
+    isModal?: boolean;
   };
   EditProfileScreen: undefined;
   ThreadScreen: { threadId: string };
   ThreadImagesScreen: { threadId: string };
   UserProfileScreen: { user: User };
+  UserProfileModalScreen: { user: User };
   WebViewScreen: { url: string };
 };
 
@@ -134,4 +136,5 @@ export interface Thread {
   creator: User;
   repliesCount: number;
   likesCount: number;
+  parentThread: Thread | null;
 }

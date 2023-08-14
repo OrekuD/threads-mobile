@@ -10,8 +10,9 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 interface Props {
-  showFollowers?: boolean;
   user: User;
+  showFollowers?: boolean;
+  isModal?: boolean;
 }
 
 function Profile(props: Props) {
@@ -24,9 +25,12 @@ function Profile(props: Props) {
       style={styles.container}
       activeOpacity={0.8}
       onPress={() =>
-        navigation.navigate("UserProfileScreen", {
-          user: props.user,
-        })
+        navigation.navigate(
+          props.isModal ? "UserProfileModalScreen" : "UserProfileScreen",
+          {
+            user: props.user,
+          }
+        )
       }
     >
       <Image

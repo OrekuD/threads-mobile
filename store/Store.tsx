@@ -28,8 +28,8 @@ class Store {
         : faker.datatype.boolean()
         ? faker.person.jobDescriptor()
         : "",
-      followersCount: randomNumber(1000),
-      followingCount: randomNumber(1000),
+      followersCount: randomNumber(10000),
+      followingCount: randomNumber(10000),
     };
   }
 
@@ -43,6 +43,7 @@ class Store {
         .fill(null)
         .map((_, index) => `https://picsum.photos/250/250?random=${index}`),
       text: faker.lorem.lines(),
+      parentThread: null,
     };
   }
 }

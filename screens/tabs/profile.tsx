@@ -31,5 +31,5 @@ export default function ProfileScreen() {
     );
   }
 
-  return <ProfileView user={user} />;
+  return <ProfileView user={user} isModal />;
 }

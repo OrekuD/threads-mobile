@@ -195,7 +195,7 @@ export default function FollowsScreen(props: Props) {
             >
               <FlatList
                 data={item}
-                renderItem={({ item }) => <Profile user={item} />}
+                renderItem={({ item }) => <Profile user={item} isModal />}
               />
             </View>
           );

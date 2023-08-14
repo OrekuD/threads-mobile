@@ -56,6 +56,10 @@ const tabs = [
   },
 ];
 
+const users = Array(20)
+  .fill(null)
+  .map(() => Store.createUser());
+
 export default function ActivityScreen() {
   const { top } = useSafeAreaInsets();
   const scrollRef = React.useRef<FlatList>(null);
@@ -243,11 +247,10 @@ export default function ActivityScreen() {
           </Animated.View>
         </Animated.View>
         <Animated.FlatList
-          // estimatedItemSize={20}
-          data={Array(20).fill("d")}
+          data={users}
           ref={scrollRef as any}
           onScroll={onScroll}
-          keyExtractor={() => Math.random().toString()}
+          keyExtractor={({ id }) => id}
           contentContainerStyle={[
             { paddingTop: headerHeight + (isBigDevice ? 12 : 6) },
           ]}
@@ -268,7 +271,7 @@ export default function ActivityScreen() {
           }
           scrollEventThrottle={16}
           renderItem={({ item }) => {
-            return <Profile showFollowers user={Store.createUser()} />;
+            return <Profile showFollowers user={item} />;
           }}
         />
       </View>
