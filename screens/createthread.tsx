@@ -279,7 +279,7 @@ export default function CreateThreadScreen(props: Props) {
           activeOpacity={0.8}
           onPress={() => setShowPopupMenu((prevValue) => !prevValue)}
         >
-          <Typography variant="sm" color="secondary">
+          <Typography variant="body" color="secondary">
             {scope}
           </Typography>
         </TouchableOpacity>
@@ -289,7 +289,7 @@ export default function CreateThreadScreen(props: Props) {
             opacity: hasCreatedThreads ? 1 : 0.5,
           }}
         >
-          <Typography variant="sm" fontWeight={600} color="#17A2FC">
+          <Typography variant="body" fontWeight={600} color="#17A2FC">
             Post
           </Typography>
         </TouchableOpacity>

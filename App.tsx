@@ -13,6 +13,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import useIsDarkMode from "./hooks/useIsDarkMode";
 import RootNavigation from "./navigation/RootNavigation";
 import UserContextProvider from "./context/UserContext";
+import ThreadsContextProvider from "./context/ThreadsContext";
 
 // @ts-ignore
 Text.defaultProps = Text.defaultProps || {};
@@ -22,8 +23,6 @@ Text.defaultProps.allowFontScaling = false;
 TextInput.defaultProps = TextInput.defaultProps || {};
 // @ts-ignore
 TextInput.defaultProps.allowFontScaling = false;
-
-// WebBrowser.openBrowserAsync(props.href as string);
 
 export default function App() {
   const [loaded, error] = useFonts({
@@ -71,7 +70,9 @@ export default function App() {
       >
         <PortalProvider>
           <UserContextProvider>
-            <RootNavigation />
+            <ThreadsContextProvider>
+              <RootNavigation />
+            </ThreadsContextProvider>
           </UserContextProvider>
         </PortalProvider>
       </GestureHandlerRootView>

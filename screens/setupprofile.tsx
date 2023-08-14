@@ -56,7 +56,7 @@ export default function SetupProfileScreen(props: Props) {
 
   const backgroundColor = React.useMemo(() => {
     if (isAndroid) {
-      return "#181818";
+      return isDarkMode ? "#181818" : colors.modalBackground;
     }
     return isDarkMode ? "#121112" : colors.modalBackground;
   }, [isDarkMode, colors.modalBackground]);

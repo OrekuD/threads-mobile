@@ -1,5 +1,7 @@
+import Header from "@/components/Header";
 import Profile from "@/components/Profile";
 import Typography from "@/components/Typography";
+import { isAndroid } from "@/constants/Platform";
 import useColors from "@/hooks/useColors";
 import useIsDarkMode from "@/hooks/useIsDarkMode";
 import Store from "@/store/Store";
@@ -105,6 +107,11 @@ export default function FollowsScreen(props: Props) {
           },
         ]}
       />
+      {isAndroid ? (
+        <Header title={props.route.params.username} hideRightButton />
+      ) : (
+        <></>
+      )}
       <View
         style={[
           styles.tabs,
@@ -125,11 +132,15 @@ export default function FollowsScreen(props: Props) {
           >
             Followers
           </Animated.Text>
-          <Animated.Text
-            style={[styles.count, { color: colors.text }, followersOpacity]}
-          >
-            {formatNumber(props.route.params.followersCount)}
-          </Animated.Text>
+          {isAndroid ? (
+            <></>
+          ) : (
+            <Animated.Text
+              style={[styles.count, { color: colors.text }, followersOpacity]}
+            >
+              {formatNumber(props.route.params.followersCount)}
+            </Animated.Text>
+          )}
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.tab}
@@ -143,11 +154,15 @@ export default function FollowsScreen(props: Props) {
           >
             Following
           </Animated.Text>
-          <Animated.Text
-            style={[styles.count, { color: colors.text }, followingOpacity]}
-          >
-            {formatNumber(props.route.params.followingCount)}
-          </Animated.Text>
+          {isAndroid ? (
+            <></>
+          ) : (
+            <Animated.Text
+              style={[styles.count, { color: colors.text }, followingOpacity]}
+            >
+              {formatNumber(props.route.params.followingCount)}
+            </Animated.Text>
+          )}
         </TouchableOpacity>
         <Animated.View
           style={[
@@ -169,6 +184,7 @@ export default function FollowsScreen(props: Props) {
         pagingEnabled
         scrollEventThrottle={16}
         onScroll={onScroll}
+        nestedScrollEnabled
         renderItem={({ item }) => {
           return (
             <View

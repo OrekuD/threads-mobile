@@ -19,6 +19,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "@/types";
 import { useUserContext } from "@/context/UserContext";
 import Store from "@/store/Store";
+import { isAndroid } from "@/constants/Platform";
 
 interface Props extends NativeStackScreenProps<RootStackParamList> {}
 
@@ -42,7 +43,7 @@ export default function LandingScreen(props: Props) {
         style={[
           styles.illustration,
           {
-            height: width * 1.639,
+            height: width * (isAndroid ? 1.6 : 1.639),
           },
         ]}
       />

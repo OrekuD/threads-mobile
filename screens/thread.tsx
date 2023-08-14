@@ -1,5 +1,5 @@
 import { ChevronLeftIcon } from "@/components/Icons";
-import Thread from "@/components/Thread";
+import ThreadView from "@/components/ThreadView";
 import Typography from "@/components/Typography";
 import useColors from "@/hooks/useColors";
 import React from "react";
@@ -24,16 +24,32 @@ import useIsDarkMode from "@/hooks/useIsDarkMode";
 import { isAndroid } from "@/constants/Platform";
 import Header from "@/components/Header";
 import { useNavigation } from "@react-navigation/native";
+import Store from "@/store/Store";
+import { useThreadsContext } from "@/context/ThreadsContext";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { RootStackParamList } from "@/types";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-export default function ThreadScreen() {
+interface Props
+  extends NativeStackScreenProps<RootStackParamList, "ThreadScreen"> {}
+
+export default function ThreadScreen(props: Props) {
   const colors = useColors();
   const isDarkMode = useIsDarkMode();
   const { top, bottom } = useSafeAreaInsets();
   const scrollY = useSharedValue(0);
   const press = useSharedValue(0);
   const navigation = useNavigation();
+  const threadsContext = useThreadsContext();
+
+  const thread = React.useMemo(
+    () =>
+      threadsContext.state.list.find(
+        ({ id }) => id === props.route.params.threadId
+      ),
+    [props.route.params.threadId, threadsContext.state.list]
+  );
 
   const onScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -60,6 +76,23 @@ export default function ThreadScreen() {
       ],
     };
   });
+
+  if (!thread) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: colors.background,
+        }}
+      >
+        <Typography variant="sm" fontWeight={600}>
+          Thread not found
+        </Typography>
+      </View>
+    );
+  }
 
   return (
     <View
@@ -96,12 +129,14 @@ export default function ThreadScreen() {
         </Animated.View>
       )}
       <Animated.FlatList
-        ListHeaderComponent={() => <Thread variant="thread" />}
+        ListHeaderComponent={() => (
+          <ThreadView variant="thread" thread={thread} />
+        )}
         scrollEventThrottle={16}
         onScroll={onScroll}
         data={Array(3).fill("d")}
         renderItem={({ item }) => {
-          return <Thread variant="reply" />;
+          return <ThreadView variant="reply" thread={Store.createThread()} />;
         }}
       />
       <View

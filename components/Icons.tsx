@@ -80,6 +80,41 @@ export const CreateIcon = ({ color, size, style }: SvgProps) => (
   </Svg>
 );
 
+export const MoreIcon = ({ color, size, style }: SvgProps) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={style}>
+    <G clip-path="url(#clip0_33_24502)">
+      <Path
+        d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
+        stroke={color}
+        strokeWidth="2"
+      />
+      <Path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M7.5 13.5C6.67157 13.5 6 12.8284 6 12C6 11.1716 6.67157 10.5 7.5 10.5C8.32843 10.5 9 11.1716 9 12C9 12.8284 8.32843 13.5 7.5 13.5Z"
+        fill={color}
+      />
+      <Path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M12 13.5C11.1716 13.5 10.5 12.8284 10.5 12C10.5 11.1716 11.1716 10.5 12 10.5C12.8284 10.5 13.5 11.1716 13.5 12C13.5 12.8284 12.8284 13.5 12 13.5Z"
+        fill={color}
+      />
+      <Path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M16.5 13.5C15.6716 13.5 15 12.8284 15 12C15 11.1716 15.6716 10.5 16.5 10.5C17.3284 10.5 18 11.1716 18 12C18 12.8284 17.3284 13.5 16.5 13.5Z"
+        fill={color}
+      />
+    </G>
+    <Defs>
+      <ClipPath id="clip0_33_24502">
+        <Rect width="24" height="24" fill={color} />
+      </ClipPath>
+    </Defs>
+  </Svg>
+);
+
 export const ActivityActiveIcon = ({ color, size, style }: SvgProps) => (
   <Svg
     width={size * 1.0315}

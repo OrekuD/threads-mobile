@@ -1,5 +1,5 @@
 import { HomeIcon } from "./components/Icons";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch } from "react";
 
 export type RootStackParamList = {
   LandingScreen: undefined;
@@ -11,11 +11,13 @@ export type RootStackParamList = {
   FollowsScreen: {
     followersCount: number;
     followingCount: number;
+    username: string;
   };
   EditProfileScreen: undefined;
   ThreadScreen: { threadId: string };
   ThreadImagesScreen: { threadId: string };
-  UserProfileScreen: { username: string };
+  UserProfileScreen: { user: User };
+  WebViewScreen: { url: string };
 };
 
 export type BottomTabParamList = {
@@ -59,7 +61,6 @@ export class UserContextActionTypes {
 
 export class AsyncStorageKeys {
   public static USER = "user" as const;
-  public static AUTH = "auth" as const;
 }
 
 export type UserContextAction =
@@ -71,6 +72,24 @@ export type UserContextAction =
       type: typeof UserContextActionTypes.LOAD_STATE;
       payload: UserContextState;
     };
+
+export interface ThreadsContextState {
+  list: Array<Thread>;
+  updatedAt: number;
+}
+
+export interface ThreadsContextType {
+  state: ThreadsContextState;
+  dispatch: Dispatch<ThreadsContextAction>;
+}
+
+export class ThreadsContextActionTypes {
+  public static ADD_THREADS = "ADD_THREADS" as const;
+}
+
+export type ThreadsContextAction = {
+  type: typeof ThreadsContextActionTypes.ADD_THREADS;
+};
 
 export interface CreateThread {
   text: string;
@@ -111,7 +130,7 @@ export interface User {
 export interface Thread {
   id: string;
   text: string;
-  images: Array<string>;
+  media: Array<string>;
   creator: User;
   repliesCount: number;
   likesCount: number;

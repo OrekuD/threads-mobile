@@ -1,59 +1,40 @@
 import {
-  Dimensions,
   FlatList,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
-  Image,
   Pressable,
   Share,
+  Image,
+  ScrollView,
 } from "react-native";
 import {
-  CancelIcon,
+  HeartFilledIcon,
   HeartIcon,
   MenuIcon,
   MessageIcon,
   RepostIcon,
   SendIcon,
 } from "./Icons";
-// import { Image } from "expo-image";
 import useColors from "@/hooks/useColors";
 import React from "react";
 import Typography from "./Typography";
 import useScreensize from "@/hooks/useScreensize";
-import { Portal } from "@gorhom/portal";
-import Animated from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "@/types";
-import { isAndroid } from "@/constants/Platform";
+import { RootStackParamList, Thread } from "@/types";
 
 interface Props {
   variant: "reply" | "thread" | "list-thread";
+  thread: Thread;
 }
 
-export default function Thread(props: Props) {
+function ThreadView(props: Props) {
   const colors = useColors();
-  const { top } = useSafeAreaInsets();
   const { width } = useScreensize();
-  const [showImages, setShowImages] = React.useState(false);
+  const [isLiked, setIsLiked] = React.useState(false);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-
-  const [dimensions, setDimensions] = React.useState({
-    width: width,
-    height: 0,
-  });
-
-  React.useEffect(() => {
-    Image.getSize("https://picsum.photos/250", (imageWidth, imageHeight) => {
-      const scaleFactor = imageWidth / width;
-      const height = imageHeight / scaleFactor;
-      setDimensions({ width, height });
-    });
-  }, [width]);
 
   const buttons = React.useMemo(
     () => [
@@ -74,12 +55,18 @@ export default function Thread(props: Props) {
   );
 
   const images = React.useMemo(() => {
-    return Math.random() > 0.5 ? Array(3).fill("s") : Array(2).fill("s");
+    return Array(3).fill("s");
   }, []);
 
   return (
     <>
-      <View
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={() => {
+          navigation.navigate("ThreadScreen", {
+            threadId: props.thread.id,
+          });
+        }}
         style={[
           styles.container,
           {
@@ -92,12 +79,24 @@ export default function Thread(props: Props) {
           <></>
         ) : (
           <View style={styles.leftContainer}>
-            <View style={styles.avatarContainer}>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={styles.avatarContainer}
+              onPress={() =>
+                navigation.navigate("UserProfileScreen", {
+                  user: props.thread.creator,
+                })
+              }
+            >
               <Image
                 style={styles.avatar}
-                source={{ uri: "https://picsum.photos/44" }}
+                source={
+                  props.thread.creator.avatar
+                    ? { uri: props.thread.creator.avatar }
+                    : require("../assets/images/no-avatar.jpeg")
+                }
               />
-            </View>
+            </TouchableOpacity>
             <View
               style={[
                 styles.line,
@@ -129,10 +128,11 @@ export default function Thread(props: Props) {
                           ],
                         },
                       ]}
-                      source={{ uri: "https://picsum.photos/44" }}
-                      // placeholder={blurhash}
-                      // contentFit="cover"
-                      // transition={1000}
+                      source={
+                        props.thread.creator.avatar
+                          ? { uri: props.thread.creator.avatar }
+                          : require("../assets/images/no-avatar.jpeg")
+                      }
                     />
                   );
                 })}
@@ -157,10 +157,11 @@ export default function Thread(props: Props) {
                             borderColor: colors.border,
                           },
                         ]}
-                        source={{ uri: "https://picsum.photos/44" }}
-                        // placeholder={blurhash}
-                        // contentFit="cover"
-                        // transition={1000}
+                        source={
+                          props.thread.creator.avatar
+                            ? { uri: props.thread.creator.avatar }
+                            : require("../assets/images/no-avatar.jpeg")
+                        }
                       />
                     </View>
                   );
@@ -182,19 +183,35 @@ export default function Thread(props: Props) {
               >
                 <Image
                   style={styles.avatar}
-                  source={{ uri: "https://picsum.photos/4" }}
-                  // placeholder={blurhash}
-                  // contentFit="cover"
-                  // transition={500}
+                  source={
+                    props.thread.creator.avatar
+                      ? { uri: props.thread.creator.avatar }
+                      : require("../assets/images/no-avatar.jpeg")
+                  }
                 />
               </View>
             ) : (
               <></>
             )}
-            <Typography variant="sm" fontWeight={600} style={{ flex: 1 }}>
-              oreku_
-            </Typography>
-            <Typography variant="sm" color="secondary">
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={() =>
+                navigation.navigate("UserProfileScreen", {
+                  user: props.thread.creator,
+                })
+              }
+            >
+              <Typography variant="sm" fontWeight={600}>
+                {props.thread.creator.username}
+              </Typography>
+            </TouchableOpacity>
+            <Typography
+              variant="sm"
+              color="secondary"
+              style={{
+                marginLeft: "auto",
+              }}
+            >
               33m
             </Typography>
             <TouchableOpacity activeOpacity={0.5}>
@@ -202,13 +219,9 @@ export default function Thread(props: Props) {
             </TouchableOpacity>
           </View>
           <View style={styles.content}>
-            <Typography variant="sm">
-              Fugiat occaecat adipisicing est ullamco officia commodo nisi
-              consequat id. Eiusmod officia dolor aute deserunt. consequat id.
-              Eiusmod officia dolor aute deserunt.
-            </Typography>
+            <Typography variant="sm">{props.thread.text}</Typography>
           </View>
-          {true ? (
+          {props.thread.media.length > 0 ? (
             <View
               style={[
                 styles.imageContainer,
@@ -222,9 +235,7 @@ export default function Thread(props: Props) {
                 },
               ]}
             >
-              <FlatList
-                data={Array(1).fill("9")}
-                keyExtractor={() => Math.random().toString()}
+              <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={{
@@ -232,30 +243,30 @@ export default function Thread(props: Props) {
                   paddingLeft: props.variant === "thread" ? 8 : 70,
                   paddingRight: props.variant === "thread" ? 8 : 16,
                 }}
-                renderItem={({ item, index }) => {
-                  // const imageWidth =
-                  //   thread.media.length === 1
-                  //     ? width - 70 - 8
-                  //     : width - 70 - 24;
+              >
+                {props.thread.media.map((url, index) => {
+                  const imageWidth =
+                    props.variant === "thread" &&
+                    props.thread.media.length === 1
+                      ? width - 32
+                      : props.thread.media.length === 1
+                      ? width - 70 - 8
+                      : width - 70 - 24;
+
                   return (
                     <Pressable
+                      key={index}
                       style={{
                         borderRadius: 8,
                         overflow: "hidden",
-                        width: 300,
-                        height: 400,
-                        // width: imageWidth,
-                        // height:
-                        //   thread.media.length > 1 ? 200 : undefined,
-                        // aspectRatio:
-                        //   thread.media.length > 1
-                        //     ? undefined
-                        //     : item.aspectRatio,
+                        width: imageWidth,
+                        height:
+                          props.thread.media.length > 1 ? 200 : imageWidth,
                       }}
                       onPress={() => {
-                        navigation.navigate("ThreadImagesScreen", {
-                          threadId: "8",
-                        });
+                        // navigation.navigate("ThreadImagesScreen", {
+                        //   threadId: "8",
+                        // });
                       }}
                       onLongPress={() => {
                         Share.share({
@@ -264,7 +275,7 @@ export default function Thread(props: Props) {
                       }}
                     >
                       <Image
-                        source={{ uri: "https://picsum.photos/250" }}
+                        source={{ uri: url }}
                         style={{
                           borderRadius: 8,
                           width: "100%",
@@ -274,15 +285,23 @@ export default function Thread(props: Props) {
                       />
                     </Pressable>
                   );
-                }}
-              />
+                })}
+              </ScrollView>
             </View>
           ) : (
             <></>
           )}
           <View style={styles.buttons}>
-            <TouchableOpacity style={styles.button} activeOpacity={0.5}>
-              <HeartIcon size={24} color={colors.text} />
+            <TouchableOpacity
+              style={styles.button}
+              activeOpacity={0.5}
+              onPress={() => setIsLiked((prevValue) => !prevValue)}
+            >
+              {isLiked ? (
+                <HeartFilledIcon size={24} color="#FF2735" />
+              ) : (
+                <HeartIcon size={24} color={colors.text} />
+              )}
             </TouchableOpacity>
             {buttons.map(({ icon: Icon, onPress }, index) => {
               return (
@@ -304,13 +323,19 @@ export default function Thread(props: Props) {
               marginTop: 5,
             }}
           >
-            26 replies • 112 Likes
+            {props.thread.repliesCount} replies • {props.thread.likesCount}{" "}
+            Likes
           </Typography>
         </View>
-      </View>
+      </TouchableOpacity>
     </>
   );
 }
+
+export default React.memo(
+  ThreadView,
+  (prevProps, nextProps) => prevProps.thread.id === nextProps.thread.id
+);
 
 const styles = StyleSheet.create({
   container: {

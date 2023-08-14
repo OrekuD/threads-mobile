@@ -1,5 +1,4 @@
 import { Logo } from "@/components/Icons";
-import Thread from "@/components/Thread";
 import useColors from "@/hooks/useColors";
 import React from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
@@ -10,12 +9,17 @@ import Animated, {
   useAnimatedStyle,
   interpolate,
 } from "react-native-reanimated";
+import ThreadView from "@/components/ThreadView";
+import { useThreadsContext } from "@/context/ThreadsContext";
 
 export default function HomeScreen() {
   const colors = useColors();
   const [isLoading, setIsLoading] = React.useState(true);
+  const [isFetchingMoreThreads, setIsFetchingMoreThreads] =
+    React.useState(false);
   const { top } = useSafeAreaInsets();
   const scrollY = useSharedValue(0);
+  const threadsContext = useThreadsContext();
 
   React.useEffect(() => {
     setTimeout(() => {
@@ -34,6 +38,8 @@ export default function HomeScreen() {
       opacity: interpolate(scrollY.value, [0, 60], [1, 0]),
     };
   });
+
+  // return null;
 
   if (isLoading) {
     return (
@@ -79,13 +85,33 @@ export default function HomeScreen() {
             <Logo size={30} color={colors.text} />
           </Animated.View>
         )}
-        data={Array(3).fill("d")}
+        data={threadsContext.state.list}
         scrollEventThrottle={16}
         onScroll={onScroll}
         keyExtractor={() => Math.random().toString()}
-        renderItem={({ item }) => {
-          return <Thread variant="list-thread" />;
+        onEndReached={() => {
+          setIsFetchingMoreThreads(true);
+          setTimeout(() => {
+            threadsContext.dispatch({ type: "ADD_THREADS" });
+          }, 500);
         }}
+        renderItem={({ item }) => {
+          return <ThreadView variant="list-thread" thread={item} />;
+        }}
+        ListFooterComponent={
+          isFetchingMoreThreads
+            ? () => (
+                <View
+                  style={{
+                    paddingVertical: 32,
+                    alignItems: "center",
+                  }}
+                >
+                  <ActivityIndicator size="small" color={colors.text} />
+                </View>
+              )
+            : undefined
+        }
       />
     </View>
   );

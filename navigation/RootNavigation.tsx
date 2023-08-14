@@ -19,6 +19,8 @@ import ThreadScreen from "@/screens/thread";
 import { useUserContext } from "@/context/UserContext";
 import { ActivityIndicator, View } from "react-native";
 import useColors from "@/hooks/useColors";
+import UserProfileScreen from "@/screens/userprofile";
+import WebViewScreen from "@/screens/webview";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -75,12 +77,22 @@ export default function RootNavigation() {
           <Stack.Screen name="LandingScreen" component={LandingScreen} />
           <Stack.Screen name="ThreadScreen" component={ThreadScreen} />
           <Stack.Screen
+            name="UserProfileScreen"
+            component={UserProfileScreen}
+            getId={({ params }) => params?.user.id}
+          />
+          <Stack.Screen
             name="ThreadImagesScreen"
             component={ThreadImagesScreen}
           />
           <Stack.Screen
             name="EditBioScreen"
             component={EditBioScreen}
+            options={modalNavigationOptions}
+          />
+          <Stack.Screen
+            name="WebViewScreen"
+            component={WebViewScreen}
             options={modalNavigationOptions}
           />
           <Stack.Screen

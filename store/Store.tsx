@@ -33,15 +33,15 @@ class Store {
     };
   }
 
-  createThread(): Thread {
+  createThread(user?: User | null): Thread {
     return {
       id: uuid.v4().toString(),
-      creator: this.createUser(),
+      creator: user || this.createUser(),
       likesCount: randomNumber(1000),
       repliesCount: randomNumber(15),
-      images: Array(randomNumber(4))
+      media: Array(randomNumber(4))
         .fill(null)
-        .map((_, index) => `https://picsum.photos/200/200?random=${index}`),
+        .map((_, index) => `https://picsum.photos/250/250?random=${index}`),
       text: faker.lorem.lines(),
     };
   }

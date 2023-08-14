@@ -24,11 +24,14 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { FlashList } from "@shopify/flash-list";
 import Recent from "@/components/Recent";
 import useScreensize from "@/hooks/useScreensize";
 import { isAndroid } from "@/constants/Platform";
 import Store from "@/store/Store";
+
+const list = Array(15)
+  .fill(null)
+  .map(() => Store.createUser());
 
 export default function SearchScreen() {
   const { top } = useSafeAreaInsets();
@@ -340,8 +343,7 @@ export default function SearchScreen() {
           </View>
         </Animated.View>
         <Animated.FlatList
-          // estimatedItemSize={20}
-          data={Array(20).fill("d")}
+          data={list}
           ref={scrollRef as any}
           onScroll={onScroll}
           keyExtractor={() => Math.random().toString()}
@@ -365,7 +367,7 @@ export default function SearchScreen() {
           }
           scrollEventThrottle={16}
           renderItem={({ item }) => {
-            return <Profile showFollowers user={Store.createUser()} />;
+            return <Profile showFollowers user={item} />;
           }}
         />
       </View>

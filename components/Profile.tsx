@@ -1,13 +1,13 @@
-import { blurhash } from "@/constants/Blurhash";
 import useColors from "@/hooks/useColors";
-// import { Image } from "expo-image";
 import React from "react";
-import { Pressable, StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import Typography from "./Typography";
 import { VerifiedIcon } from "./Icons";
-import { Image } from "react-native";
-import { User } from "@/types";
+import { Image } from "expo-image";
+import { RootStackParamList, User } from "@/types";
 import formatNumber from "@/util/formatNumber";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 interface Props {
   showFollowers?: boolean;
@@ -16,8 +16,19 @@ interface Props {
 
 function Profile(props: Props) {
   const colors = useColors();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
   return (
-    <Pressable style={[styles.container]}>
+    <TouchableOpacity
+      style={styles.container}
+      activeOpacity={0.8}
+      onPress={() =>
+        navigation.navigate("UserProfileScreen", {
+          user: props.user,
+        })
+      }
+    >
       <Image
         style={[
           styles.avatar,
@@ -30,6 +41,7 @@ function Profile(props: Props) {
             ? { uri: props.user.avatar }
             : require("../assets/images/no-avatar.jpeg")
         }
+        transition={300}
       />
       <View
         style={[
@@ -89,11 +101,14 @@ function Profile(props: Props) {
           </Typography>
         </TouchableOpacity>
       </View>
-    </Pressable>
+    </TouchableOpacity>
   );
 }
 
-export default React.memo(Profile);
+export default React.memo(
+  Profile,
+  (prev, next) => prev.user.id === next.user.id
+);
 
 const styles = StyleSheet.create({
   container: {

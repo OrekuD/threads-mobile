@@ -55,6 +55,8 @@ const UserContextProvider = ({ children }: React.PropsWithChildren<{}>) => {
       );
       if (state) {
         dispatch({ type: "LOAD_STATE", payload: state });
+      } else {
+        dispatch({ type: "LOAD_STATE", payload: initialState });
       }
     }
     getState();
