@@ -42,6 +42,7 @@ import { useNavigation } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
 import * as WebBrowser from "expo-web-browser";
 import { isAndroid } from "@/constants/Platform";
+import { useThreadsContext } from "@/context/ThreadsContext";
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
@@ -65,6 +66,7 @@ export default function ProfileView(props: Props) {
   const scrollXRef = React.useRef<ScrollView>(null);
   const [headerHeight, setHeaderHeight] = React.useState(0);
   const userContext = useUserContext();
+  const threadsContext = useThreadsContext();
 
   const isCurrentUser = React.useMemo(
     () => props.user.id === userContext.state.user?.id,
@@ -145,13 +147,32 @@ export default function ProfileView(props: Props) {
     }
   }, []);
 
-  const threads = React.useMemo(
-    () =>
-      Array(4)
-        .fill(null)
-        .map(() => Store.createThread(props.user)),
-    []
-  );
+  const threads = React.useMemo(() => {
+    const userThreads = threadsContext.state.userThreads.filter(
+      ({ creator }) => creator.id === props.user.id
+    );
+
+    if (userThreads.length > 0) {
+      return userThreads;
+    }
+
+    return Array(4)
+      .fill(null)
+      .map(() => Store.createThread(props.user));
+  }, [props.user.id, threadsContext.state.userThreads]);
+
+  React.useEffect(() => {
+    const userThreads = threadsContext.state.userThreads.filter(
+      ({ creator }) => creator.id === props.user.id
+    );
+
+    if (userThreads.length === 0) {
+      threadsContext.dispatch({
+        type: "ADD_USER_THREADS",
+        payload: threads,
+      });
+    }
+  }, [threads, threadsContext.state.userThreads, props.user.id]);
 
   const avatars = React.useMemo(
     () =>

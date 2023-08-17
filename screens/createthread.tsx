@@ -2,11 +2,10 @@ import { AttachmentIcon, CancelIcon } from "@/components/Icons";
 import Typography from "@/components/Typography";
 import useColors from "@/hooks/useColors";
 import useKeyboard from "@/hooks/useKeyboard";
-import { CreateThread, RootStackParamList } from "@/types";
+import { CreateThread, RootStackParamList, Thread } from "@/types";
 import React from "react";
 import {
   Alert,
-  Dimensions,
   FlatList,
   Image,
   Pressable,
@@ -15,7 +14,6 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  useColorScheme,
 } from "react-native";
 import Animated, {
   Easing,
@@ -34,6 +32,9 @@ import Header from "@/components/Header";
 import useIsDarkMode from "@/hooks/useIsDarkMode";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useUserContext } from "@/context/UserContext";
+import ThreadView from "@/components/ThreadView";
+import Store from "@/store/Store";
+import { useThreadsContext } from "@/context/ThreadsContext";
 
 const threadId = uuid.v4().toString();
 
@@ -61,12 +62,14 @@ export default function CreateThreadScreen(props: Props) {
   const isPrivateAccount = false;
   const colors = useColors();
   const scrollRef = React.useRef<ScrollView>(null);
+  const textInputRef = React.useRef<TextInput>(null);
   const userContext = useUserContext();
   const { bottom } = useSafeAreaInsets();
   const toolbarAnimation = useSharedValue(0);
   const popmenuAnimation = useSharedValue(0);
   const { width } = useScreensize();
   const isDarkMode = useIsDarkMode();
+  const threadsContext = useThreadsContext();
   const [threads, setThreads] = React.useState<Array<CreateThread>>([
     {
       media: [],
@@ -89,11 +92,55 @@ export default function CreateThreadScreen(props: Props) {
     [isPrivateAccount]
   );
 
+  const title = React.useMemo(() => {
+    switch (props.route.params.type) {
+      case "reply":
+        return "Reply";
+
+      default:
+        return "New Thread";
+    }
+  }, [props.route.params.type]);
+
   React.useEffect(() => {
     toolbarAnimation.value = withTiming(isKeyboardVisible ? 1 : 0, {
       easing: Easing.bezier(0.25, 0.1, 0.25, 1),
     });
   }, [isKeyboardVisible]);
+
+  React.useEffect(() => {
+    setTimeout(() => {
+      textInputRef.current?.focus();
+      scrollRef.current?.scrollToEnd({ animated: true });
+    }, 500);
+  }, []);
+
+  React.useEffect(() => {
+    if (props.route.params.type === "reply") {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [props.route.params.type]);
+
+  const thread = React.useMemo(() => {
+    if (props.route.params.type === "new") return undefined;
+
+    const threadId = props.route.params.threadId;
+    let thread: Thread | undefined = undefined;
+
+    thread = threadsContext.state.list.find(({ id }) => id === threadId);
+
+    if (!thread) {
+      thread = threadsContext.state.userThreads.find(
+        ({ id }) => id === threadId
+      );
+    }
+
+    return thread;
+  }, [
+    props.route.params.type,
+    threadsContext.state.list,
+    threadsContext.state.userThreads,
+  ]);
 
   React.useEffect(() => {
     // if (isAndroid) return;
@@ -296,9 +343,9 @@ export default function CreateThreadScreen(props: Props) {
       </Animated.View>
       <View style={{ flex: 1, zIndex: 4 }}>
         <Header
-          title="New thread"
+          title={title}
           hasBorder
-          hideRightButton
+          hideRightButton={props.route.params.type !== "new"}
           onCancelButtonPressed={onCancelButtonPressed}
         />
         <ScrollView
@@ -308,6 +355,11 @@ export default function CreateThreadScreen(props: Props) {
           }}
           ref={scrollRef}
         >
+          {props.route.params.type === "reply" && thread ? (
+            <ThreadView thread={thread} variant="reply-thread" />
+          ) : (
+            <></>
+          )}
           {threads.map((thread, index) => {
             const isActiveThread = activeThreadId === thread.threadId;
             return (
@@ -363,9 +415,9 @@ export default function CreateThreadScreen(props: Props) {
                       <TextInput
                         placeholder="Start a thread..."
                         placeholderTextColor={colors.textSecondary}
-                        autoFocus
                         multiline
                         value={thread.text}
+                        ref={textInputRef}
                         style={[
                           styles.textInput,
                           {
@@ -619,15 +671,16 @@ const styles = StyleSheet.create({
   thread: {
     width: "100%",
     flexDirection: "row",
+    paddingRight: 12,
   },
   left: {
-    width: 70,
+    width: 66,
     alignItems: "center",
   },
   avatar: {
-    width: 38,
-    height: 38,
-    borderRadius: 38 / 2,
+    width: 36,
+    height: 36,
+    borderRadius: 36 / 2,
     marginTop: 2,
     resizeMode: "cover",
   },

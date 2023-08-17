@@ -7,7 +7,14 @@ export type RootStackParamList = {
   SetupProfileScreen: undefined;
   EditBioScreen: undefined;
   EditLinkScreen: undefined;
-  CreateThreadScreen: undefined;
+  CreateThreadScreen:
+    | {
+        type: "new";
+      }
+    | {
+        type: "reply" | "quote";
+        threadId: string;
+      };
   FollowsScreen: {
     followersCount: number;
     followingCount: number;
@@ -34,10 +41,6 @@ export interface BottomNavigationTab {
   activeIcon: typeof HomeIcon;
   href: keyof BottomTabParamList | "CreateThreadScreen";
   index: number;
-}
-
-export interface ToastContextType {
-  showToast: () => void;
 }
 
 export interface UserContextState {
@@ -77,6 +80,7 @@ export type UserContextAction =
 
 export interface ThreadsContextState {
   list: Array<Thread>;
+  userThreads: Array<Thread>;
   updatedAt: number;
 }
 
@@ -87,10 +91,31 @@ export interface ThreadsContextType {
 
 export class ThreadsContextActionTypes {
   public static ADD_THREADS = "ADD_THREADS" as const;
+  public static ADD_USER_THREADS = "ADD_USER_THREADS" as const;
 }
 
-export type ThreadsContextAction = {
-  type: typeof ThreadsContextActionTypes.ADD_THREADS;
+export type ThreadsContextAction =
+  | { type: typeof ThreadsContextActionTypes.ADD_THREADS }
+  | {
+      type: typeof ThreadsContextActionTypes.ADD_USER_THREADS;
+      payload: Array<Thread>;
+    };
+
+export interface UIStateContextState {
+  updatedAt: number;
+}
+
+export interface UIStateContextType {
+  state: UIStateContextState;
+  dispatch: Dispatch<UIStateContextAction>;
+}
+
+export class UIStateContextActionTypes {
+  public static UPDATE_UISTATE = "UPDATE_UISTATE" as const;
+}
+
+export type UIStateContextAction = {
+  type: typeof UIStateContextActionTypes.UPDATE_UISTATE;
 };
 
 export interface CreateThread {

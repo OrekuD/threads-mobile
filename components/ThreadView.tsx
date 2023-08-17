@@ -1,5 +1,4 @@
 import {
-  FlatList,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -9,12 +8,19 @@ import {
   ScrollView,
 } from "react-native";
 import {
+  AddToStoryIcon,
   HeartFilledIcon,
   HeartIcon,
+  InstagramIcon,
+  LinkIcon,
   MenuIcon,
   MessageIcon,
+  QuoteIcon,
   RepostIcon,
   SendIcon,
+  ShareIcon,
+  TwitterIcon,
+  VerifiedIcon,
 } from "./Icons";
 import useColors from "@/hooks/useColors";
 import React from "react";
@@ -23,16 +29,26 @@ import useScreensize from "@/hooks/useScreensize";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList, Thread } from "@/types";
+import useIsDarkMode from "@/hooks/useIsDarkMode";
+import BottomSheet from "./BottomSheet";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface Props {
-  variant: "reply" | "thread" | "list-thread";
+  variant: "reply" | "thread" | "list-thread" | "reply-thread" | "quote";
   thread: Thread;
 }
 
 function ThreadView(props: Props) {
   const colors = useColors();
   const { width } = useScreensize();
+  const isDarkMode = useIsDarkMode();
   const [isLiked, setIsLiked] = React.useState(false);
+  const [isRepostBottomSheetVisible, setIsRepostBottomSheetVisible] =
+    React.useState(false);
+  const [isSendPostBottomSheetVisible, setIsSendPostBottomSheetVisible] =
+    React.useState(false);
+  const [isPostOptionsBottomSheetVisible, setIsPostOptionsBottomSheetVisible] =
+    React.useState(false);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -40,18 +56,27 @@ function ThreadView(props: Props) {
     () => [
       {
         icon: MessageIcon,
-        onPress: () => {},
+        onPress: () => {
+          navigation.navigate("CreateThreadScreen", {
+            type: "reply",
+            threadId: props.thread.id,
+          });
+        },
       },
       {
         icon: RepostIcon,
-        onPress: () => {},
+        onPress: () => {
+          setIsRepostBottomSheetVisible(true);
+        },
       },
       {
         icon: SendIcon,
-        onPress: () => {},
+        onPress: () => {
+          setIsSendPostBottomSheetVisible(true);
+        },
       },
     ],
-    []
+    [props.thread.id]
   );
 
   const images = React.useMemo(() => {
@@ -60,6 +85,19 @@ function ThreadView(props: Props) {
 
   return (
     <>
+      <RepostBottomSheet
+        isOpen={isRepostBottomSheetVisible}
+        onClose={() => setIsRepostBottomSheetVisible(false)}
+        threadId={props.thread.id}
+      />
+      <PostOptionsBottomSheet
+        isOpen={isPostOptionsBottomSheetVisible}
+        onClose={() => setIsPostOptionsBottomSheetVisible(false)}
+      />
+      <SendPostOptionsBottomSheet
+        isOpen={isSendPostBottomSheetVisible}
+        onClose={() => setIsSendPostBottomSheetVisible(false)}
+      />
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => {
@@ -72,6 +110,7 @@ function ThreadView(props: Props) {
           {
             borderColor: colors.cardBorder,
             width,
+            borderBottomWidth: props.variant === "reply-thread" ? 0 : 1,
           },
         ]}
       >
@@ -102,71 +141,79 @@ function ThreadView(props: Props) {
                 styles.line,
                 {
                   backgroundColor: colors.border,
+                  marginBottom: props.variant === "reply-thread" ? 0 : 5,
+                  height: "100%",
                 },
               ]}
             />
-            {images.length === 3 ? (
-              <View style={styles.threeImages}>
-                {images.map((_, index) => {
-                  return (
-                    <Image
-                      key={index}
-                      style={[
-                        styles.smallAvatar,
-                        {
-                          borderColor: colors.border,
-                          transform: [
-                            { scale: 1 - index * 0.15 },
-                            {
-                              translateX:
-                                index === 2 ? 0 : index === 0 ? 10 : -10,
-                            },
-                            {
-                              translateY:
-                                index === 2 ? -20 : index === 0 ? 3 : -10,
-                            },
-                          ],
-                        },
-                      ]}
-                      source={
-                        props.thread.creator.avatar
-                          ? { uri: props.thread.creator.avatar }
-                          : require("../assets/images/no-avatar.jpeg")
-                      }
-                    />
-                  );
-                })}
-              </View>
+            {props.variant === "reply-thread" ? (
+              <></>
             ) : (
-              <View style={styles.twoImages}>
-                {images.map((_, index) => {
-                  return (
-                    <View
-                      key={index}
-                      style={[
-                        styles.smallAvatarContainer,
-                        {
-                          backgroundColor: colors.background,
-                        },
-                      ]}
-                    >
-                      <Image
-                        style={[
-                          styles.smallAvatar,
-                          {
-                            borderColor: colors.border,
-                          },
-                        ]}
-                        source={
-                          props.thread.creator.avatar
-                            ? { uri: props.thread.creator.avatar }
-                            : require("../assets/images/no-avatar.jpeg")
-                        }
-                      />
-                    </View>
-                  );
-                })}
-              </View>
+              <>
+                {images.length === 3 ? (
+                  <View style={styles.threeImages}>
+                    {images.map((_, index) => {
+                      return (
+                        <Image
+                          key={index}
+                          style={[
+                            styles.smallAvatar,
+                            {
+                              borderColor: colors.border,
+                              transform: [
+                                { scale: 1 - index * 0.15 },
+                                {
+                                  translateX:
+                                    index === 2 ? 0 : index === 0 ? 10 : -10,
+                                },
+                                {
+                                  translateY:
+                                    index === 2 ? -20 : index === 0 ? 3 : -10,
+                                },
+                              ],
+                            },
+                          ]}
+                          source={
+                            props.thread.creator.avatar
+                              ? { uri: props.thread.creator.avatar }
+                              : require("../assets/images/no-avatar.jpeg")
+                          }
+                        />
+                      );
+                    })}
+                  </View>
+                ) : (
+                  <View style={styles.twoImages}>
+                    {images.map((_, index) => {
+                      return (
+                        <View
+                          key={index}
+                          style={[
+                            styles.smallAvatarContainer,
+                            {
+                              backgroundColor: colors.background,
+                            },
+                          ]}
+                        >
+                          <Image
+                            style={[
+                              styles.smallAvatar,
+                              {
+                                borderColor: colors.border,
+                              },
+                            ]}
+                            source={
+                              props.thread.creator.avatar
+                                ? { uri: props.thread.creator.avatar }
+                                : require("../assets/images/no-avatar.jpeg")
+                            }
+                          />
+                        </View>
+                      );
+                    })}
+                  </View>
+                )}
+              </>
             )}
           </View>
         )}
@@ -195,6 +242,12 @@ function ThreadView(props: Props) {
             )}
             <TouchableOpacity
               activeOpacity={0.8}
+              style={[
+                styles.row,
+                {
+                  gap: 4,
+                },
+              ]}
               onPress={() =>
                 navigation.navigate("UserProfileScreen", {
                   user: props.thread.creator,
@@ -204,22 +257,36 @@ function ThreadView(props: Props) {
               <Typography variant="sm" fontWeight={600}>
                 {props.thread.creator.username}
               </Typography>
+              {props.thread.creator.isVerified ? (
+                <VerifiedIcon size={12} />
+              ) : (
+                <></>
+              )}
             </TouchableOpacity>
-            <Typography
-              variant="sm"
-              color="secondary"
-              style={{
-                marginLeft: "auto",
-              }}
-            >
-              33m
-            </Typography>
-            <TouchableOpacity activeOpacity={0.5}>
-              <MenuIcon size={24} color={colors.text} />
-            </TouchableOpacity>
+            {props.variant === "reply-thread" ? (
+              <></>
+            ) : (
+              <>
+                <Typography
+                  variant="sm"
+                  color="secondary"
+                  style={{
+                    marginLeft: "auto",
+                  }}
+                >
+                  33m
+                </Typography>
+                <TouchableOpacity
+                  activeOpacity={0.5}
+                  onPress={() => setIsPostOptionsBottomSheetVisible(true)}
+                >
+                  <MenuIcon size={24} color={colors.text} />
+                </TouchableOpacity>
+              </>
+            )}
           </View>
           <View style={styles.content}>
-            <Typography variant="sm">{props.thread.text}</Typography>
+            <Typography variant="body">{props.thread.text}</Typography>
           </View>
           {props.thread.media.length > 0 ? (
             <View
@@ -291,41 +358,46 @@ function ThreadView(props: Props) {
           ) : (
             <></>
           )}
-          <View style={styles.buttons}>
-            <TouchableOpacity
-              style={styles.button}
-              activeOpacity={0.5}
-              onPress={() => setIsLiked((prevValue) => !prevValue)}
-            >
-              {isLiked ? (
-                <HeartFilledIcon size={24} color="#FF2735" />
-              ) : (
-                <HeartIcon size={24} color={colors.text} />
-              )}
-            </TouchableOpacity>
-            {buttons.map(({ icon: Icon, onPress }, index) => {
-              return (
+          {props.variant === "reply-thread" ? (
+            <></>
+          ) : (
+            <>
+              <View style={styles.buttons}>
                 <TouchableOpacity
                   style={styles.button}
-                  onPress={onPress}
-                  key={index}
                   activeOpacity={0.5}
+                  onPress={() => setIsLiked((prevValue) => !prevValue)}
                 >
-                  <Icon size={24} color={colors.text} />
+                  {isLiked ? (
+                    <HeartFilledIcon size={24} color="#FF2735" />
+                  ) : (
+                    <HeartIcon size={24} color={colors.text} />
+                  )}
                 </TouchableOpacity>
-              );
-            })}
-          </View>
-          <Typography
-            variant="sm"
-            color="secondary"
-            style={{
-              marginTop: 5,
-            }}
-          >
-            {props.thread.repliesCount} replies • {props.thread.likesCount}{" "}
-            Likes
-          </Typography>
+                {buttons.map(({ icon: Icon, onPress }, index) => {
+                  return (
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={onPress}
+                      key={index}
+                      activeOpacity={0.5}
+                    >
+                      <Icon size={24} color={colors.text} />
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+              <Typography
+                variant="sm"
+                color="secondary"
+                style={{
+                  marginTop: 5,
+                }}
+              >
+                {`${props.thread.repliesCount} replies • ${props.thread.likesCount} likes`}
+              </Typography>
+            </>
+          )}
         </View>
       </TouchableOpacity>
     </>
@@ -337,11 +409,315 @@ export default React.memo(
   (prevProps, nextProps) => prevProps.thread.id === nextProps.thread.id
 );
 
+interface BottomSheetProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+function RepostBottomSheet(props: BottomSheetProps & { threadId: string }) {
+  const colors = useColors();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { bottom } = useSafeAreaInsets();
+  const buttons = React.useMemo(
+    () => [
+      { label: "Repost", icon: RepostIcon, onPress: () => {} },
+      {
+        label: "Quote",
+        icon: QuoteIcon,
+        onPress: () => {
+          navigation.navigate("CreateThreadScreen", {
+            threadId: props.threadId,
+            type: "quote",
+          });
+        },
+      },
+    ],
+    []
+  );
+  return (
+    <BottomSheet
+      isOpen={props.isOpen}
+      onClose={props.onClose}
+      height={54 * 2 + (bottom || 20) + 56}
+    >
+      <View
+        style={{
+          paddingHorizontal: 16,
+          gap: 12,
+          paddingTop: 6,
+        }}
+      >
+        {buttons.map(({ label, icon: Icon, onPress }) => {
+          return (
+            <TouchableOpacity
+              activeOpacity={0.8}
+              key={label}
+              onPress={onPress}
+              style={[
+                styles.bottomSheetButton,
+                {
+                  backgroundColor: colors.bottomSheetButtonColor,
+                },
+              ]}
+            >
+              <Typography variant="sm" fontWeight={600} color={colors.text}>
+                {label}
+              </Typography>
+              <Icon size={24} color={colors.text} />
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </BottomSheet>
+  );
+}
+
+function PostOptionsBottomSheet(props: BottomSheetProps) {
+  const colors = useColors();
+  const { bottom } = useSafeAreaInsets();
+  const optionsList1 = React.useMemo(
+    () => [
+      { label: "Repost", onPress: () => {} },
+      { label: "Quote", onPress: () => {} },
+    ],
+    []
+  );
+  const optionsList2 = React.useMemo(
+    () => [
+      { label: "Hide", onPress: () => {} },
+      { label: "Report", onPress: () => {} },
+    ],
+    []
+  );
+  return (
+    <BottomSheet
+      isOpen={props.isOpen}
+      onClose={props.onClose}
+      height={54 * 4 + (bottom || 20) + 44 + 24}
+    >
+      <View
+        style={{
+          paddingHorizontal: 16,
+          gap: 16,
+          paddingTop: 6,
+        }}
+      >
+        <View
+          style={{
+            backgroundColor: colors.bottomSheetButtonColor,
+            borderRadius: 14,
+            overflow: "hidden",
+          }}
+        >
+          {optionsList1.map(({ label, onPress }, index) => {
+            return (
+              <TouchableOpacity
+                activeOpacity={0.8}
+                key={label}
+                onPress={onPress}
+                style={[
+                  styles.bottomSheetButton,
+
+                  {
+                    borderRadius: 0,
+                    backgroundColor: colors.bottomSheetButtonColor,
+                    borderBottomWidth:
+                      index === 0 ? StyleSheet.hairlineWidth : 0,
+                    borderBottomColor: colors.bottomSheetButtonBorderColor,
+                  },
+                ]}
+              >
+                <Typography variant="sm" fontWeight={600} color={colors.text}>
+                  {label}
+                </Typography>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+        <View
+          style={{
+            backgroundColor: colors.bottomSheetButtonColor,
+            borderRadius: 14,
+            overflow: "hidden",
+          }}
+        >
+          {optionsList2.map(({ label, onPress }, index) => {
+            return (
+              <TouchableOpacity
+                activeOpacity={0.8}
+                key={label}
+                onPress={onPress}
+                style={[
+                  styles.bottomSheetButton,
+
+                  {
+                    borderRadius: 0,
+                    backgroundColor: colors.bottomSheetButtonColor,
+                    borderBottomWidth:
+                      index === 0 ? StyleSheet.hairlineWidth : 0,
+                    borderBottomColor:
+                      index === 0
+                        ? colors.bottomSheetButtonBorderColor
+                        : undefined,
+                  },
+                ]}
+              >
+                <Typography
+                  variant="sm"
+                  fontWeight={600}
+                  color={index === 0 ? colors.text : "red"}
+                >
+                  {label}
+                </Typography>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+    </BottomSheet>
+  );
+}
+
+function SendPostOptionsBottomSheet(props: BottomSheetProps) {
+  const colors = useColors();
+  const { bottom } = useSafeAreaInsets();
+  const optionsList1 = React.useMemo(
+    () => [
+      {
+        label: "Send on Instagram",
+        icon: SendIcon,
+        onPress: () => {},
+        iconSize: 26,
+      },
+      {
+        label: "Add to story",
+        icon: AddToStoryIcon,
+        onPress: () => {},
+        iconSize: 24,
+      },
+      {
+        label: "Post to feed",
+        icon: InstagramIcon,
+        onPress: () => {},
+        iconSize: 20,
+      },
+      {
+        label: "Post to",
+        icon: TwitterIcon,
+        onPress: () => {},
+        iconSize: 16,
+      },
+    ],
+    []
+  );
+
+  const optionsList2 = React.useMemo(
+    () => [
+      { label: "Copy link", icon: LinkIcon, onPress: () => {} },
+      {
+        label: "Share via...",
+        icon: ShareIcon,
+        onPress: () => {},
+      },
+    ],
+    []
+  );
+
+  return (
+    <BottomSheet
+      isOpen={props.isOpen}
+      onClose={props.onClose}
+      height={54 * 6 + (bottom || 20) + 44 + 24}
+    >
+      <View
+        style={{
+          paddingHorizontal: 16,
+          gap: 16,
+          paddingTop: 6,
+        }}
+      >
+        <View
+          style={{
+            backgroundColor: colors.bottomSheetButtonColor,
+            borderRadius: 14,
+            overflow: "hidden",
+          }}
+        >
+          {optionsList1.map(
+            ({ label, onPress, icon: Icon, iconSize }, index) => {
+              return (
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  key={label}
+                  onPress={onPress}
+                  style={[
+                    styles.bottomSheetButton,
+
+                    {
+                      borderRadius: 0,
+                      backgroundColor: colors.bottomSheetButtonColor,
+                      borderTopWidth:
+                        index === 0 ? 0 : StyleSheet.hairlineWidth,
+                      borderColor: colors.bottomSheetButtonBorderColor,
+                    },
+                  ]}
+                >
+                  <Typography variant="sm" fontWeight={600} color={colors.text}>
+                    {label}
+                  </Typography>
+                  <Icon size={iconSize} color={colors.text} />
+                </TouchableOpacity>
+              );
+            }
+          )}
+        </View>
+        <View
+          style={{
+            backgroundColor: colors.bottomSheetButtonColor,
+            borderRadius: 14,
+            overflow: "hidden",
+          }}
+        >
+          {optionsList2.map(({ label, onPress, icon: Icon }, index) => {
+            return (
+              <TouchableOpacity
+                activeOpacity={0.8}
+                key={label}
+                onPress={onPress}
+                style={[
+                  styles.bottomSheetButton,
+
+                  {
+                    borderRadius: 0,
+                    backgroundColor: colors.bottomSheetButtonColor,
+                    borderBottomWidth:
+                      index === 0 ? StyleSheet.hairlineWidth : 0,
+                    borderBottomColor:
+                      index === 0
+                        ? colors.bottomSheetButtonBorderColor
+                        : undefined,
+                  },
+                ]}
+              >
+                <Typography variant="sm" fontWeight={600}>
+                  {label}
+                </Typography>
+                <Icon size={24} color={colors.text} />
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+    </BottomSheet>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    borderBottomWidth: 1,
-    paddingHorizontal: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingRight: 12,
     paddingTop: 14,
     paddingBottom: 18,
     flexDirection: "row",
@@ -361,19 +737,19 @@ const styles = StyleSheet.create({
   leftContainer: {
     alignItems: "center",
     height: "100%",
-    marginRight: 12,
-    paddingTop: 6,
+    paddingTop: 4,
+    width: 64,
   },
   avatarContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 36 / 2,
+    width: 34,
+    height: 34,
+    borderRadius: 34 / 2,
     position: "relative",
   },
   avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 36 / 2,
+    width: 34,
+    height: 34,
+    borderRadius: 34 / 2,
     resizeMode: "cover",
   },
   top: {
@@ -423,5 +799,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#1E1E1E",
+  },
+  bottomSheetButton: {
+    width: "100%",
+    borderRadius: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 24,
+    height: 54,
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 });

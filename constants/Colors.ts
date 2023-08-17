@@ -9,6 +9,8 @@ export default {
     tabIconSelected: "#000000",
     searchToolbarBackground: "#EEEEEE",
     modalBackground: "#FFFFFF",
+    bottomSheetButtonColor: "#F5F5F5",
+    bottomSheetButtonBorderColor: "#DDDDDE",
   },
   dark: {
     text: "#F3F4F6",
@@ -20,5 +22,7 @@ export default {
     tabIconSelected: "#F3F4F6",
     searchToolbarBackground: "#252527",
     modalBackground: "#181818",
+    bottomSheetButtonColor: "#252525",
+    bottomSheetButtonBorderColor: "#49494B",
   },
 };

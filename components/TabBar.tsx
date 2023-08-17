@@ -1,4 +1,4 @@
-import { BottomNavigationTab } from "@/types";
+import { BottomNavigationTab, RootStackParamList } from "@/types";
 import React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -14,6 +14,9 @@ import {
 } from "./Icons";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import useColors from "@/hooks/useColors";
+import { useUIStateContext } from "@/context/UIStateContext";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useNavigation } from "@react-navigation/native";
 
 interface Props {
   tabbBarProps: BottomTabBarProps;
@@ -21,6 +24,9 @@ interface Props {
 
 export default function TabBar(props: Props) {
   const { bottom } = useSafeAreaInsets();
+  const navigaton =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const uiStateContext = useUIStateContext();
   const colors = useColors();
 
   const tabs: Array<BottomNavigationTab> = [
@@ -80,7 +86,17 @@ export default function TabBar(props: Props) {
               activeOpacity={0.8}
               key={index}
               onPress={() => {
-                props.tabbBarProps.navigation.navigate(href);
+                if (isActive && href === "HomeScreen") {
+                  uiStateContext.dispatch({ type: "UPDATE_UISTATE" });
+                }
+
+                if (href === "CreateThreadScreen") {
+                  navigaton.navigate("CreateThreadScreen", {
+                    type: "new",
+                  });
+                } else {
+                  props.tabbBarProps.navigation.navigate(href);
+                }
               }}
               style={styles.tab}
             >

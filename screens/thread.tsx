@@ -27,7 +27,7 @@ import { useNavigation } from "@react-navigation/native";
 import Store from "@/store/Store";
 import { useThreadsContext } from "@/context/ThreadsContext";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { RootStackParamList } from "@/types";
+import { RootStackParamList, Thread } from "@/types";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -43,13 +43,21 @@ export default function ThreadScreen(props: Props) {
   const navigation = useNavigation();
   const threadsContext = useThreadsContext();
 
-  const thread = React.useMemo(
-    () =>
-      threadsContext.state.list.find(
+  const thread = React.useMemo(() => {
+    let thread: Thread | undefined = undefined;
+
+    thread = threadsContext.state.list.find(
+      ({ id }) => id === props.route.params.threadId
+    );
+
+    if (!thread) {
+      thread = threadsContext.state?.userThreads?.find(
         ({ id }) => id === props.route.params.threadId
-      ),
-    [props.route.params.threadId, threadsContext.state.list]
-  );
+      );
+    }
+
+    return thread;
+  }, [props.route.params.threadId, threadsContext.state.list]);
 
   const onScroll = useAnimatedScrollHandler({
     onScroll: (event) => {

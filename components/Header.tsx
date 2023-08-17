@@ -97,20 +97,25 @@ export default function Header(props: Props) {
       <Typography variant="body2" fontWeight={600}>
         {props.title}
       </Typography>
-      <TouchableOpacity
-        activeOpacity={0.5}
-        style={[
-          styles.iosButton,
-          {
-            right: 16,
-          },
-        ]}
-        onPress={navigation.goBack}
-      >
-        <Typography variant="body2" fontWeight={600} color="#16A1FB">
-          Done
-        </Typography>
-      </TouchableOpacity>
+
+      {props.hideRightButton ? (
+        <></>
+      ) : (
+        <TouchableOpacity
+          activeOpacity={0.5}
+          style={[
+            styles.iosButton,
+            {
+              right: 16,
+            },
+          ]}
+          onPress={navigation.goBack}
+        >
+          <Typography variant="body2" fontWeight={600} color="#16A1FB">
+            Done
+          </Typography>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }

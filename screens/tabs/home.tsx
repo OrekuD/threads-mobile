@@ -1,7 +1,7 @@
 import { Logo } from "@/components/Icons";
 import useColors from "@/hooks/useColors";
 import React from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { ActivityIndicator, FlatList, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   useSharedValue,
@@ -11,21 +11,28 @@ import Animated, {
 } from "react-native-reanimated";
 import ThreadView from "@/components/ThreadView";
 import { useThreadsContext } from "@/context/ThreadsContext";
+import { useUIStateContext } from "@/context/UIStateContext";
 
 export default function HomeScreen() {
   const colors = useColors();
   const [isLoading, setIsLoading] = React.useState(true);
   const [isFetchingMoreThreads, setIsFetchingMoreThreads] =
     React.useState(false);
+  const scrollRef = React.useRef<FlatList>(null);
   const { top } = useSafeAreaInsets();
   const scrollY = useSharedValue(0);
   const threadsContext = useThreadsContext();
+  const uiStateContext = useUIStateContext();
 
   React.useEffect(() => {
     setTimeout(() => {
       setIsLoading(false);
     }, 1000);
   }, []);
+
+  React.useEffect(() => {
+    scrollRef.current?.scrollToOffset({ offset: 0, animated: true });
+  }, [uiStateContext.state.updatedAt]);
 
   const onScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -85,6 +92,7 @@ export default function HomeScreen() {
             <Logo size={30} color={colors.text} />
           </Animated.View>
         )}
+        ref={scrollRef as any}
         data={threadsContext.state.list}
         scrollEventThrottle={16}
         onScroll={onScroll}

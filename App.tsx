@@ -14,6 +14,7 @@ import useIsDarkMode from "./hooks/useIsDarkMode";
 import RootNavigation from "./navigation/RootNavigation";
 import UserContextProvider from "./context/UserContext";
 import ThreadsContextProvider from "./context/ThreadsContext";
+import UIStateContextProvider from "./context/UIStateContext";
 
 // @ts-ignore
 Text.defaultProps = Text.defaultProps || {};
@@ -71,7 +72,9 @@ export default function App() {
         <PortalProvider>
           <UserContextProvider>
             <ThreadsContextProvider>
-              <RootNavigation />
+              <UIStateContextProvider>
+                <RootNavigation />
+              </UIStateContextProvider>
             </ThreadsContextProvider>
           </UserContextProvider>
         </PortalProvider>

@@ -13,6 +13,7 @@ const ThreadsContext = React.createContext<ThreadsContextType | undefined>(
 
 const initialState: ThreadsContextState = {
   list: [],
+  userThreads: [],
   updatedAt: -1,
 };
 
@@ -29,7 +30,14 @@ const reducer = (
           .map(() => Store.createThread()),
       ];
       return {
+        ...state,
         list: newList,
+        updatedAt: Date.now(),
+      };
+    case ThreadsContextActionTypes.ADD_USER_THREADS:
+      return {
+        ...state,
+        userThreads: [...state.userThreads, ...action.payload],
         updatedAt: Date.now(),
       };
     default:
