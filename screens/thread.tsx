@@ -31,7 +31,7 @@ import { RootStackParamList, Thread } from "@/types";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-const replies = Array(0)
+const replies = Array(3)
   .fill(null)
   .map(() => Store.createThread());
 

@@ -271,7 +271,7 @@ export default function ActivityScreen() {
           }
           scrollEventThrottle={16}
           renderItem={({ item }) => {
-            return <Profile showFollowers user={item} />;
+            return <Profile user={item} />;
           }}
         />
       </View>

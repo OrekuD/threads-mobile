@@ -102,6 +102,7 @@ function ThreadView(props: Props) {
       <PostOptionsBottomSheet
         isOpen={isPostOptionsBottomSheetVisible}
         onClose={() => setIsPostOptionsBottomSheetVisible(false)}
+        threadId={props.thread.id}
       />
       <SendPostOptionsBottomSheet
         isOpen={isSendPostBottomSheetVisible}
@@ -444,10 +445,13 @@ function RepostBottomSheet(props: BottomSheetProps & { threadId: string }) {
         label: "Quote",
         icon: QuoteIcon,
         onPress: () => {
-          navigation.navigate("CreateThreadScreen", {
-            threadId: props.threadId,
-            type: "quote",
-          });
+          props.onClose();
+          setTimeout(() => {
+            navigation.navigate("CreateThreadScreen", {
+              threadId: props.threadId,
+              type: "quote",
+            });
+          }, 300);
         },
       },
     ],
@@ -491,13 +495,28 @@ function RepostBottomSheet(props: BottomSheetProps & { threadId: string }) {
   );
 }
 
-function PostOptionsBottomSheet(props: BottomSheetProps) {
+function PostOptionsBottomSheet(
+  props: BottomSheetProps & { threadId: string }
+) {
   const colors = useColors();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { bottom } = useSafeAreaInsets();
   const optionsList1 = React.useMemo(
     () => [
       { label: "Repost", onPress: () => {} },
-      { label: "Quote", onPress: () => {} },
+      {
+        label: "Quote",
+        onPress: () => {
+          props.onClose();
+          setTimeout(() => {
+            navigation.navigate("CreateThreadScreen", {
+              threadId: props.threadId,
+              type: "quote",
+            });
+          }, 300);
+        },
+      },
     ],
     []
   );

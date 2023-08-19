@@ -80,6 +80,7 @@ export default function CreateThreadScreen(props: Props) {
     },
   ]);
   const [activeThreadId, setActiveThreadId] = React.useState(threadId);
+  const [updatedAt, setUpdatedAt] = React.useState(0);
   const [scope, setScope] = React.useState(
     isPrivateAccount
       ? privateProfileMenuOptions[0]
@@ -179,11 +180,6 @@ export default function CreateThreadScreen(props: Props) {
       opacity: interpolate(popmenuAnimation.value, [0, 0.5], [0, 1]),
     };
   }, [keyboardHeight, bottom, toolbarHeight]);
-
-  // const activeThread = React.useMemo(
-  //   () => threads.find(({ threadId }) => threadId === activeThreadId),
-  //   [activeThreadId, threads]
-  // );
 
   const selectImages = React.useCallback(async (threadId: string) => {
     let result = await ImagePicker.launchImageLibraryAsync({
