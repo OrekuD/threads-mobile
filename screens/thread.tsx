@@ -213,7 +213,12 @@ export default function ThreadScreen(props: Props) {
               duration: 200,
             });
           }}
-          onPress={() => {}}
+          onPress={() => {
+            props.navigation.navigate("CreateThreadScreen", {
+              threadId: thread.id,
+              type: "reply",
+            });
+          }}
           style={[
             styles.replyTo,
             {
