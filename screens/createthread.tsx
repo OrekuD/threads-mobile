@@ -35,6 +35,7 @@ import { useUserContext } from "@/context/UserContext";
 import ThreadView from "@/components/ThreadView";
 import Store from "@/store/Store";
 import { useThreadsContext } from "@/context/ThreadsContext";
+import EmbeddedThreadView from "@/components/EmbeddedThreadView";
 
 const threadId = uuid.v4().toString();
 
@@ -111,17 +112,14 @@ export default function CreateThreadScreen(props: Props) {
   React.useEffect(() => {
     setTimeout(() => {
       textInputRef.current?.focus();
-      scrollRef.current?.scrollToEnd({ animated: true });
     }, 500);
   }, []);
 
   React.useEffect(() => {
-    if (props.route.params.type === "reply") {
-      scrollRef.current?.scrollToEnd({ animated: true });
-    }
-  }, [props.route.params.type]);
+    scrollRef.current?.scrollToEnd({ animated: true });
+  }, [threads]);
 
-  const thread = React.useMemo(() => {
+  const embeddedThread = React.useMemo(() => {
     if (props.route.params.type === "new") return undefined;
 
     const threadId = props.route.params.threadId;
@@ -141,12 +139,6 @@ export default function CreateThreadScreen(props: Props) {
     threadsContext.state.list,
     threadsContext.state.userThreads,
   ]);
-
-  React.useEffect(() => {
-    // if (isAndroid) return;
-    scrollRef.current?.scrollToEnd({ animated: true });
-  }, [threads]);
-
   React.useEffect(() => {
     popmenuAnimation.value = withSpring(showPopupMenu ? 1 : 0, {
       duration: 550,
@@ -227,7 +219,6 @@ export default function CreateThreadScreen(props: Props) {
   const cannotCreateNewThread = React.useMemo(() => {
     if (threads.length === 0) return true;
     const lastThread = threads[threads.length - 1];
-
     return !lastThread.text && lastThread.media.length === 0;
   }, [threads]);
 
@@ -355,8 +346,8 @@ export default function CreateThreadScreen(props: Props) {
           }}
           ref={scrollRef}
         >
-          {props.route.params.type === "reply" && thread ? (
-            <ThreadView thread={thread} variant="reply-thread" />
+          {props.route.params.type === "reply" && embeddedThread ? (
+            <ThreadView thread={embeddedThread} variant="reply-thread" />
           ) : (
             <></>
           )}
@@ -565,6 +556,14 @@ export default function CreateThreadScreen(props: Props) {
                         }}
                       />
                     </View>
+                  ) : (
+                    <></>
+                  )}
+                  {props.route.params.type === "quote" && embeddedThread ? (
+                    <EmbeddedThreadView
+                      thread={embeddedThread}
+                      disableNavigation
+                    />
                   ) : (
                     <></>
                   )}

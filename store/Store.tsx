@@ -2,6 +2,7 @@ import { Thread, User } from "@/types";
 import uuid from "react-native-uuid";
 import { faker } from "@faker-js/faker";
 import randomNumber from "@/util/randomNumber";
+import getBoolean from "@/util/getBoolean";
 
 class Store {
   createUser(isDefaultUser?: boolean): User {
@@ -43,7 +44,7 @@ class Store {
         .fill(null)
         .map((_, index) => `https://picsum.photos/250/250?random=${index}`),
       text: faker.lorem.lines(),
-      parentThread: null,
+      parentThread: getBoolean(0.1) ? this.createThread() : null,
     };
   }
 }

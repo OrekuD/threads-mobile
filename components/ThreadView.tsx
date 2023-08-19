@@ -32,16 +32,25 @@ import { RootStackParamList, Thread } from "@/types";
 import useIsDarkMode from "@/hooks/useIsDarkMode";
 import BottomSheet from "./BottomSheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import EmbeddedThreadView from "./EmbeddedThreadView";
+import Store from "@/store/Store";
+
+type ThreadViewVariant =
+  | "reply"
+  | "thread"
+  | "list-thread"
+  | "reply-thread"
+  | "quote";
 
 interface Props {
-  variant: "reply" | "thread" | "list-thread" | "reply-thread" | "quote";
+  variant: ThreadViewVariant;
   thread: Thread;
+  pointerEvents?: "none" | "auto";
 }
 
 function ThreadView(props: Props) {
   const colors = useColors();
   const { width } = useScreensize();
-  const isDarkMode = useIsDarkMode();
   const [isLiked, setIsLiked] = React.useState(false);
   const [isRepostBottomSheetVisible, setIsRepostBottomSheetVisible] =
     React.useState(false);
@@ -99,7 +108,8 @@ function ThreadView(props: Props) {
         onClose={() => setIsSendPostBottomSheetVisible(false)}
       />
       <TouchableOpacity
-        activeOpacity={0.8}
+        activeOpacity={props.variant === "thread" ? 1 : 0.8}
+        disabled={props.variant === "thread"}
         onPress={() => {
           navigation.navigate("ThreadScreen", {
             threadId: props.thread.id,
@@ -111,6 +121,8 @@ function ThreadView(props: Props) {
             borderColor: colors.cardBorder,
             width,
             borderBottomWidth: props.variant === "reply-thread" ? 0 : 1,
+            paddingLeft: props.variant === "thread" ? 16 : 0,
+            pointerEvents: props.pointerEvents,
           },
         ]}
       >
@@ -286,7 +298,7 @@ function ThreadView(props: Props) {
             )}
           </View>
           <View style={styles.content}>
-            <Typography variant="body">{props.thread.text}</Typography>
+            <Typography variant="sm">{props.thread.text}</Typography>
           </View>
           {props.thread.media.length > 0 ? (
             <View
@@ -318,7 +330,7 @@ function ThreadView(props: Props) {
                       ? width - 32
                       : props.thread.media.length === 1
                       ? width - 70 - 8
-                      : width - 70 - 24;
+                      : (width - 70 - 8) * 0.65;
 
                   return (
                     <Pressable
@@ -328,7 +340,8 @@ function ThreadView(props: Props) {
                         overflow: "hidden",
                         width: imageWidth,
                         height:
-                          props.thread.media.length > 1 ? 200 : imageWidth,
+                          imageWidth *
+                          (props.thread.media.length === 1 ? 1.1 : 1.3),
                       }}
                       onPress={() => {
                         // navigation.navigate("ThreadImagesScreen", {
@@ -355,6 +368,11 @@ function ThreadView(props: Props) {
                 })}
               </ScrollView>
             </View>
+          ) : (
+            <></>
+          )}
+          {props.thread.parentThread ? (
+            <EmbeddedThreadView thread={props.thread.parentThread} />
           ) : (
             <></>
           )}

@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
     marginLeft: 16,
     marginRight: 12,
     marginTop: 16,
-    resizeMode: "cover",
+    contentFit: "cover",
   },
   content: {
     flex: 1,

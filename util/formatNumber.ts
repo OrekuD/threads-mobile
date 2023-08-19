@@ -12,7 +12,6 @@ function formatNumber(number: number): string {
   const abbreviation = abbreviations[numDigits];
   const formattedNumber = (number / Math.pow(10, numDigits * 3)).toFixed(1);
 
-  // return formattedNumber + abbreviation;
   return `${formattedNumber} ${abbreviation}`;
 }
 

@@ -31,6 +31,10 @@ import { RootStackParamList, Thread } from "@/types";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
+const replies = Array(0)
+  .fill(null)
+  .map(() => Store.createThread());
+
 interface Props
   extends NativeStackScreenProps<RootStackParamList, "ThreadScreen"> {}
 
@@ -44,6 +48,9 @@ export default function ThreadScreen(props: Props) {
   const threadsContext = useThreadsContext();
 
   const thread = React.useMemo(() => {
+    if (props.route.params.thread) {
+      return props.route.params.thread;
+    }
     let thread: Thread | undefined = undefined;
 
     thread = threadsContext.state.list.find(
@@ -57,7 +64,40 @@ export default function ThreadScreen(props: Props) {
     }
 
     return thread;
-  }, [props.route.params.threadId, threadsContext.state.list]);
+  }, [
+    props.route.params.threadId,
+    threadsContext.state.list,
+    threadsContext.state.userThreads,
+    props.route.params.thread,
+  ]);
+
+  React.useEffect(() => {
+    if (!props.route.params.thread?.id) return;
+
+    let thread: Thread | undefined = undefined;
+
+    thread = threadsContext.state.list.find(
+      ({ id }) => id === props.route.params.thread!.id
+    );
+
+    if (!thread) {
+      thread = threadsContext.state?.userThreads?.find(
+        ({ id }) => id === props.route.params.thread!.id
+      );
+    }
+
+    if (thread) return;
+
+    threadsContext.dispatch({
+      type: "ADD_USER_THREADS",
+      payload: [props.route.params.thread!],
+    });
+  }, [
+    props.route.params.threadId,
+    threadsContext.state.list,
+    threadsContext.state.userThreads,
+    props.route.params.thread,
+  ]);
 
   const onScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -142,9 +182,9 @@ export default function ThreadScreen(props: Props) {
         )}
         scrollEventThrottle={16}
         onScroll={onScroll}
-        data={Array(3).fill("d")}
+        data={replies}
         renderItem={({ item }) => {
-          return <ThreadView variant="reply" thread={Store.createThread()} />;
+          return <ThreadView variant="reply" thread={item} />;
         }}
       />
       <View
@@ -158,13 +198,17 @@ export default function ThreadScreen(props: Props) {
       >
         <AnimatedPressable
           onPressIn={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            if (!isAndroid) {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            }
             press.value = withTiming(1, {
               duration: 200,
             });
           }}
           onPressOut={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            if (!isAndroid) {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            }
             press.value = withTiming(0, {
               duration: 200,
             });

@@ -22,7 +22,7 @@ export type RootStackParamList = {
     isModal?: boolean;
   };
   EditProfileScreen: undefined;
-  ThreadScreen: { threadId: string };
+  ThreadScreen: { threadId: string; thread?: Thread }; // used to pass quote threads which are not saved in state
   ThreadImagesScreen: { threadId: string };
   UserProfileScreen: { user: User };
   UserProfileModalScreen: { user: User };
