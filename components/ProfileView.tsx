@@ -316,7 +316,7 @@ export default function ProfileView(props: Props) {
               </TouchableOpacity>
               <TouchableOpacity
                 activeOpacity={0.8}
-                onPress={() => userContext.dispatch({ type: "SIGN_OUT" })}
+                // onPress={() => userContext.dispatch({ type: "SIGN_OUT" })}
               >
                 <HamburgerIcon size={24} color={colors.text} />
               </TouchableOpacity>
