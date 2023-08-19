@@ -13,3 +13,7 @@ The app has a dark and light theme
 #### Light theme
 
 ![Light theme](https://github.com/OrekuD/Threads/blob/development/screenshots/light.png)
+
+#### Screen recording
+
+<video src='https://github.com/OrekuD/Threads/blob/development/screenshots/screenrecording.mp4' width=180 />
