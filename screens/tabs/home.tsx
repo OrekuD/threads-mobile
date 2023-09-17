@@ -10,29 +10,46 @@ import Animated, {
   interpolate,
 } from "react-native-reanimated";
 import ThreadView from "@/components/ThreadView";
-import { useThreadsContext } from "@/context/ThreadsContext";
-import { useUIStateContext } from "@/context/UIStateContext";
+import useGetForYouTimelineQuery from "@/hooks/queries/useGetForYouTimelineQuery";
+import useGetFollowingTimelineQuery from "@/hooks/queries/useGetFollowingTimelineQuery";
+import useTimelineStore from "@/store/timelineStore";
 
 export default function HomeScreen() {
   const colors = useColors();
-  const [isLoading, setIsLoading] = React.useState(true);
   const [isFetchingMoreThreads, setIsFetchingMoreThreads] =
     React.useState(false);
   const scrollRef = React.useRef<FlatList>(null);
   const { top } = useSafeAreaInsets();
   const scrollY = useSharedValue(0);
-  const threadsContext = useThreadsContext();
-  const uiStateContext = useUIStateContext();
+  const followingTimelineQuery = useGetFollowingTimelineQuery();
+  const forYouTimelineQuery = useGetForYouTimelineQuery();
+  const timelineStore = useTimelineStore();
 
-  React.useEffect(() => {
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-  }, []);
+  // React.useEffect(() => {
+  //   scrollRef.current?.scrollToOffset({ offset: 0, animated: true });
+  // }, [uiStateContext.state.updatedAt]);
 
-  React.useEffect(() => {
-    scrollRef.current?.scrollToOffset({ offset: 0, animated: true });
-  }, [uiStateContext.state.updatedAt]);
+  const isLoading = React.useMemo(() => {
+    if (timelineStore.isForYou) {
+      return forYouTimelineQuery.isLoading;
+    }
+    return followingTimelineQuery.isLoading;
+  }, [
+    followingTimelineQuery.isLoading,
+    forYouTimelineQuery.isLoading,
+    timelineStore.isForYou,
+  ]);
+
+  const threads = React.useMemo(() => {
+    if (timelineStore.isForYou) {
+      return forYouTimelineQuery.data || [];
+    }
+    return followingTimelineQuery.data || [];
+  }, [
+    followingTimelineQuery.data,
+    forYouTimelineQuery.data,
+    timelineStore.isForYou,
+  ]);
 
   const onScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -45,8 +62,6 @@ export default function HomeScreen() {
       opacity: interpolate(scrollY.value, [0, 60], [1, 0]),
     };
   });
-
-  // return null;
 
   if (isLoading) {
     return (
@@ -93,15 +108,15 @@ export default function HomeScreen() {
           </Animated.View>
         )}
         ref={scrollRef as any}
-        data={threadsContext.state.list}
+        data={threads}
         scrollEventThrottle={16}
         onScroll={onScroll}
-        keyExtractor={({ id }) => id}
+        keyExtractor={({ id }) => id.toString()}
         onEndReached={() => {
-          setIsFetchingMoreThreads(true);
-          setTimeout(() => {
-            threadsContext.dispatch({ type: "ADD_THREADS" });
-          }, 500);
+          setIsFetchingMoreThreads(false);
+          // setTimeout(() => {
+          //   threadsContext.dispatch({ type: "ADD_THREADS" });
+          // }, 500);
         }}
         renderItem={({ item }) => {
           return <ThreadView variant="list-thread" thread={item} />;

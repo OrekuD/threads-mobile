@@ -3,7 +3,6 @@ import Typography from "@/components/Typography";
 import { isAndroid } from "@/constants/Platform";
 import useColors from "@/hooks/useColors";
 import useScreensize from "@/hooks/useScreensize";
-import Store from "@/store/Store";
 import { NotificationTab } from "@/types";
 import React from "react";
 import {
@@ -55,10 +54,6 @@ const tabs = [
     key: NotificationTab.VERIFIED,
   },
 ];
-
-const users = Array(20)
-  .fill(null)
-  .map(() => Store.createUser());
 
 export default function ActivityScreen() {
   const { top } = useSafeAreaInsets();
@@ -247,7 +242,7 @@ export default function ActivityScreen() {
           </Animated.View>
         </Animated.View>
         <Animated.FlatList
-          data={users}
+          data={[]}
           ref={scrollRef as any}
           onScroll={onScroll}
           keyExtractor={({ id }) => id}

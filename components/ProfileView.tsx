@@ -32,17 +32,15 @@ import Animated, {
 } from "react-native-reanimated";
 import useScreensize from "@/hooks/useScreensize";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack/lib/typescript/src/types";
-import { RootStackParamList, User } from "@/types";
-import { useUserContext } from "@/context/UserContext";
-import { faker } from "@faker-js/faker";
-import formatNumber from "@/util/formatNumber";
-import Store from "@/store/Store";
+import { RootStackParamList } from "@/types";
+import formatNumber from "@/utils/formatNumber";
 import ThreadView from "@/components/ThreadView";
 import { useNavigation } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
 import * as WebBrowser from "expo-web-browser";
 import { isAndroid } from "@/constants/Platform";
-import { useThreadsContext } from "@/context/ThreadsContext";
+import User from "@/models/User";
+import useUserStore from "@/store/userStore";
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
@@ -62,15 +60,14 @@ export default function ProfileView(props: Props) {
   const [isFollowing, setIsFollowing] = React.useState(false);
   const scrollY = useSharedValue(0);
   const scrollX = useSharedValue(0);
+  const user = useUserStore((state) => state.user);
   const { width, height } = useScreensize();
   const scrollXRef = React.useRef<ScrollView>(null);
   const [headerHeight, setHeaderHeight] = React.useState(0);
-  const userContext = useUserContext();
-  const threadsContext = useThreadsContext();
 
   const isCurrentUser = React.useMemo(
-    () => props.user.id === userContext.state.user?.id,
-    [userContext.state.user?.id, props.user.id]
+    () => props.user.id === user?.id,
+    [user?.id, props.user.id]
   );
 
   const onScrollY = useAnimatedScrollHandler({
@@ -146,41 +143,6 @@ export default function ProfileView(props: Props) {
       Alert.alert("Error", "Could not open Instagram");
     }
   }, []);
-
-  const threads = React.useMemo(() => {
-    const userThreads = threadsContext.state.userThreads.filter(
-      ({ creator }) => creator.id === props.user.id
-    );
-
-    if (userThreads.length > 0) {
-      return userThreads;
-    }
-
-    return Array(4)
-      .fill(null)
-      .map(() => Store.createThread(props.user));
-  }, [props.user.id, threadsContext.state.userThreads]);
-
-  React.useEffect(() => {
-    const userThreads = threadsContext.state.userThreads.filter(
-      ({ creator }) => creator.id === props.user.id
-    );
-
-    if (userThreads.length === 0) {
-      threadsContext.dispatch({
-        type: "ADD_USER_THREADS",
-        payload: threads,
-      });
-    }
-  }, [threads, threadsContext.state.userThreads, props.user.id]);
-
-  const avatars = React.useMemo(
-    () =>
-      Array(3)
-        .fill(null)
-        .map(() => faker.internet.avatar()),
-    []
-  );
 
   return (
     <>
@@ -369,21 +331,21 @@ export default function ProfileView(props: Props) {
             </View>
             <Image
               source={
-                props.user.avatar
-                  ? { uri: props.user.avatar }
+                props.user.profile?.profilePicture
+                  ? { uri: props.user.profile.profilePicture }
                   : require("../assets/images/no-avatar.jpeg")
               }
               style={styles.avatar}
             />
           </View>
-          {Boolean(props.user.bio) ? (
+          {Boolean(props.user.profile?.bio) ? (
             <Typography
               variant="sm"
               style={{
                 marginTop: 8,
               }}
             >
-              {props.user.bio}
+              {props.user.profile!.bio}
             </Typography>
           ) : (
             <></>
@@ -400,17 +362,15 @@ export default function ProfileView(props: Props) {
               activeOpacity={0.8}
               onPress={() =>
                 navigation.navigate("FollowsScreen", {
-                  followersCount: props.user.followersCount || 0,
-                  followingCount: props.user.followingCount || 0,
-                  username: props.user.username,
-                  isModal: props.isModal,
+                  userId: props.user.id,
+                  isModal: props.isModal || false,
                 })
               }
               style={[
                 styles.row,
                 {
                   marginVertical: 12,
-                  gap: 12,
+                  // gap: 12,
                   alignSelf: "flex-start",
                 },
               ]}
@@ -423,7 +383,7 @@ export default function ProfileView(props: Props) {
                   },
                 ]}
               >
-                {avatars.map((avatar, index) => {
+                {/* {[].map((avatar, index) => {
                   return (
                     <Image
                       source={{
@@ -438,7 +398,7 @@ export default function ProfileView(props: Props) {
                       key={index}
                     />
                   );
-                })}
+                })} */}
               </View>
               <Typography variant="sm" color="secondary">
                 {formatNumber(props.user.followersCount || 0)} followers
@@ -633,7 +593,7 @@ export default function ProfileView(props: Props) {
           nestedScrollEnabled
         >
           <View style={{ width }}>
-            {threads.length === 0 ? (
+            {true ? (
               <View
                 style={{
                   paddingTop: height * 0.2,
@@ -653,25 +613,17 @@ export default function ProfileView(props: Props) {
               </View>
             ) : (
               <>
-                {threads.map((thread) => (
+                {/* {threads.map((thread) => (
                   <ThreadView
                     variant="list-thread"
                     thread={thread}
                     key={thread.id}
                   />
-                ))}
+                ))} */}
               </>
             )}
           </View>
-          <View style={{ width }}>
-            {Array(10)
-              .fill("d")
-              .map((_, index) => (
-                <Typography variant="sm" key={index}>
-                  {index}sd
-                </Typography>
-              ))}
-          </View>
+          <View style={{ width }}></View>
         </AnimatedScrollView>
       </AnimatedScrollView>
     </>

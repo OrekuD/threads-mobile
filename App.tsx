@@ -12,9 +12,16 @@ import { PortalProvider } from "@gorhom/portal";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import useIsDarkMode from "./hooks/useIsDarkMode";
 import RootNavigation from "./navigation/RootNavigation";
-import UserContextProvider from "./context/UserContext";
-import ThreadsContextProvider from "./context/ThreadsContext";
-import UIStateContextProvider from "./context/UIStateContext";
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: false,
+    },
+  },
+});
 
 // @ts-ignore
 Text.defaultProps = Text.defaultProps || {};
@@ -64,21 +71,17 @@ export default function App() {
   return (
     <ThemeProvider value={isDarkMode ? DarkTheme : DefaultTheme}>
       <StatusBar animated backgroundColor={colors.background} translucent />
-      <GestureHandlerRootView
-        style={{
-          flex: 1,
-        }}
-      >
-        <PortalProvider>
-          <UserContextProvider>
-            <ThreadsContextProvider>
-              <UIStateContextProvider>
-                <RootNavigation />
-              </UIStateContextProvider>
-            </ThreadsContextProvider>
-          </UserContextProvider>
-        </PortalProvider>
-      </GestureHandlerRootView>
+      <QueryClientProvider client={queryClient}>
+        <GestureHandlerRootView
+          style={{
+            flex: 1,
+          }}
+        >
+          <PortalProvider>
+            <RootNavigation />
+          </PortalProvider>
+        </GestureHandlerRootView>
+      </QueryClientProvider>
     </ThemeProvider>
   );
 }

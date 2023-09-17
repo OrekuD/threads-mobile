@@ -2,7 +2,7 @@ import { AttachmentIcon, CancelIcon } from "@/components/Icons";
 import Typography from "@/components/Typography";
 import useColors from "@/hooks/useColors";
 import useKeyboard from "@/hooks/useKeyboard";
-import { CreateThread, RootStackParamList, Thread } from "@/types";
+import { CreateThread, RootStackParamList } from "@/types";
 import React from "react";
 import {
   Alert,
@@ -31,11 +31,11 @@ import { isAndroid } from "@/constants/Platform";
 import Header from "@/components/Header";
 import useIsDarkMode from "@/hooks/useIsDarkMode";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useUserContext } from "@/context/UserContext";
 import ThreadView from "@/components/ThreadView";
-import Store from "@/store/Store";
-import { useThreadsContext } from "@/context/ThreadsContext";
 import EmbeddedThreadView from "@/components/EmbeddedThreadView";
+import useUserStore from "@/store/userStore";
+import Thread from "@/models/Thread";
+import useThreadStore from "@/store/threadStore";
 
 const threadId = uuid.v4().toString();
 
@@ -64,13 +64,13 @@ export default function CreateThreadScreen(props: Props) {
   const colors = useColors();
   const scrollRef = React.useRef<ScrollView>(null);
   const textInputRef = React.useRef<TextInput>(null);
-  const userContext = useUserContext();
+  const user = useUserStore((state) => state.user);
+  const thread = useThreadStore((state) => state.thread);
   const { bottom } = useSafeAreaInsets();
   const toolbarAnimation = useSharedValue(0);
   const popmenuAnimation = useSharedValue(0);
   const { width } = useScreensize();
   const isDarkMode = useIsDarkMode();
-  const threadsContext = useThreadsContext();
   const [threads, setThreads] = React.useState<Array<CreateThread>>([
     {
       media: [],
@@ -123,23 +123,10 @@ export default function CreateThreadScreen(props: Props) {
   const embeddedThread = React.useMemo(() => {
     if (props.route.params.type === "new") return undefined;
 
-    const threadId = props.route.params.threadId;
-    let thread: Thread | undefined = undefined;
-
-    thread = threadsContext.state.list.find(({ id }) => id === threadId);
-
-    if (!thread) {
-      thread = threadsContext.state.userThreads.find(
-        ({ id }) => id === threadId
-      );
+    if (props.route.params.threadId === thread?.threadId) {
+      return thread;
     }
-
-    return thread;
-  }, [
-    props.route.params.type,
-    threadsContext.state.list,
-    threadsContext.state.userThreads,
-  ]);
+  }, [props.route.params.type, thread]);
   React.useEffect(() => {
     popmenuAnimation.value = withSpring(showPopupMenu ? 1 : 0, {
       duration: 550,
@@ -360,8 +347,8 @@ export default function CreateThreadScreen(props: Props) {
                       },
                     ]}
                     source={
-                      userContext.state.user?.avatar
-                        ? { uri: userContext.state.user.avatar }
+                      user?.profile?.profilePicture
+                        ? { uri: user.profile.profilePicture }
                         : require("../assets/images/no-avatar.jpeg")
                     }
                   />
@@ -377,7 +364,7 @@ export default function CreateThreadScreen(props: Props) {
                 <View style={styles.content}>
                   <View style={styles.top}>
                     <Typography variant="sm" fontWeight={600}>
-                      {userContext.state.user?.username}
+                      {user?.username}
                     </Typography>
                     {threads.length === 1 ? (
                       <></>
@@ -602,8 +589,8 @@ export default function CreateThreadScreen(props: Props) {
               <Image
                 style={[styles.smallAvatar]}
                 source={
-                  userContext.state.user?.avatar
-                    ? { uri: userContext.state.user.avatar }
+                  user?.profile?.profilePicture
+                    ? { uri: user.profile.profilePicture }
                     : require("../assets/images/no-avatar.jpeg")
                 }
               />

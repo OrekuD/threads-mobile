@@ -2,9 +2,10 @@ import { SearchIcon } from "@/components/Icons";
 import Profile from "@/components/Profile";
 import Typography from "@/components/Typography";
 import useColors from "@/hooks/useColors";
-import hexToRGBA from "@/util/hexToRGBA";
+import hexToRGBA from "@/utils/hexToRGBA";
 import React from "react";
 import {
+  ActivityIndicator,
   Dimensions,
   FlatList,
   Keyboard,
@@ -27,11 +28,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Recent from "@/components/Recent";
 import useScreensize from "@/hooks/useScreensize";
 import { isAndroid } from "@/constants/Platform";
-import Store from "@/store/Store";
-
-const list = Array(15)
-  .fill(null)
-  .map(() => Store.createUser());
+import useSearch from "@/hooks/useSearch";
+import useGetSuggestedAccountsQuery from "@/hooks/queries/useGetSuggestedAccountsQuery";
+import useSearchUserMutation from "@/hooks/mutations/useSearchUserMutation";
+import useUserStore from "@/store/userStore";
 
 export default function SearchScreen() {
   const { top } = useSafeAreaInsets();
@@ -40,10 +40,16 @@ export default function SearchScreen() {
   const colors = useColors();
   const scrollY = useSharedValue(0);
   const searchView = useSharedValue(0);
-  const [search, setSearch] = React.useState("");
+  const [searchQuery, setSearchQuery] = React.useState("");
   const [isSearchViewVisible, setIsSearchViewVisible] = React.useState(false);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const { isBigDevice, width, height } = useScreensize();
+  const searchUserMutation = useSearchUserMutation();
+  const suggestedUsersAccounts = useGetSuggestedAccountsQuery();
+
+  useSearch(searchQuery, () => {
+    searchUserMutation.mutate(searchQuery);
+  });
 
   const scrollToOffset = React.useCallback((offset: number) => {
     scrollRef.current?.scrollToOffset({ offset: offset, animated: true });
@@ -206,7 +212,7 @@ export default function SearchScreen() {
         ]}
         pointerEvents={isSearchViewVisible ? "auto" : "none"}
       >
-        {search.trim().length === 0 ? (
+        {searchQuery.trim().length === 0 ? (
           <View>
             <View style={styles.recentHeader}>
               <Typography variant="body" fontWeight={700}>
@@ -219,7 +225,7 @@ export default function SearchScreen() {
               </TouchableOpacity>
             </View>
             <FlatList
-              data={Array(4).fill("d")}
+              data={[]}
               keyExtractor={() => Math.random().toString()}
               contentContainerStyle={{}}
               renderItem={({ item }) => {
@@ -228,14 +234,27 @@ export default function SearchScreen() {
             />
           </View>
         ) : (
-          <FlatList
-            data={Array(10).fill("d")}
-            keyExtractor={() => Math.random().toString()}
-            contentContainerStyle={{}}
-            renderItem={({ item }) => {
-              return <Profile user={Store.createUser()} />;
-            }}
-          />
+          <>
+            {searchUserMutation.isLoading ? (
+              <View
+                style={{
+                  paddingTop: height * 0.3,
+                  alignItems: "center",
+                }}
+              >
+                <ActivityIndicator size="small" color={colors.text} />
+              </View>
+            ) : (
+              <FlatList
+                data={searchUserMutation.data || []}
+                keyExtractor={() => Math.random().toString()}
+                contentContainerStyle={{}}
+                renderItem={({ item }) => {
+                  return <Profile user={item} />;
+                }}
+              />
+            )}
+          </>
         )}
       </Animated.View>
       <View
@@ -305,8 +324,8 @@ export default function SearchScreen() {
                     },
                   ]}
                   ref={textInputRef}
-                  value={search}
-                  onChangeText={setSearch}
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
                   editable={isSearchViewVisible}
                   pointerEvents={isSearchViewVisible ? "auto" : "none"}
                   placeholder="Search"
@@ -342,34 +361,47 @@ export default function SearchScreen() {
             </Animated.View>
           </View>
         </Animated.View>
-        <Animated.FlatList
-          data={list}
-          ref={scrollRef as any}
-          onScroll={onScroll}
-          keyExtractor={({ id }) => id}
-          contentContainerStyle={[
-            { paddingTop: headerHeight + (isBigDevice ? 12 : 6) },
-          ]}
-          refreshing={isRefreshing}
-          ListHeaderComponent={() => (
-            <Animated.View style={[{ width: "100%" }, spacingAnimatedStyles]} />
-          )}
-          refreshControl={
-            <RefreshControl
-              progressViewOffset={headerHeight + 6}
-              refreshing={isRefreshing}
-              onRefresh={() => {
-                setTimeout(() => {
+        {suggestedUsersAccounts.isLoading ? (
+          <View
+            style={{
+              paddingTop: height * 0.5,
+              alignItems: "center",
+            }}
+          >
+            <ActivityIndicator size="small" color={colors.text} />
+          </View>
+        ) : (
+          <Animated.FlatList
+            data={suggestedUsersAccounts.data || []}
+            ref={scrollRef as any}
+            onScroll={onScroll}
+            keyExtractor={({ id }) => id.toString()}
+            contentContainerStyle={[
+              { paddingTop: headerHeight + (isBigDevice ? 12 : 6) },
+            ]}
+            refreshing={isRefreshing}
+            ListHeaderComponent={() => (
+              <Animated.View
+                style={[{ width: "100%" }, spacingAnimatedStyles]}
+              />
+            )}
+            refreshControl={
+              <RefreshControl
+                progressViewOffset={headerHeight + 6}
+                refreshing={isRefreshing}
+                onRefresh={async () => {
+                  setIsRefreshing(true);
+                  await suggestedUsersAccounts.refetch();
                   setIsRefreshing(false);
-                }, 1000);
-              }}
-            />
-          }
-          scrollEventThrottle={16}
-          renderItem={({ item }) => {
-            return <Profile showFollowers user={item} />;
-          }}
-        />
+                }}
+              />
+            }
+            scrollEventThrottle={16}
+            renderItem={({ item }) => {
+              return <Profile showFollowers user={item} />;
+            }}
+          />
+        )}
       </View>
     </>
   );

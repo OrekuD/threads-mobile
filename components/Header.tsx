@@ -1,4 +1,9 @@
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import Typography from "./Typography";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ArrowLeftIcon, CancelIcon, CheckIcon } from "./Icons";
@@ -15,6 +20,9 @@ interface Props {
   hideRightButton?: boolean;
   hasBorder?: boolean;
   onCancelButtonPressed?: () => void;
+  onDoneButtonPressed?: () => void;
+  isDoneButtonDisabled?: boolean;
+  isDoneButtonDLoading?: boolean;
 }
 
 export default function Header(props: Props) {
@@ -59,13 +67,23 @@ export default function Header(props: Props) {
         {props.hideRightButton ? (
           <></>
         ) : (
-          <TouchableOpacity activeOpacity={0.8} onPress={navigation.goBack}>
-            {props.hasCheckIcon ? (
-              <CheckIcon size={24} color={colors.text} />
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={props.onDoneButtonPressed}
+            disabled={props.isDoneButtonDisabled}
+          >
+            {props.isDoneButtonDLoading ? (
+              <ActivityIndicator size="small" color={colors.text} />
             ) : (
-              <Typography variant="body2" fontWeight={600}>
-                Done
-              </Typography>
+              <>
+                {props.hasCheckIcon ? (
+                  <CheckIcon size={24} color={colors.text} />
+                ) : (
+                  <Typography variant="body2" fontWeight={600}>
+                    Done
+                  </Typography>
+                )}
+              </>
             )}
           </TouchableOpacity>
         )}
@@ -94,10 +112,9 @@ export default function Header(props: Props) {
       >
         <Typography variant="body2">Cancel</Typography>
       </TouchableOpacity>
-      <Typography variant="body2" fontWeight={600}>
+      <Typography variant="body2" fontWeight={600} style={{ marginBottom: 2 }}>
         {props.title}
       </Typography>
-
       {props.hideRightButton ? (
         <></>
       ) : (
@@ -107,13 +124,19 @@ export default function Header(props: Props) {
             styles.iosButton,
             {
               right: 16,
+              opacity: props.isDoneButtonDisabled ? 0.5 : 1,
             },
           ]}
-          onPress={navigation.goBack}
+          onPress={props.onDoneButtonPressed}
+          disabled={props.isDoneButtonDisabled}
         >
-          <Typography variant="body2" fontWeight={600} color="#16A1FB">
-            Done
-          </Typography>
+          {props.isDoneButtonDLoading ? (
+            <ActivityIndicator size="small" color="#16A1FB" />
+          ) : (
+            <Typography variant="body2" fontWeight={600} color="#16A1FB">
+              Done
+            </Typography>
+          )}
         </TouchableOpacity>
       )}
     </View>

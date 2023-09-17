@@ -14,7 +14,6 @@ import {
 } from "./Icons";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import useColors from "@/hooks/useColors";
-import { useUIStateContext } from "@/context/UIStateContext";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useNavigation } from "@react-navigation/native";
 
@@ -26,7 +25,6 @@ export default function TabBar(props: Props) {
   const { bottom } = useSafeAreaInsets();
   const navigaton =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const uiStateContext = useUIStateContext();
   const colors = useColors();
 
   const tabs: Array<BottomNavigationTab> = [
@@ -87,7 +85,7 @@ export default function TabBar(props: Props) {
               key={index}
               onPress={() => {
                 if (isActive && href === "HomeScreen") {
-                  uiStateContext.dispatch({ type: "UPDATE_UISTATE" });
+                  // uiStateContext.dispatch({ type: "UPDATE_UISTATE" }); TODO:
                 }
 
                 if (href === "CreateThreadScreen") {

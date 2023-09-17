@@ -2,17 +2,12 @@ import React from "react";
 import { View } from "react-native";
 import useColors from "@/hooks/useColors";
 import Typography from "@/components/Typography";
-import { useUserContext } from "@/context/UserContext";
 import ProfileView from "@/components/ProfileView";
+import useUserStore from "@/store/userStore";
 
 export default function ProfileScreen() {
   const colors = useColors();
-  const userContext = useUserContext();
-
-  const user = React.useMemo(
-    () => userContext.state.user,
-    [userContext.state.user]
-  );
+  const user = useUserStore((state) => state.user);
 
   if (!user) {
     return (

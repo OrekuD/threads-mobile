@@ -4,6 +4,7 @@ import Typography from "@/components/Typography";
 import useColors from "@/hooks/useColors";
 import React from "react";
 import {
+  ActivityIndicator,
   Image,
   Pressable,
   StyleSheet,
@@ -24,16 +25,11 @@ import useIsDarkMode from "@/hooks/useIsDarkMode";
 import { isAndroid } from "@/constants/Platform";
 import Header from "@/components/Header";
 import { useNavigation } from "@react-navigation/native";
-import Store from "@/store/Store";
-import { useThreadsContext } from "@/context/ThreadsContext";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { RootStackParamList, Thread } from "@/types";
+import { RootStackParamList } from "@/types";
+import useGetThreadQuery from "@/hooks/queries/useGetThreadQuery";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-
-const replies = Array(3)
-  .fill(null)
-  .map(() => Store.createThread());
 
 interface Props
   extends NativeStackScreenProps<RootStackParamList, "ThreadScreen"> {}
@@ -45,59 +41,7 @@ export default function ThreadScreen(props: Props) {
   const scrollY = useSharedValue(0);
   const press = useSharedValue(0);
   const navigation = useNavigation();
-  const threadsContext = useThreadsContext();
-
-  const thread = React.useMemo(() => {
-    if (props.route.params.thread) {
-      return props.route.params.thread;
-    }
-    let thread: Thread | undefined = undefined;
-
-    thread = threadsContext.state.list.find(
-      ({ id }) => id === props.route.params.threadId
-    );
-
-    if (!thread) {
-      thread = threadsContext.state?.userThreads?.find(
-        ({ id }) => id === props.route.params.threadId
-      );
-    }
-
-    return thread;
-  }, [
-    props.route.params.threadId,
-    threadsContext.state.list,
-    threadsContext.state.userThreads,
-    props.route.params.thread,
-  ]);
-
-  React.useEffect(() => {
-    if (!props.route.params.thread?.id) return;
-
-    let thread: Thread | undefined = undefined;
-
-    thread = threadsContext.state.list.find(
-      ({ id }) => id === props.route.params.thread!.id
-    );
-
-    if (!thread) {
-      thread = threadsContext.state?.userThreads?.find(
-        ({ id }) => id === props.route.params.thread!.id
-      );
-    }
-
-    if (thread) return;
-
-    threadsContext.dispatch({
-      type: "ADD_USER_THREADS",
-      payload: [props.route.params.thread!],
-    });
-  }, [
-    props.route.params.threadId,
-    threadsContext.state.list,
-    threadsContext.state.userThreads,
-    props.route.params.thread,
-  ]);
+  const threadQuery = useGetThreadQuery(props.route.params.threadId);
 
   const onScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -125,7 +69,22 @@ export default function ThreadScreen(props: Props) {
     };
   });
 
-  if (!thread) {
+  if (threadQuery.isLoading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: colors.background,
+        }}
+      >
+        <ActivityIndicator size="small" color={colors.text} />
+      </View>
+    );
+  }
+
+  if (!threadQuery.data) {
     return (
       <View
         style={{
@@ -178,11 +137,11 @@ export default function ThreadScreen(props: Props) {
       )}
       <Animated.FlatList
         ListHeaderComponent={() => (
-          <ThreadView variant="thread" thread={thread} />
+          <ThreadView variant="thread" thread={threadQuery.data} />
         )}
         scrollEventThrottle={16}
         onScroll={onScroll}
-        data={replies}
+        data={threadQuery.data.replies}
         renderItem={({ item }) => {
           return <ThreadView variant="reply" thread={item} />;
         }}
@@ -215,7 +174,7 @@ export default function ThreadScreen(props: Props) {
           }}
           onPress={() => {
             props.navigation.navigate("CreateThreadScreen", {
-              threadId: thread.id,
+              threadId: threadQuery.data.threadId,
               type: "reply",
             });
           }}
@@ -228,13 +187,17 @@ export default function ThreadScreen(props: Props) {
           ]}
         >
           <Image
-            source={{
-              uri: "https://picsum.photos/seed/picsum/24/24",
-            }}
+            source={
+              threadQuery.data.user?.profile?.profilePicture
+                ? {
+                    uri: threadQuery.data.user?.profile?.profilePicture,
+                  }
+                : require("../assets/images/no-avatar.jpeg")
+            }
             style={styles.avatar}
           />
           <Typography variant="body" color={isDarkMode ? "#767676" : "#989899"}>
-            Reply to onefootball
+            Reply to {threadQuery.data.user?.username}
           </Typography>
         </AnimatedPressable>
       </View>

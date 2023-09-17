@@ -35,22 +35,22 @@ export default function Typography(props: React.PropsWithChildren<Props>) {
     switch (props.variant) {
       case "tiny":
         // return isAndroid ? 12 : 10;
-        return 10;
+        return 12;
       case "sm":
         // return isAndroid ? 14 : 12;
-        return 12;
+        return 14;
       case "body":
         // return isAndroid ? 16 : 14;
-        return 14;
+        return 16;
       case "body2":
         // return isAndroid ? 18 : 16;
-        return 16;
+        return 18;
       case "title":
         // return isAndroid ? 24 : 22;
-        return 22;
+        return 24;
       case "heading":
         // return isAndroid ? 34 : 30;
-        return 30;
+        return 34;
       default:
         // return isAndroid ? 16 : 14;
         return 14;
@@ -76,7 +76,7 @@ export default function Typography(props: React.PropsWithChildren<Props>) {
           fontFamily,
           fontSize,
           color,
-          lineHeight: fontSize * 1.5,
+          lineHeight: fontSize * 1.3,
           textAlign: props.textAlign,
         },
         props.style,

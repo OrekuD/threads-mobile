@@ -2,14 +2,19 @@ import Header from "@/components/Header";
 import Profile from "@/components/Profile";
 import Typography from "@/components/Typography";
 import { isAndroid } from "@/constants/Platform";
+import useGetFollowersQuery from "@/hooks/queries/useGetFollowersQuery";
+import useGetFollowingQuery from "@/hooks/queries/useGetFollowingQuery";
 import useColors from "@/hooks/useColors";
 import useIsDarkMode from "@/hooks/useIsDarkMode";
-import Store from "@/store/Store";
+import useScreensize from "@/hooks/useScreensize";
+import User from "@/models/User";
 import { RootStackParamList } from "@/types";
-import formatNumber from "@/util/formatNumber";
+import formatNumber from "@/utils/formatNumber";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { UseQueryResult } from "@tanstack/react-query";
 import React from "react";
 import {
+  ActivityIndicator,
   FlatList,
   StyleSheet,
   TouchableOpacity,
@@ -33,6 +38,8 @@ export default function FollowsScreen(props: Props) {
   const { width } = useWindowDimensions();
   const scrollRef = React.useRef<FlatList>(null);
   const scrollX = useSharedValue(0);
+  const followingQuery = useGetFollowingQuery(props.route.params.userId);
+  const followersQuery = useGetFollowersQuery(props.route.params.userId);
 
   const onScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -76,22 +83,6 @@ export default function FollowsScreen(props: Props) {
     };
   }, [width]);
 
-  const followers = React.useMemo(
-    () =>
-      Array(props.route.params.followersCount)
-        .fill(null)
-        .map(() => Store.createUser()),
-    [props.route.params.followersCount]
-  );
-
-  const following = React.useMemo(
-    () =>
-      Array(props.route.params.followingCount)
-        .fill(null)
-        .map(() => Store.createUser()),
-    [props.route.params.followingCount]
-  );
-
   return (
     <View
       style={{
@@ -108,7 +99,7 @@ export default function FollowsScreen(props: Props) {
         ]}
       />
       {isAndroid ? (
-        <Header title={props.route.params.username} hideRightButton />
+        <Header title={"props.route.params.username"} hideRightButton />
       ) : (
         <></>
       )}
@@ -138,7 +129,7 @@ export default function FollowsScreen(props: Props) {
             <Animated.Text
               style={[styles.count, { color: colors.text }, followersOpacity]}
             >
-              {formatNumber(props.route.params.followersCount)}
+              {formatNumber(followersQuery.data?.length || 0)}
             </Animated.Text>
           )}
         </TouchableOpacity>
@@ -160,7 +151,7 @@ export default function FollowsScreen(props: Props) {
             <Animated.Text
               style={[styles.count, { color: colors.text }, followingOpacity]}
             >
-              {formatNumber(props.route.params.followingCount)}
+              {formatNumber(followingQuery.data?.length || 0)}
             </Animated.Text>
           )}
         </TouchableOpacity>
@@ -176,7 +167,7 @@ export default function FollowsScreen(props: Props) {
         />
       </View>
       <Animated.FlatList
-        data={[followers, following]}
+        data={[followersQuery, followingQuery]}
         keyExtractor={(_, index) => index.toString()}
         ref={scrollRef as any}
         horizontal
@@ -185,7 +176,7 @@ export default function FollowsScreen(props: Props) {
         scrollEventThrottle={16}
         onScroll={onScroll}
         nestedScrollEnabled
-        renderItem={({ item }) => {
+        renderItem={({ item, index }) => {
           return (
             <View
               style={{
@@ -193,15 +184,63 @@ export default function FollowsScreen(props: Props) {
                 flex: 1,
               }}
             >
-              <FlatList
-                data={item}
-                renderItem={({ item }) => <Profile user={item} isModal />}
+              <Tab
+                emptyLabel={index === 0 ? "No followers" : "No following"}
+                query={item}
               />
             </View>
           );
         }}
       />
     </View>
+  );
+}
+
+function Tab({
+  query,
+  emptyLabel,
+}: {
+  query: UseQueryResult<Array<User>>;
+  emptyLabel: string;
+}) {
+  const colors = useColors();
+  const { height } = useScreensize();
+
+  if (query.isLoading)
+    return (
+      <View
+        style={{
+          paddingTop: height * 0.3,
+          alignItems: "center",
+        }}
+      >
+        <ActivityIndicator size="small" color={colors.text} />
+      </View>
+    );
+
+  if (!query.data || query.data.length === 0) {
+    return (
+      <View
+        style={{
+          paddingTop: height * 0.3,
+          alignItems: "center",
+        }}
+      >
+        <Typography variant="body" color={colors.textSecondary}>
+          {emptyLabel}
+        </Typography>
+      </View>
+    );
+  }
+
+  return (
+    <FlatList
+      data={query.data}
+      keyExtractor={({ id }) => id.toString()}
+      renderItem={({ item }) => {
+        return <Profile user={item} isModal />;
+      }}
+    />
   );
 }
 

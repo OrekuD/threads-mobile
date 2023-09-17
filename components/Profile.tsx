@@ -1,16 +1,19 @@
 import useColors from "@/hooks/useColors";
 import React from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
 import Typography from "./Typography";
 import { VerifiedIcon } from "./Icons";
-import { Image } from "expo-image";
-import { RootStackParamList, User } from "@/types";
-import formatNumber from "@/util/formatNumber";
+import { RootStackParamList } from "@/types";
+import formatNumber from "@/utils/formatNumber";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import User from "@/models/User";
+import AlgoliaUser from "@/models/AlgoliaUser";
+import useUserFollowsStore from "@/store/userFollowsStore";
+import useFollowUserMutation from "@/hooks/mutations/useFollowUserMutation";
 
 interface Props {
-  user: User;
+  user: User | AlgoliaUser;
   showFollowers?: boolean;
   isModal?: boolean;
 }
@@ -19,6 +22,38 @@ function Profile(props: Props) {
   const colors = useColors();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const following = useUserFollowsStore((state) => state.following);
+  const followUserMutation = useFollowUserMutation();
+  const [isFollowing, setIsFollowing] = React.useState(() => {
+    if ("isFollowedByCurrentUser" in props.user) {
+      return props.user.isFollowedByCurrentUser;
+    }
+    const index = following.findIndex(
+      (user) => Number(user.id) === Number(props.user.id)
+    );
+    return index !== -1;
+  });
+  const [followersCount, setFollowersCount] = React.useState(
+    props.user.followersCount
+  );
+
+  const data = React.useMemo(
+    () => ({
+      id: Number(props.user.id),
+      username: props.user.username,
+      name: props.user.name,
+      isVerified:
+        "isVerified" in props.user
+          ? props.user.isVerified
+          : props.user?.profile?.isVerified || false,
+      avatar:
+        "profilePicture" in props.user
+          ? props.user.profilePicture
+          : props.user?.profile?.profilePicture,
+      followersCount: props.user.followersCount,
+    }),
+    [props.user]
+  );
 
   return (
     <TouchableOpacity
@@ -28,24 +63,25 @@ function Profile(props: Props) {
         navigation.navigate(
           props.isModal ? "UserProfileModalScreen" : "UserProfileScreen",
           {
-            user: props.user,
+            username: data.username,
           }
         )
       }
     >
       <Image
+        source={
+          data.avatar
+            ? { uri: data.avatar }
+            : require("../assets/images/no-avatar.jpeg")
+        }
         style={[
           styles.avatar,
           {
             borderColor: colors.border,
+            marginTop: props.showFollowers ? 16 : 8,
           },
         ]}
-        source={
-          props.user.avatar
-            ? { uri: props.user.avatar }
-            : require("../assets/images/no-avatar.jpeg")
-        }
-        transition={300}
+        resizeMode="cover"
       />
       <View
         style={[
@@ -69,12 +105,12 @@ function Profile(props: Props) {
               }}
               lineLimit={1}
             >
-              {props.user.username}
+              {data.username}
             </Typography>
-            {props.user.isVerified ? <VerifiedIcon size={12} /> : <></>}
+            {data.isVerified ? <VerifiedIcon size={12} /> : <></>}
           </View>
           <Typography variant="sm" color="secondary" lineLimit={1}>
-            {props.user.name}
+            {data.name}
           </Typography>
           {props?.showFollowers ? (
             <Typography
@@ -85,7 +121,7 @@ function Profile(props: Props) {
                 marginTop: 8,
               }}
             >
-              {formatNumber(props.user.followersCount)} followers
+              {formatNumber(followersCount)} followers
             </Typography>
           ) : (
             <></>
@@ -99,9 +135,26 @@ function Profile(props: Props) {
               borderColor: colors.cardBorder,
             },
           ]}
+          onPress={() => {
+            if (!props.user?.id) return;
+
+            if (isFollowing) {
+              setFollowersCount((prevValue) =>
+                prevValue === 0 ? 0 : prevValue - 1
+              );
+            } else {
+              setFollowersCount((prevValue) => prevValue + 1);
+            }
+
+            followUserMutation.mutate({
+              userId: String(props.user.id),
+            });
+
+            setIsFollowing((prevValue) => !prevValue);
+          }}
         >
           <Typography variant="sm" fontWeight={500}>
-            Follow
+            {isFollowing ? "Unfollow" : "Follow"}
           </Typography>
         </TouchableOpacity>
       </View>
@@ -126,18 +179,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginLeft: 16,
     marginRight: 12,
-    marginTop: 16,
-    contentFit: "cover",
   },
   content: {
     flex: 1,
     borderBottomWidth: 1,
-    paddingVertical: 16,
+    paddingVertical: 12,
     flexDirection: "row",
     paddingRight: 16,
   },
   followButton: {
-    width: 90,
+    width: 98,
     height: 36,
     borderRadius: 12,
     borderWidth: 1,

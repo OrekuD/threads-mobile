@@ -19,7 +19,7 @@ import Header from "@/components/Header";
 import { isAndroid } from "@/constants/Platform";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "@/types";
-import { useUserContext } from "@/context/UserContext";
+import useUserStore from "@/store/userStore";
 
 interface Props
   extends NativeStackScreenProps<RootStackParamList, "EditProfileScreen"> {}
@@ -28,7 +28,7 @@ export default function EditProfileScreen(props: Props) {
   const colors = useColors();
   const isDarkMode = useIsDarkMode();
   const [isLoading, setIsLoading] = React.useState(true);
-  const userContext = useUserContext();
+  const user = useUserStore((state) => state.user);
 
   const borderColor = isDarkMode ? "#343535" : "#D6D6D6";
 
@@ -102,7 +102,7 @@ export default function EditProfileScreen(props: Props) {
                   placeholder="+ Add username"
                   borderColor={borderColor}
                   editable={false}
-                  value={`@${userContext.state.user?.username}`}
+                  value={`@${user?.username}`}
                 />
               </View>
               <TouchableOpacity

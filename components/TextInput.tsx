@@ -5,6 +5,7 @@ import Typography from "./Typography";
 
 interface Props {
   label: string;
+  onChange?: (text: string) => void;
   placeholder: string;
   value?: string;
   borderColor?: string;
@@ -27,8 +28,9 @@ export default function TextInput(props: Props) {
       <Typography variant="sm" fontWeight={600}>
         {props.label}
       </Typography>
-      {/* <RNTextInput
+      <RNTextInput
         value={props.value}
+        onChangeText={props.onChange}
         placeholder={props.placeholder}
         placeholderTextColor={colors.textSecondary}
         style={[
@@ -38,15 +40,15 @@ export default function TextInput(props: Props) {
           },
         ]}
         editable={props.editable}
-      /> */}
-      <View style={styles.textInput}>
+      />
+      {/* <View style={styles.textInput}>
         <Typography
           variant="sm"
           color={props.value ? colors.text : colors.textSecondary}
         >
           {props.value || props.placeholder}
         </Typography>
-      </View>
+      </View> */}
     </View>
   );
 }

@@ -14,7 +14,8 @@ import React from "react";
 import Typography from "./Typography";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList, Thread } from "@/types";
+import { RootStackParamList } from "@/types";
+import Thread from "@/models/Thread";
 
 interface Props {
   thread: Thread;
@@ -33,8 +34,7 @@ function EmbeddedThreadView(props: Props) {
       disabled={props.disableNavigation}
       onPress={() => {
         navigation.navigate("ThreadScreen", {
-          threadId: props.thread.id,
-          thread: props.thread,
+          threadId: props.thread.threadId,
         });
       }}
       style={[
@@ -56,7 +56,7 @@ function EmbeddedThreadView(props: Props) {
         ]}
         onPress={() => {
           navigation.navigate("UserProfileScreen", {
-            user: props.thread.creator,
+            username: props.thread.user?.username || "",
           });
         }}
       >
@@ -71,16 +71,18 @@ function EmbeddedThreadView(props: Props) {
           <Image
             style={styles.avatar}
             source={
-              props.thread.creator.avatar
-                ? { uri: props.thread.creator.avatar }
+              props.thread.user?.profile?.profilePicture
+                ? { uri: props.thread.user.profile.profilePicture }
                 : require("../assets/images/no-avatar.jpeg")
             }
           />
         </View>
         <Typography variant="sm" fontWeight={600}>
-          {props.thread.creator.username}
+          {props.thread.user?.username}
         </Typography>
-        {props.thread.creator.isVerified ? <VerifiedIcon size={12} /> : <></>}
+        {props.thread.user?.profile?.isVerified ? (
+          <VerifiedIcon size={12} />
+        ) : null}
       </TouchableOpacity>
 
       <View style={styles.content}>
@@ -149,7 +151,7 @@ function EmbeddedThreadView(props: Props) {
           paddingHorizontal: 16,
         }}
       >
-        {`${props.thread.repliesCount} replies • ${props.thread.likesCount} likes`}
+        {`${props.thread.replies.length} replies • ${props.thread.likesCount} likes`}
       </Typography>
     </TouchableOpacity>
   );

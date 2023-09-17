@@ -17,7 +17,7 @@ import SetupHeader from "@/components/SetupHeader";
 import useScreensize from "@/hooks/useScreensize";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "@/types";
-import { useUserContext } from "@/context/UserContext";
+import useUserStore from "@/store/userStore";
 
 interface Props extends NativeStackScreenProps<RootStackParamList> {}
 
@@ -26,7 +26,7 @@ export default function SetupProfileScreen(props: Props) {
   const isDarkMode = useIsDarkMode();
   const [isLoading, setIsLoading] = React.useState(true);
   const { height } = useScreensize();
-  const userContext = useUserContext();
+  const user = useUserStore((state) => state.user);
 
   const borderColor = isDarkMode ? "#343535" : "#D6D6D6";
 
@@ -74,7 +74,6 @@ export default function SetupProfileScreen(props: Props) {
     >
       <SetupHeader
         onNext={() => {
-          userContext.dispatch({ type: "SETUP_PROFILE" });
           props.navigation.navigate("MainScreen");
         }}
       />
@@ -132,7 +131,7 @@ export default function SetupProfileScreen(props: Props) {
                     placeholder="+ Add username"
                     borderColor={borderColor}
                     editable={false}
-                    value={`@${userContext.state.user?.username || ""}`}
+                    value={`@${user?.username || ""}`}
                   />
                 </View>
                 <TouchableOpacity
