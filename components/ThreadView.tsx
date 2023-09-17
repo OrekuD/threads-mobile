@@ -66,7 +66,12 @@ interface Props {
 function ThreadView(props: Props) {
   const colors = useColors();
   const { width } = useScreensize();
-  const [isLiked, setIsLiked] = React.useState(false);
+  const [hasLiked, setHasLiked] = React.useState(
+    props.thread.hasCurrentUserLiked
+  );
+  const [hasReposted, setHasReposted] = React.useState(
+    props.thread.hasCurrentUserReposted
+  );
   const [likesCount, setLikesCount] = React.useState(props.thread.likesCount);
   const [isRepostBottomSheetVisible, setIsRepostBottomSheetVisible] =
     React.useState(false);
@@ -428,20 +433,20 @@ function ThreadView(props: Props) {
                   style={styles.button}
                   activeOpacity={0.5}
                   onPress={() => {
-                    if (isLiked) {
+                    if (hasLiked) {
                       setLikesCount((prevValue) =>
                         prevValue === 0 ? 0 : prevValue - 1
                       );
                     } else {
                       setLikesCount((prevValue) => prevValue + 1);
                     }
-                    setIsLiked((value) => !value);
+                    setHasLiked((value) => !value);
                     likeThreadMutation.mutate({
                       threadId: props.thread.threadId,
                     });
                   }}
                 >
-                  {isLiked ? (
+                  {hasLiked ? (
                     <HeartFilledIcon size={24} color="#FF2735" />
                   ) : (
                     <HeartIcon size={24} color={colors.text} />

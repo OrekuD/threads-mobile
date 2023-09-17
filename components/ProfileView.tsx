@@ -99,8 +99,8 @@ export default function ProfileView(props: Props) {
         {
           translateX: interpolate(
             scrollX.value,
-            [0, width],
-            [0, (width - 32) / 2]
+            [0, width, width * 2],
+            [0, (width - 32) / 3, ((width - 32) / 3) * 2]
           ),
         },
       ],
@@ -122,7 +122,18 @@ export default function ProfileView(props: Props) {
     return {
       opacity: interpolate(
         scrollX.value,
-        [0, width],
+        [0, width, width * 2],
+        [0.5, 1, 0.5],
+        Extrapolate.CLAMP
+      ),
+    };
+  });
+
+  const repostsTabTextAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(
+        scrollX.value,
+        [width, width * 2],
         [0.5, 1],
         Extrapolate.CLAMP
       ),
@@ -401,7 +412,9 @@ export default function ProfileView(props: Props) {
                 })} */}
               </View>
               <Typography variant="sm" color="secondary">
-                {formatNumber(props.user.followersCount || 0)} followers
+                {props.user.followersCount === 1
+                  ? "1 follower"
+                  : `${formatNumber(props.user.followersCount)} followers`}
               </Typography>
             </TouchableOpacity>
             {false ? (
@@ -470,8 +483,9 @@ export default function ProfileView(props: Props) {
                     },
                   ]}
                   onPress={() => {
+                    const url = `${process.env.EXPO_PUBLIC_CLIENT_URL}/@${props.user.username}`;
                     Share.share({
-                      url: "https://threads.net/@oreku__",
+                      url,
                     });
                   }}
                 >
@@ -567,7 +581,7 @@ export default function ProfileView(props: Props) {
             activeOpacity={0.8}
             style={styles.tab}
             onPress={() => {
-              scrollXRef.current?.scrollToEnd({ animated: true });
+              scrollXRef.current?.scrollTo({ animated: true, x: width });
             }}
           >
             <Animated.Text
@@ -580,6 +594,25 @@ export default function ProfileView(props: Props) {
               ]}
             >
               Replies
+            </Animated.Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            style={styles.tab}
+            onPress={() => {
+              scrollXRef.current?.scrollToEnd({ animated: true });
+            }}
+          >
+            <Animated.Text
+              style={[
+                styles.text,
+                {
+                  color: colors.text,
+                },
+                repostsTabTextAnimatedStyle,
+              ]}
+            >
+              Reposts
             </Animated.Text>
           </TouchableOpacity>
         </Animated.View>
@@ -623,6 +656,7 @@ export default function ProfileView(props: Props) {
               </>
             )}
           </View>
+          <View style={{ width }}></View>
           <View style={{ width }}></View>
         </AnimatedScrollView>
       </AnimatedScrollView>
@@ -708,7 +742,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 16,
     bottom: -1,
-    width: "50%",
+    width: "33.333%",
     height: 1.64,
   },
   overlay: {

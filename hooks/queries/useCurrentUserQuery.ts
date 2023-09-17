@@ -34,9 +34,12 @@ export default function useCurrentUserQuery() {
   const query = useQuery<User>({
     queryKey: ["user", "index"],
     queryFn: getCurrentUser,
-    onError: (error) => {
-      console.log(error);
-    },
+    // onError: (error) => {
+    //   console.log(error);
+    // },
+    // onSuccess: (data) => {
+    //   console.log(data);
+    // },
   });
 
   return query;

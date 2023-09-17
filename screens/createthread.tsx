@@ -2,9 +2,10 @@ import { AttachmentIcon, CancelIcon } from "@/components/Icons";
 import Typography from "@/components/Typography";
 import useColors from "@/hooks/useColors";
 import useKeyboard from "@/hooks/useKeyboard";
-import { CreateThread, RootStackParamList } from "@/types";
+import { RootStackParamList } from "@/types";
 import React from "react";
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
   Image,
@@ -24,7 +25,6 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import uuid from "react-native-uuid";
 import * as ImagePicker from "expo-image-picker";
 import useScreensize from "@/hooks/useScreensize";
 import { isAndroid } from "@/constants/Platform";
@@ -34,10 +34,9 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import ThreadView from "@/components/ThreadView";
 import EmbeddedThreadView from "@/components/EmbeddedThreadView";
 import useUserStore from "@/store/userStore";
-import Thread from "@/models/Thread";
 import useThreadStore from "@/store/threadStore";
-
-const threadId = uuid.v4().toString();
+import useCreateThreadMutation from "@/hooks/mutations/useCreateThreadMutation";
+import useToastsStore from "@/store/toastsStore";
 
 const privateProfileMenuOptions = [
   "Your followers",
@@ -71,22 +70,64 @@ export default function CreateThreadScreen(props: Props) {
   const popmenuAnimation = useSharedValue(0);
   const { width } = useScreensize();
   const isDarkMode = useIsDarkMode();
-  const [threads, setThreads] = React.useState<Array<CreateThread>>([
-    {
-      media: [],
-      replyTo: "",
-      text: "",
-      threadId: threadId,
-    },
-  ]);
-  const [activeThreadId, setActiveThreadId] = React.useState(threadId);
-  const [updatedAt, setUpdatedAt] = React.useState(0);
+
   const [scope, setScope] = React.useState(
     isPrivateAccount
       ? privateProfileMenuOptions[0]
       : publicProfileMenuOptions[0]
   );
   const [showPopupMenu, setShowPopupMenu] = React.useState(false);
+  const [text, setText] = React.useState("");
+  const [images, setImages] = React.useState<Array<string>>([]);
+  const createThreadMutation = useCreateThreadMutation();
+
+  React.useEffect(() => {
+    if (createThreadMutation.isSuccess) {
+      setText("");
+      setImages([]);
+      props.navigation.goBack();
+    }
+  }, [createThreadMutation.isSuccess]);
+
+  const cannotPost = React.useMemo(
+    () => text.trim().length === 0 && images.length === 0,
+    [text, images]
+  );
+
+  const handlePost = React.useCallback(() => {
+    if (createThreadMutation.isLoading || cannotPost) {
+      return;
+    }
+
+    createThreadMutation.mutate({
+      payload: {
+        // media: images,
+        media: [],
+        text: text,
+        // replyThreadId: props.replyThread ? String(props.replyThread.id) : null,
+        // quoteThreadId: props.quoteThread ? String(props.quoteThread?.id) : null,
+        quoteThreadId: null,
+        replyThreadId: null,
+      },
+      // quoteThreadQueryKeyId: props?.quoteThread
+      //   ? props.quoteThread.threadId
+      //   : null,
+      // replyThreadQueryKeyId: props?.replyThread
+      //   ? props.replyThread.threadId
+      //   : null,
+      quoteThreadQueryKeyId: null,
+      replyThreadQueryKeyId: null,
+    });
+  }, [
+    text,
+    images,
+    cannotPost,
+    createThreadMutation.isLoading,
+    // props.replyThread?.id,
+    // props.replyThread?.threadId,
+    // props.quoteThread?.id,
+    // props.quoteThread?.threadId,
+  ]);
 
   const menuOptions = React.useMemo(
     () =>
@@ -118,7 +159,7 @@ export default function CreateThreadScreen(props: Props) {
 
   React.useEffect(() => {
     scrollRef.current?.scrollToEnd({ animated: true });
-  }, [threads]);
+  }, [text, images]);
 
   const embeddedThread = React.useMemo(() => {
     if (props.route.params.type === "new") return undefined;
@@ -127,6 +168,7 @@ export default function CreateThreadScreen(props: Props) {
       return thread;
     }
   }, [props.route.params.type, thread]);
+
   React.useEffect(() => {
     popmenuAnimation.value = withSpring(showPopupMenu ? 1 : 0, {
       duration: 550,
@@ -168,55 +210,23 @@ export default function CreateThreadScreen(props: Props) {
     };
   }, [keyboardHeight, bottom, toolbarHeight]);
 
-  const selectImages = React.useCallback(async (threadId: string) => {
+  const selectImages = React.useCallback(async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: false,
-      quality: 1,
+      quality: 0.7,
       allowsMultipleSelection: true,
       selectionLimit: 4,
     });
 
-    setThreads((prevThreads) => {
-      const index = prevThreads.findIndex(
-        (thread) => threadId === thread.threadId
-      );
-
-      if (index !== -1 && result.assets) {
-        const newThreads = [...prevThreads];
-        newThreads.splice(index, 1, {
-          ...prevThreads[index],
-          media: result.assets.map(({ uri, height, width }) => ({
-            url: uri,
-            aspectRatio: width / height,
-            height,
-            width,
-          })),
-        });
-        return newThreads;
-      }
-      return prevThreads;
-    });
+    if (result.assets) {
+      const newImages = result.assets.map(({ uri }) => uri);
+      setImages((prevValues) => [...prevValues, ...newImages]);
+    }
   }, []);
 
-  const cannotCreateNewThread = React.useMemo(() => {
-    if (threads.length === 0) return true;
-    const lastThread = threads[threads.length - 1];
-    return !lastThread.text && lastThread.media.length === 0;
-  }, [threads]);
-
-  const hasCreatedThreads = React.useMemo(() => {
-    if (threads.length === 0) return false;
-    for (const { media, text } of threads) {
-      if (media.length > 0 || text) {
-        return true;
-      }
-    }
-    return false;
-  }, [threads]);
-
   const onCancelButtonPressed = React.useCallback(() => {
-    if (!hasCreatedThreads) {
+    if (cannotPost) {
       props.navigation.goBack();
     } else {
       Alert.alert("Discard thread?", "", [
@@ -231,7 +241,7 @@ export default function CreateThreadScreen(props: Props) {
         },
       ]);
     }
-  }, [hasCreatedThreads]);
+  }, [cannotPost]);
 
   return (
     <Pressable
@@ -296,30 +306,37 @@ export default function CreateThreadScreen(props: Props) {
           toolbarAnimatedStyle,
         ]}
       >
-        <TouchableOpacity
+        {/* <TouchableOpacity
           activeOpacity={0.8}
           onPress={() => setShowPopupMenu((prevValue) => !prevValue)}
         >
           <Typography variant="body" color="secondary">
             {scope}
           </Typography>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         <TouchableOpacity
           activeOpacity={0.5}
           style={{
-            opacity: hasCreatedThreads ? 1 : 0.5,
+            opacity: cannotPost || createThreadMutation.isLoading ? 0.5 : 1,
+            marginLeft: "auto",
           }}
+          onPress={handlePost}
+          disabled={cannotPost || createThreadMutation.isLoading}
         >
-          <Typography variant="body" fontWeight={600} color="#17A2FC">
-            Post
-          </Typography>
+          {createThreadMutation.isLoading ? (
+            <ActivityIndicator size="small" color="#17A2FC" />
+          ) : (
+            <Typography variant="body" fontWeight={600} color="#17A2FC">
+              Post
+            </Typography>
+          )}
         </TouchableOpacity>
       </Animated.View>
       <View style={{ flex: 1, zIndex: 4 }}>
         <Header
           title={title}
           hasBorder
-          hideRightButton={props.route.params.type !== "new"}
+          hideRightButton
           onCancelButtonPressed={onCancelButtonPressed}
         />
         <ScrollView
@@ -334,281 +351,149 @@ export default function CreateThreadScreen(props: Props) {
           ) : (
             <></>
           )}
-          {threads.map((thread, index) => {
-            const isActiveThread = activeThreadId === thread.threadId;
-            return (
-              <Animated.View style={styles.thread} key={index}>
-                <View style={styles.left}>
-                  <Image
-                    style={[
-                      styles.avatar,
-                      {
-                        borderColor: colors.border,
-                      },
-                    ]}
-                    source={
-                      user?.profile?.profilePicture
-                        ? { uri: user.profile.profilePicture }
-                        : require("../assets/images/no-avatar.jpeg")
-                    }
-                  />
-                  <View
-                    style={[
-                      styles.line,
-                      {
-                        backgroundColor: colors.border,
-                      },
-                    ]}
-                  />
-                </View>
-                <View style={styles.content}>
-                  <View style={styles.top}>
-                    <Typography variant="sm" fontWeight={600}>
-                      {user?.username}
-                    </Typography>
-                    {threads.length === 1 ? (
-                      <></>
-                    ) : (
-                      <TouchableOpacity
-                        disabled={threads.length === 1}
-                        onPress={() => {
-                          const index = threads.findIndex(
-                            ({ threadId }) => thread.threadId === threadId
-                          );
-                          const newThreads = [...threads];
-                          newThreads.splice(index, 1);
-                          setThreads(newThreads);
-                        }}
-                      >
-                        <CancelIcon size={18} color={colors.textSecondary} />
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                  {isActiveThread ? (
-                    <>
-                      <TextInput
-                        placeholder="Start a thread..."
-                        placeholderTextColor={colors.textSecondary}
-                        multiline
-                        value={thread.text}
-                        ref={textInputRef}
-                        style={[
-                          styles.textInput,
-                          {
-                            color: colors.text,
-                          },
-                        ]}
-                        onChangeText={(text) => {
-                          setThreads((prevThreads) => {
-                            const index = prevThreads.findIndex(
-                              ({ threadId }) => threadId === thread.threadId
-                            );
-
-                            if (index !== -1) {
-                              const newThreads = [...prevThreads];
-                              newThreads.splice(index, 1, {
-                                ...thread,
-                                text,
-                              });
-
-                              return newThreads;
-                            }
-                            return prevThreads;
-                          });
-                        }}
-                        onFocus={() => setShowPopupMenu(false)}
-                      />
-                      {thread.media.length === 0 ? (
-                        <TouchableOpacity
-                          activeOpacity={0.8}
-                          onPress={() => selectImages(thread.threadId)}
-                          style={{ marginTop: 16 }}
-                        >
-                          <AttachmentIcon
-                            size={18}
-                            color={colors.textSecondary}
-                          />
-                        </TouchableOpacity>
-                      ) : (
-                        <></>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <TouchableOpacity
-                        activeOpacity={0.8}
-                        onPress={() => setActiveThreadId(thread.threadId)}
-                        style={{
-                          marginTop: 6,
-                        }}
-                      >
-                        <Typography
-                          variant="sm"
-                          color={
-                            thread.text ? colors.text : colors.textSecondary
-                          }
-                        >
-                          {thread.text ? thread.text : "Start a thread..."}
-                        </Typography>
-                      </TouchableOpacity>
-                    </>
-                  )}
-                  {thread.media.length > 0 ? (
-                    <View
-                      style={[
-                        styles.imageContainer,
-                        {
-                          width,
-                          transform: [
-                            {
-                              translateX: -70,
-                            },
-                          ],
-                        },
-                      ]}
-                    >
-                      <FlatList
-                        data={thread.media}
-                        keyExtractor={({ url }) => url}
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={{
-                          gap: 8,
-                          paddingLeft: 70,
-                          paddingRight: 16,
-                        }}
-                        renderItem={({ item }) => {
-                          const imageWidth =
-                            thread.media.length === 1
-                              ? width - 70 - 8
-                              : width - 70 - 24;
-                          return (
-                            <TouchableOpacity
-                              activeOpacity={0.8}
-                              style={{
-                                borderRadius: 8,
-                                overflow: "hidden",
-                                width: imageWidth,
-                                height:
-                                  thread.media.length > 1 ? 200 : undefined,
-                                aspectRatio:
-                                  thread.media.length > 1
-                                    ? undefined
-                                    : item.aspectRatio,
-                              }}
-                              onPress={() => selectImages(thread.threadId)}
-                            >
-                              <TouchableOpacity
-                                activeOpacity={0.8}
-                                style={styles.closeButton}
-                                onPress={() => {
-                                  setThreads((prevThreads) => {
-                                    const index = prevThreads.findIndex(
-                                      ({ threadId }) =>
-                                        thread.threadId === threadId
-                                    );
-
-                                    if (index !== -1) {
-                                      const newThreads = [...prevThreads];
-                                      newThreads.splice(index, 1, {
-                                        ...thread,
-                                        media: thread.media.filter(
-                                          (media) => media.url !== item.url
-                                        ),
-                                      });
-
-                                      return newThreads;
-                                    }
-                                    return prevThreads;
-                                  });
-                                }}
-                              >
-                                <CancelIcon size={20} color="#fff" />
-                              </TouchableOpacity>
-                              <Image
-                                source={{ uri: item.url }}
-                                style={{
-                                  borderRadius: 8,
-                                  width: "100%",
-                                  height: "100%",
-                                  resizeMode: "cover",
-                                }}
-                              />
-                            </TouchableOpacity>
-                          );
-                        }}
-                      />
-                    </View>
-                  ) : (
-                    <></>
-                  )}
-                  {props.route.params.type === "quote" && embeddedThread ? (
-                    <EmbeddedThreadView
-                      thread={embeddedThread}
-                      disableNavigation
-                    />
-                  ) : (
-                    <></>
-                  )}
-                </View>
-              </Animated.View>
-            );
-          })}
-          <TouchableOpacity
-            activeOpacity={0.5}
-            disabled={cannotCreateNewThread}
-            style={[
-              styles.thread,
-              {
-                opacity: cannotCreateNewThread ? 0.5 : 1,
-              },
-            ]}
-            onPress={() => {
-              const id = uuid.v4().toString();
-              setThreads((prevValues) => [
-                ...prevValues,
-                {
-                  media: [],
-                  replyTo: "",
-                  text: "",
-                  threadId: id,
-                },
-              ]);
-              setActiveThreadId(id);
-              // scrollRef.current?.scrollToEnd({ animated: true });
-            }}
-          >
-            <View
-              style={[
-                styles.left,
-                {
-                  justifyContent: "center",
-                },
-              ]}
-            >
+          <View style={styles.thread}>
+            <View style={styles.left}>
               <Image
-                style={[styles.smallAvatar]}
+                style={[
+                  styles.avatar,
+                  {
+                    borderColor: colors.border,
+                  },
+                ]}
                 source={
                   user?.profile?.profilePicture
                     ? { uri: user.profile.profilePicture }
                     : require("../assets/images/no-avatar.jpeg")
                 }
               />
+              <View
+                style={[
+                  styles.line,
+                  {
+                    backgroundColor: colors.border,
+                  },
+                ]}
+              />
             </View>
-            <View
-              style={[
-                styles.content,
-                {
-                  paddingBottom: 0,
-                  padding: 0,
-                },
-              ]}
-            >
-              <Typography color="secondary" variant="sm">
-                Add to thread
-              </Typography>
+            <View style={styles.content}>
+              <View style={styles.top}>
+                <Typography variant="sm" fontWeight={600}>
+                  {user?.username}
+                </Typography>
+                {cannotPost ? (
+                  <></>
+                ) : (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setText("");
+                      setImages([]);
+                    }}
+                  >
+                    <CancelIcon size={18} color={colors.textSecondary} />
+                  </TouchableOpacity>
+                )}
+              </View>
+              <TextInput
+                placeholder="Start a thread..."
+                placeholderTextColor={colors.textSecondary}
+                multiline
+                value={text}
+                ref={textInputRef}
+                style={[
+                  styles.textInput,
+                  {
+                    color: colors.text,
+                  },
+                ]}
+                onChangeText={setText}
+                onFocus={() => setShowPopupMenu(false)}
+              />
+              {images.length === 0 ? (
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={selectImages}
+                  style={{ marginTop: 16 }}
+                >
+                  <AttachmentIcon size={18} color={colors.textSecondary} />
+                </TouchableOpacity>
+              ) : (
+                <></>
+              )}
+              {images.length > 0 ? (
+                <View
+                  style={[
+                    styles.imageContainer,
+                    {
+                      width,
+                      transform: [
+                        {
+                          translateX: -70,
+                        },
+                      ],
+                    },
+                  ]}
+                >
+                  <FlatList
+                    data={images}
+                    keyExtractor={(image) => image}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{
+                      gap: 8,
+                      paddingLeft: 70,
+                      paddingRight: 16,
+                    }}
+                    renderItem={({ item }) => {
+                      const imageWidth =
+                        images.length === 1
+                          ? width - 70 - 8
+                          : (width - 70) * 0.6;
+                      return (
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          style={{
+                            borderRadius: 8,
+                            overflow: "hidden",
+                            width: imageWidth,
+                            height: imageWidth * 1.2,
+                          }}
+                          onPress={selectImages}
+                        >
+                          <TouchableOpacity
+                            activeOpacity={0.8}
+                            style={styles.closeButton}
+                            onPress={() => {
+                              setImages((prevImages) =>
+                                prevImages.filter((image) => image !== item)
+                              );
+                            }}
+                          >
+                            <CancelIcon size={20} color="#fff" />
+                          </TouchableOpacity>
+                          <Image
+                            source={{ uri: item }}
+                            style={{
+                              borderRadius: 8,
+                              width: "100%",
+                              height: "100%",
+                              resizeMode: "cover",
+                            }}
+                          />
+                        </TouchableOpacity>
+                      );
+                    }}
+                  />
+                </View>
+              ) : (
+                <></>
+              )}
+              {props.route.params.type === "quote" && embeddedThread ? (
+                <EmbeddedThreadView thread={embeddedThread} disableNavigation />
+              ) : (
+                <></>
+              )}
             </View>
-          </TouchableOpacity>
+          </View>
         </ScrollView>
       </View>
     </Pressable>

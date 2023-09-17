@@ -4,6 +4,7 @@ import getAccessToken from "@/utils/getAccessToken";
 import ErrorResponse from "@/network/responses/ErrorResponse";
 import AsyncStorageKeys from "@/constants/AsyncStorageKeys";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import useToastsStore from "@/store/toastsStore";
 
 interface CreateThreadRequest {
   payload: CreateThreadPayloadRequest;
@@ -57,6 +58,7 @@ async function createThread({ payload }: CreateThreadRequest) {
 export default function useCreateThreadMutation() {
   const queryClient = useQueryClient();
   const userStore = useUserStore((state) => state);
+  const toastsStore = useToastsStore();
 
   const mutation = useMutation({
     mutationFn: createThread,
@@ -88,6 +90,9 @@ export default function useCreateThreadMutation() {
           queryKey: ["user", userStore.user.username, "reposts"],
         });
       }
+    },
+    onError: () => {
+      toastsStore.addToast("Something went wrong");
     },
   });
 
