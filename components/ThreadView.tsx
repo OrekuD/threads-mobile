@@ -29,11 +29,9 @@ import useScreensize from "@/hooks/useScreensize";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList, Thread } from "@/types";
-import useIsDarkMode from "@/hooks/useIsDarkMode";
 import BottomSheet from "./BottomSheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import EmbeddedThreadView from "./EmbeddedThreadView";
-import Store from "@/store/Store";
 
 type ThreadViewVariant =
   | "reply"
