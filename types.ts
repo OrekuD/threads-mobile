@@ -1,5 +1,6 @@
 import { HomeIcon } from "./components/Icons";
 import { Dispatch } from "react";
+import Thread from "./models/Thread";
 
 export type RootStackParamList = {
   MainScreen: undefined;
@@ -14,7 +15,7 @@ export type RootStackParamList = {
       }
     | {
         type: "reply" | "quote";
-        threadId: string;
+        thread: Thread;
       };
   FollowsScreen: {
     userId: number;
@@ -22,8 +23,8 @@ export type RootStackParamList = {
   };
   EditProfileScreen: undefined;
   ReportAProblemScreen: undefined;
-  ThreadScreen: { threadId: string }; // used to pass quote threads which are not saved in state
-  ThreadImagesScreen: { threadId: string };
+  ThreadScreen: { thread: Thread };
+  ThreadImagesScreen: { thread: Thread };
   UserProfileScreen: { username: string };
   UserProfileModalScreen: { username: string };
   WebViewScreen: { url: string };

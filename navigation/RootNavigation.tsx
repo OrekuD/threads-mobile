@@ -98,7 +98,10 @@ export default function RootNavigation() {
               <Stack.Screen
                 name="ThreadScreen"
                 component={ThreadScreen}
-                getId={({ params }) => params.threadId}
+                getId={({ params }) => params.thread.threadId}
+                listeners={({ navigation }) => ({
+                  blur: () => navigation.setParams({ params: undefined }),
+                })}
               />
               <Stack.Screen
                 name="UserProfileScreen"
@@ -108,6 +111,9 @@ export default function RootNavigation() {
               <Stack.Screen
                 name="ThreadImagesScreen"
                 component={ThreadImagesScreen}
+                listeners={({ navigation }) => ({
+                  blur: () => navigation.setParams({ params: undefined }),
+                })}
               />
               <Stack.Screen
                 name="UserProfileModalScreen"
@@ -134,6 +140,9 @@ export default function RootNavigation() {
                 name="CreateThreadScreen"
                 component={CreateThreadScreen}
                 options={modalNavigationOptions}
+                listeners={({ navigation }) => ({
+                  blur: () => navigation.setParams({ params: undefined }),
+                })}
               />
               <Stack.Screen
                 name="FollowsScreen"

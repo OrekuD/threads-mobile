@@ -41,7 +41,7 @@ export default function ThreadScreen(props: Props) {
   const scrollY = useSharedValue(0);
   const press = useSharedValue(0);
   const navigation = useNavigation();
-  const threadQuery = useGetThreadQuery(props.route.params.threadId);
+  const threadQuery = useGetThreadQuery(props.route.params.thread.threadId);
 
   const onScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -69,22 +69,22 @@ export default function ThreadScreen(props: Props) {
     };
   });
 
-  if (threadQuery.isLoading) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: colors.background,
-        }}
-      >
-        <ActivityIndicator size="small" color={colors.text} />
-      </View>
-    );
-  }
+  // if (threadQuery.isLoading) {
+  //   return (
+  //     <View
+  //       style={{
+  //         flex: 1,
+  //         alignItems: "center",
+  //         justifyContent: "center",
+  //         backgroundColor: colors.background,
+  //       }}
+  //     >
+  //       <ActivityIndicator size="small" color={colors.text} />
+  //     </View>
+  //   );
+  // }
 
-  if (!threadQuery.data) {
+  if (!threadQuery.data && !threadQuery.isLoading) {
     return (
       <View
         style={{
@@ -137,12 +137,25 @@ export default function ThreadScreen(props: Props) {
       )}
       <Animated.FlatList
         ListHeaderComponent={() => (
-          <ThreadView variant="thread" thread={threadQuery.data} />
+          <ThreadView variant="thread" thread={props.route.params.thread} />
         )}
         scrollEventThrottle={16}
         onScroll={onScroll}
-        data={threadQuery.data.replies}
+        data={threadQuery?.data?.replies || []}
         renderItem={({ item }) => {
+          if (threadQuery.isLoading) {
+            return (
+              <View
+                style={{
+                  paddingTop: 32,
+                  alignItems: "center",
+                  backgroundColor: colors.background,
+                }}
+              >
+                <ActivityIndicator size="small" color={colors.text} />
+              </View>
+            );
+          }
           return <ThreadView variant="reply" thread={item} />;
         }}
       />
@@ -174,7 +187,7 @@ export default function ThreadScreen(props: Props) {
           }}
           onPress={() => {
             props.navigation.navigate("CreateThreadScreen", {
-              threadId: threadQuery.data.threadId,
+              thread: props.route.params.thread,
               type: "reply",
             });
           }}
@@ -188,16 +201,17 @@ export default function ThreadScreen(props: Props) {
         >
           <Image
             source={
-              threadQuery.data.user?.profile?.profilePicture
+              props.route.params.thread.user?.profile?.profilePicture
                 ? {
-                    uri: threadQuery.data.user?.profile?.profilePicture,
+                    uri: props.route.params.thread.user?.profile
+                      ?.profilePicture,
                   }
                 : require("../assets/images/no-avatar.jpeg")
             }
             style={styles.avatar}
           />
           <Typography variant="body" color={isDarkMode ? "#767676" : "#989899"}>
-            Reply to {threadQuery.data.user?.username}
+            Reply to {props.route.params.thread.user?.username}
           </Typography>
         </AnimatedPressable>
       </View>

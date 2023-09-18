@@ -6,6 +6,8 @@ export default interface Thread {
   text: string;
   media: Array<string>;
   user: User | null;
+  replyTheadId: string | null;
+  quoteTheadId: string | null;
   replyThead: Thread | null;
   quoteThead: Thread | null;
   replies: Array<Thread>;

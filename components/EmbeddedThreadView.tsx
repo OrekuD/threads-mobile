@@ -34,7 +34,7 @@ function EmbeddedThreadView(props: Props) {
       disabled={props.disableNavigation}
       onPress={() => {
         navigation.navigate("ThreadScreen", {
-          threadId: props.thread.threadId,
+          thread: props.thread,
         });
       }}
       style={[

@@ -5,6 +5,7 @@ import ErrorResponse from "@/network/responses/ErrorResponse";
 import AsyncStorageKeys from "@/constants/AsyncStorageKeys";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import useToastsStore from "@/store/toastsStore";
+import { isAndroid } from "@/constants/Platform";
 
 interface CreateThreadRequest {
   payload: CreateThreadPayloadRequest;
@@ -16,7 +17,7 @@ interface CreateThreadPayloadRequest {
   text: string;
   replyThreadId: string | null;
   quoteThreadId: string | null;
-  media: Array<File>;
+  media: Array<string>;
 }
 
 async function createThread({ payload }: CreateThreadRequest) {
@@ -26,10 +27,15 @@ async function createThread({ payload }: CreateThreadRequest) {
   const formData = new FormData();
 
   for (const image of payload.media) {
-    formData.append("files", image);
+    formData.append("files", {
+      uri: isAndroid ? image : `file://${image}`,
+      type: "image/jpg",
+      name: image.split("/").pop(),
+    } as any);
   }
+
   formData.append("text", payload.text);
-  formData.append("replyThreadId", payload.quoteThreadId || "");
+  formData.append("replyThreadId", payload.replyThreadId || "");
   formData.append("quoteThreadId", payload.quoteThreadId || "");
 
   const response = await fetch(url, {
@@ -63,12 +69,13 @@ export default function useCreateThreadMutation() {
   const mutation = useMutation({
     mutationFn: createThread,
     onSuccess: (_, variables) => {
+      // console.log("onSuccess", variables);
       queryClient.invalidateQueries({
         queryKey: ["user", "timeline", "for-you"],
       });
-      // queryClient.invalidateQueries({
-      //   queryKey: ["user", "timeline", "following"],
-      // });
+      queryClient.invalidateQueries({
+        queryKey: ["user", "timeline", "following"],
+      });
       if (variables?.replyThreadQueryKeyId) {
         queryClient.invalidateQueries({
           queryKey: ["threads", variables.replyThreadQueryKeyId],
@@ -91,7 +98,8 @@ export default function useCreateThreadMutation() {
         });
       }
     },
-    onError: () => {
+    onError: (error) => {
+      // console.log(error);
       toastsStore.addToast("Something went wrong");
     },
   });

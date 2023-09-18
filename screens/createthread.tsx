@@ -34,7 +34,6 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import ThreadView from "@/components/ThreadView";
 import EmbeddedThreadView from "@/components/EmbeddedThreadView";
 import useUserStore from "@/store/userStore";
-import useThreadStore from "@/store/threadStore";
 import useCreateThreadMutation from "@/hooks/mutations/useCreateThreadMutation";
 import useToastsStore from "@/store/toastsStore";
 
@@ -64,7 +63,6 @@ export default function CreateThreadScreen(props: Props) {
   const scrollRef = React.useRef<ScrollView>(null);
   const textInputRef = React.useRef<TextInput>(null);
   const user = useUserStore((state) => state.user);
-  const thread = useThreadStore((state) => state.thread);
   const { bottom } = useSafeAreaInsets();
   const toolbarAnimation = useSharedValue(0);
   const popmenuAnimation = useSharedValue(0);
@@ -89,6 +87,12 @@ export default function CreateThreadScreen(props: Props) {
     }
   }, [createThreadMutation.isSuccess]);
 
+  const embeddedThread = React.useMemo(() => {
+    if (props.route.params.type === "new") return undefined;
+
+    return props.route.params.thread;
+  }, [props.route.params.type]);
+
   const cannotPost = React.useMemo(
     () => text.trim().length === 0 && images.length === 0,
     [text, images]
@@ -99,34 +103,34 @@ export default function CreateThreadScreen(props: Props) {
       return;
     }
 
+    if (props.route.params.type !== "new" && !embeddedThread) {
+      return;
+    }
+
     createThreadMutation.mutate({
       payload: {
-        // media: images,
-        media: [],
-        text: text,
-        // replyThreadId: props.replyThread ? String(props.replyThread.id) : null,
-        // quoteThreadId: props.quoteThread ? String(props.quoteThread?.id) : null,
-        quoteThreadId: null,
-        replyThreadId: null,
+        media: images,
+        text,
+        replyThreadId:
+          props.route.params.type === "reply"
+            ? String(embeddedThread!.id)
+            : null,
+        quoteThreadId:
+          props.route.params.type === "quote"
+            ? String(embeddedThread!.id)
+            : null,
       },
-      // quoteThreadQueryKeyId: props?.quoteThread
-      //   ? props.quoteThread.threadId
-      //   : null,
-      // replyThreadQueryKeyId: props?.replyThread
-      //   ? props.replyThread.threadId
-      //   : null,
-      quoteThreadQueryKeyId: null,
-      replyThreadQueryKeyId: null,
+      quoteThreadQueryKeyId:
+        props.route.params.type === "quote" ? embeddedThread!.threadId : null,
+      replyThreadQueryKeyId:
+        props.route.params.type === "reply" ? embeddedThread!.threadId : null,
     });
   }, [
     text,
     images,
     cannotPost,
     createThreadMutation.isLoading,
-    // props.replyThread?.id,
-    // props.replyThread?.threadId,
-    // props.quoteThread?.id,
-    // props.quoteThread?.threadId,
+    embeddedThread?.id,
   ]);
 
   const menuOptions = React.useMemo(
@@ -160,14 +164,6 @@ export default function CreateThreadScreen(props: Props) {
   React.useEffect(() => {
     scrollRef.current?.scrollToEnd({ animated: true });
   }, [text, images]);
-
-  const embeddedThread = React.useMemo(() => {
-    if (props.route.params.type === "new") return undefined;
-
-    if (props.route.params.threadId === thread?.threadId) {
-      return thread;
-    }
-  }, [props.route.params.type, thread]);
 
   React.useEffect(() => {
     popmenuAnimation.value = withSpring(showPopupMenu ? 1 : 0, {

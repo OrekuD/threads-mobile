@@ -35,7 +35,6 @@ import BottomSheet from "./BottomSheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import EmbeddedThreadView from "./EmbeddedThreadView";
 import Thread from "@/models/Thread";
-import useThreadStore from "@/store/threadStore";
 import formatDistance from "@/utils/formatDistance";
 import useLikeThreadMutation from "@/hooks/mutations/useLikeThreadMutation";
 import useRepostThreadMutation from "@/hooks/mutations/useRepostThreadMutation";
@@ -85,7 +84,6 @@ function ThreadView(props: Props) {
   ] = React.useState(false);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const threadStore = useThreadStore();
   const likeThreadMutation = useLikeThreadMutation();
   const repostThreadMutation = useRepostThreadMutation();
   const [isLikesHidden, setIsLikesHidden] = React.useState(
@@ -97,10 +95,9 @@ function ThreadView(props: Props) {
       {
         icon: MessageIcon,
         onPress: () => {
-          threadStore.setThread(props.thread);
           navigation.navigate("CreateThreadScreen", {
             type: "reply",
-            threadId: props.thread.threadId,
+            thread: props.thread,
           });
         },
       },
@@ -155,7 +152,7 @@ function ThreadView(props: Props) {
         disabled={props.variant === "thread"}
         onPress={() => {
           navigation.navigate("ThreadScreen", {
-            threadId: props.thread.threadId,
+            thread: props.thread,
           });
         }}
         style={[
@@ -515,7 +512,7 @@ function RepostBottomSheet(props: BottomSheetProps) {
           props.onClose();
           setTimeout(() => {
             navigation.navigate("CreateThreadScreen", {
-              threadId: props.thread.threadId,
+              thread: props.thread,
               type: "quote",
             });
           }, 300);
@@ -610,7 +607,7 @@ function PostOptionsBottomSheet(
           props.onClose();
           setTimeout(() => {
             navigation.navigate("CreateThreadScreen", {
-              threadId: props.thread.threadId,
+              thread: props.thread,
               type: "quote",
             });
           }, 300);
