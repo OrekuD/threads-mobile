@@ -16,6 +16,7 @@ import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import useColors from "@/hooks/useColors";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useNavigation } from "@react-navigation/native";
+import Toasts from "./Toasts";
 
 interface Props {
   tabbBarProps: BottomTabBarProps;
@@ -71,6 +72,7 @@ export default function TabBar(props: Props) {
         },
       ]}
     >
+      <Toasts />
       {tabs.map(
         ({
           activeIcon: ActiveIcon,

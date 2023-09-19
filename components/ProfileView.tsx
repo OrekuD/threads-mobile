@@ -34,7 +34,6 @@ import useScreensize from "@/hooks/useScreensize";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack/lib/typescript/src/types";
 import { RootStackParamList } from "@/types";
 import formatNumber from "@/utils/formatNumber";
-import ThreadView from "@/components/ThreadView";
 import { useNavigation } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
 import * as WebBrowser from "expo-web-browser";

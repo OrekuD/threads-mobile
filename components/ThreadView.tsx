@@ -502,6 +502,7 @@ function RepostBottomSheet(
             repostThreadMutation.mutate({
               threadId: props.thread.threadId,
             });
+            props.onClose();
           }}
           style={[
             styles.bottomSheetButton,

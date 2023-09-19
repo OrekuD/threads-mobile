@@ -28,6 +28,7 @@ import ReportAProblemScreen from "@/screens/reportaproblem";
 import useGetFollowersQuery from "@/hooks/queries/useGetFollowersQuery";
 import useGetFollowingQuery from "@/hooks/queries/useGetFollowingQuery";
 import useUserFollowsStore from "@/store/userFollowsStore";
+import Toasts from "@/components/Toasts";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -80,95 +81,101 @@ export default function RootNavigation() {
   }
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator
-        screenOptions={{
-          headerShown: false,
-        }}
-        initialRouteName={userStore.user ? "MainScreen" : "LogInScreen"}
-      >
-        <>
-          {userStore.user ? (
-            <>
-              <Stack.Screen name="MainScreen" component={BottomTabNavigation} />
-              <Stack.Screen
-                name="SetupProfileScreen"
-                component={SetupProfileScreen}
-              />
-              <Stack.Screen
-                name="ThreadScreen"
-                component={ThreadScreen}
-                getId={({ params }) => params.thread.threadId}
-                listeners={({ navigation }) => ({
-                  blur: () => navigation.setParams({ params: undefined }),
-                })}
-              />
-              <Stack.Screen
-                name="UserProfileScreen"
-                component={UserProfileScreen}
-                getId={({ params }) => params.username}
-              />
-              <Stack.Screen
-                name="ThreadImagesScreen"
-                component={ThreadImagesScreen}
-                listeners={({ navigation }) => ({
-                  blur: () => navigation.setParams({ params: undefined }),
-                })}
-              />
-              <Stack.Screen
-                name="UserProfileModalScreen"
-                component={UserProfileModalScreen}
-                options={modalNavigationOptions}
-                getId={({ params }) => params.username}
-              />
-              <Stack.Screen
-                name="EditBioScreen"
-                component={EditBioScreen}
-                options={modalNavigationOptions}
-              />
-              <Stack.Screen
-                name="WebViewScreen"
-                component={WebViewScreen}
-                options={modalNavigationOptions}
-              />
-              <Stack.Screen
-                name="EditLinkScreen"
-                component={EditLinkScreen}
-                options={modalNavigationOptions}
-              />
-              <Stack.Screen
-                name="CreateThreadScreen"
-                component={CreateThreadScreen}
-                options={modalNavigationOptions}
-                listeners={({ navigation }) => ({
-                  blur: () => navigation.setParams({ params: undefined }),
-                })}
-              />
-              <Stack.Screen
-                name="FollowsScreen"
-                component={FollowsScreen}
-                options={modalNavigationOptions}
-                getId={({ params }) => params.userId.toString()}
-              />
-              <Stack.Screen
-                name="EditProfileScreen"
-                component={EditProfileScreen}
-                options={modalNavigationOptions}
-              />
-            </>
-          ) : (
-            <>
-              <Stack.Screen name="LogInScreen" component={LogInScreen} />
-              <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
-            </>
-          )}
-          <Stack.Screen
-            name="ReportAProblemScreen"
-            component={ReportAProblemScreen}
-            options={modalNavigationOptions}
-          />
-        </>
-      </Stack.Navigator>
-    </NavigationContainer>
+    <>
+      <Toasts />
+      <NavigationContainer>
+        <Stack.Navigator
+          screenOptions={{
+            headerShown: false,
+          }}
+          initialRouteName={userStore.user ? "MainScreen" : "LogInScreen"}
+        >
+          <>
+            {userStore.user ? (
+              <>
+                <Stack.Screen
+                  name="MainScreen"
+                  component={BottomTabNavigation}
+                />
+                <Stack.Screen
+                  name="SetupProfileScreen"
+                  component={SetupProfileScreen}
+                />
+                <Stack.Screen
+                  name="ThreadScreen"
+                  component={ThreadScreen}
+                  getId={({ params }) => params.thread.threadId}
+                  listeners={({ navigation }) => ({
+                    blur: () => navigation.setParams({ params: undefined }),
+                  })}
+                />
+                <Stack.Screen
+                  name="UserProfileScreen"
+                  component={UserProfileScreen}
+                  getId={({ params }) => params.username}
+                />
+                <Stack.Screen
+                  name="ThreadImagesScreen"
+                  component={ThreadImagesScreen}
+                  listeners={({ navigation }) => ({
+                    blur: () => navigation.setParams({ params: undefined }),
+                  })}
+                />
+                <Stack.Screen
+                  name="UserProfileModalScreen"
+                  component={UserProfileModalScreen}
+                  options={modalNavigationOptions}
+                  getId={({ params }) => params.username}
+                />
+                <Stack.Screen
+                  name="EditBioScreen"
+                  component={EditBioScreen}
+                  options={modalNavigationOptions}
+                />
+                <Stack.Screen
+                  name="WebViewScreen"
+                  component={WebViewScreen}
+                  options={modalNavigationOptions}
+                />
+                <Stack.Screen
+                  name="EditLinkScreen"
+                  component={EditLinkScreen}
+                  options={modalNavigationOptions}
+                />
+                <Stack.Screen
+                  name="CreateThreadScreen"
+                  component={CreateThreadScreen}
+                  options={modalNavigationOptions}
+                  listeners={({ navigation }) => ({
+                    blur: () => navigation.setParams({ params: undefined }),
+                  })}
+                />
+                <Stack.Screen
+                  name="FollowsScreen"
+                  component={FollowsScreen}
+                  options={modalNavigationOptions}
+                  getId={({ params }) => params.userId.toString()}
+                />
+                <Stack.Screen
+                  name="EditProfileScreen"
+                  component={EditProfileScreen}
+                  options={modalNavigationOptions}
+                />
+              </>
+            ) : (
+              <>
+                <Stack.Screen name="LogInScreen" component={LogInScreen} />
+                <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
+              </>
+            )}
+            <Stack.Screen
+              name="ReportAProblemScreen"
+              component={ReportAProblemScreen}
+              options={modalNavigationOptions}
+            />
+          </>
+        </Stack.Navigator>
+      </NavigationContainer>
+    </>
   );
 }
