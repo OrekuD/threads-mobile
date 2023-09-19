@@ -380,6 +380,7 @@ export default function CreateThreadScreen(props: Props) {
                   <></>
                 ) : (
                   <TouchableOpacity
+                    disabled={createThreadMutation.isLoading}
                     onPress={() => {
                       setText("");
                       setImages([]);

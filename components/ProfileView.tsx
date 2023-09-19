@@ -1,6 +1,8 @@
 import React from "react";
 import {
+  ActivityIndicator,
   Alert,
+  FlatList,
   Image,
   Linking,
   ScrollView,
@@ -40,6 +42,14 @@ import * as WebBrowser from "expo-web-browser";
 import { isAndroid } from "@/constants/Platform";
 import User from "@/models/User";
 import useUserStore from "@/store/userStore";
+import useUserFollowsStore from "@/store/userFollowsStore";
+import useFollowUserMutation from "@/hooks/mutations/useFollowUserMutation";
+import Thread from "@/models/Thread";
+import { UseQueryResult } from "@tanstack/react-query";
+import ThreadView from "./ThreadView";
+import useGetUserThreadsQuery from "@/hooks/queries/useGetUserThreadsQuery";
+import useGetUserRepliesQuery from "@/hooks/queries/useGetUserRepliesQuery";
+import useGetUserRepostsQuery from "@/hooks/queries/useGetUserRepostsQuery";
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
@@ -56,13 +66,29 @@ export default function ProfileView(props: Props) {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [isThreadsBottomSheetOpen, setIsThreadsBottomSheetOpen] =
     React.useState(false);
-  const [isFollowing, setIsFollowing] = React.useState(false);
+  const following = useUserFollowsStore((state) => state.following);
+  const followUserMutation = useFollowUserMutation();
+  const [isFollowing, setIsFollowing] = React.useState(() => {
+    if ("isFollowedByCurrentUser" in props.user) {
+      return props.user.isFollowedByCurrentUser;
+    }
+    const index = following.findIndex(
+      (user) => Number(user.id) === Number(props.user.id)
+    );
+    return index !== -1;
+  });
+  const [followersCount, setFollowersCount] = React.useState(
+    props.user.followersCount
+  );
   const scrollY = useSharedValue(0);
   const scrollX = useSharedValue(0);
   const user = useUserStore((state) => state.user);
   const { width, height } = useScreensize();
   const scrollXRef = React.useRef<ScrollView>(null);
   const [headerHeight, setHeaderHeight] = React.useState(0);
+  const threadsTabQuery = useGetUserThreadsQuery(props.user.username);
+  const repliesTabQuery = useGetUserRepliesQuery(props.user.username);
+  const repostsTabQuery = useGetUserRepostsQuery(props.user.username);
 
   const isCurrentUser = React.useMemo(
     () => props.user.id === user?.id,
@@ -139,21 +165,6 @@ export default function ProfileView(props: Props) {
     };
   });
 
-  const openInstagram = React.useCallback(async () => {
-    try {
-      const canOpenURL = await Linking.canOpenURL(
-        "https://www.instagram.com/oreku__"
-      );
-      if (canOpenURL) {
-        Linking.openURL("https://www.instagram.com/oreku__");
-      } else {
-        Alert.alert("Error", "Could not open Instagram");
-      }
-    } catch (error) {
-      Alert.alert("Error", "Could not open Instagram");
-    }
-  }, []);
-
   return (
     <>
       <BottomSheet
@@ -193,7 +204,6 @@ export default function ProfileView(props: Props) {
           </Typography>
         </View>
       </BottomSheet>
-
       {isCurrentUser ? (
         <Animated.View
           style={[
@@ -231,435 +241,452 @@ export default function ProfileView(props: Props) {
               </>
             )}
           </TouchableOpacity>
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={{
-              marginLeft: "auto",
-            }}
-            onPress={openInstagram}
-          >
-            <InstagramIcon size={24} color={colors.text} />
-          </TouchableOpacity>
           <TouchableOpacity activeOpacity={0.8} onPress={() => {}}>
             <MoreIcon size={24} color={colors.text} />
           </TouchableOpacity>
         </View>
       )}
-      <AnimatedScrollView
+      <View
         style={{
+          flex: 1,
           backgroundColor: colors.background,
         }}
-        scrollEventThrottle={16}
-        onScroll={onScrollY}
-        showsVerticalScrollIndicator={false}
       >
-        <View
-          style={{
-            paddingHorizontal: 16,
-          }}
-          onLayout={(e) => {
-            setHeaderHeight(
-              isCurrentUser
-                ? e.nativeEvent.layout.height
-                : e.nativeEvent.layout.height + top - (isAndroid ? 0 : 6)
-            );
-          }}
-        >
-          {isCurrentUser ? (
-            <View
-              style={[
-                styles.header,
-                {
-                  paddingTop: top + 12,
-                },
-              ]}
-            >
-              <TouchableOpacity activeOpacity={0.8}>
-                <GlobeIcon size={24} color={colors.text} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                style={{
-                  marginLeft: "auto",
-                }}
-                onPress={openInstagram}
-              >
-                <InstagramIcon size={24} color={colors.text} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                // onPress={() => userContext.dispatch({ type: "SIGN_OUT" })}
-              >
-                <HamburgerIcon size={24} color={colors.text} />
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <></>
-          )}
-          <View style={styles.details}>
-            <View
-              style={{
-                flex: 1,
-                paddingRight: 24,
-              }}
-            >
-              <Typography variant="title" fontWeight={700} lineLimit={2}>
-                {props.user.name}
-              </Typography>
-              <View
-                style={[
-                  styles.row,
-                  {
-                    marginTop: 2,
-                  },
-                ]}
-              >
-                <Typography variant="body" lineLimit={1}>
-                  {props.user.username}
-                </Typography>
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  style={[
-                    styles.pill,
-                    {
-                      backgroundColor: isDarkMode ? "#1E1E1E" : "#F5F5F5",
-                    },
-                  ]}
-                  onPress={() => setIsThreadsBottomSheetOpen(true)}
-                >
-                  <Typography
-                    variant="tiny"
-                    color={isDarkMode ? "#7A7A7A" : "#959595"}
-                    style={{
-                      lineHeight: undefined,
-                    }}
-                  >
-                    threads.net
-                  </Typography>
-                </TouchableOpacity>
-              </View>
-            </View>
-            <Image
-              source={
-                props.user.profile?.profilePicture
-                  ? { uri: props.user.profile.profilePicture }
-                  : require("../assets/images/no-avatar.jpeg")
-              }
-              style={styles.avatar}
-            />
-          </View>
-          {Boolean(props.user.profile?.bio) ? (
-            <Typography
-              variant="sm"
-              style={{
-                marginTop: 8,
-              }}
-            >
-              {props.user.profile!.bio}
-            </Typography>
-          ) : (
-            <></>
-          )}
-          <View
-            style={[
-              styles.row,
-              {
-                gap: 6,
-              },
-            ]}
-          >
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() =>
-                navigation.navigate("FollowsScreen", {
-                  userId: props.user.id,
-                  isModal: props.isModal || false,
-                })
-              }
-              style={[
-                styles.row,
-                {
-                  marginVertical: 12,
-                  // gap: 12,
-                  alignSelf: "flex-start",
-                },
-              ]}
-            >
-              <View
-                style={[
-                  styles.row,
-                  {
-                    gap: -8,
-                  },
-                ]}
-              >
-                {/* {[].map((avatar, index) => {
-                  return (
-                    <Image
-                      source={{
-                        uri: avatar,
-                      }}
-                      style={[
-                        styles.smallAvatar,
-                        {
-                          borderColor: colors.background,
-                        },
-                      ]}
-                      key={index}
-                    />
-                  );
-                })} */}
-              </View>
-              <Typography variant="sm" color="secondary">
-                {props.user.followersCount === 1
-                  ? "1 follower"
-                  : `${formatNumber(props.user.followersCount)} followers`}
-              </Typography>
-            </TouchableOpacity>
-            {false ? (
+        <Animated.FlatList
+          data={[null]}
+          scrollEventThrottle={16}
+          onScroll={onScrollY}
+          showsVerticalScrollIndicator={false}
+          keyExtractor={() => "1"}
+          nestedScrollEnabled
+          ListHeaderComponent={() => {
+            return (
               <>
                 <View
-                  style={[
-                    styles.dot,
-                    {
-                      backgroundColor: colors.textSecondary,
-                    },
-                  ]}
-                />
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onPress={() => {
-                    // navigation.navigate("WebViewScreen", {
-                    //   url: "https://expo.dev",
-                    // });
-                    async function openBrowser() {
-                      await WebBrowser.openBrowserAsync("https://expo.dev");
-                    }
-                    openBrowser();
+                  style={{
+                    paddingHorizontal: 16,
+                  }}
+                  onLayout={(e) => {
+                    setHeaderHeight(
+                      isCurrentUser
+                        ? e.nativeEvent.layout.height
+                        : e.nativeEvent.layout.height +
+                            top -
+                            (isAndroid ? 0 : 6)
+                    );
                   }}
                 >
-                  <Typography variant="sm" color="secondary">
-                    {formatNumber(props.user.followersCount || 0)} followers
-                  </Typography>
-                </TouchableOpacity>
-              </>
-            ) : (
-              <></>
-            )}
-          </View>
-          <View
-            style={[
-              styles.row,
-              {
-                gap: 8,
-                height: 36,
-                marginTop: 8,
-              },
-            ]}
-          >
-            {isCurrentUser ? (
-              <>
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  style={[
-                    styles.button,
-                    {
-                      borderColor: colors.border,
-                    },
-                  ]}
-                  onPress={() => navigation.navigate("EditProfileScreen")}
-                >
-                  <Typography variant="sm" fontWeight={600}>
-                    Edit profile
-                  </Typography>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  style={[
-                    styles.button,
-                    {
-                      borderColor: colors.border,
-                    },
-                  ]}
-                  onPress={() => {
-                    const url = `${process.env.EXPO_PUBLIC_CLIENT_URL}/@${props.user.username}`;
-                    Share.share({
-                      url,
-                    });
-                  }}
-                >
-                  <Typography variant="sm" fontWeight={600}>
-                    Share profile
-                  </Typography>
-                </TouchableOpacity>
-              </>
-            ) : (
-              <>
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  style={[
-                    styles.button,
-                    {
-                      borderColor: isFollowing ? colors.border : colors.text,
-                      backgroundColor: isFollowing
-                        ? "transparent"
-                        : colors.text,
-                    },
-                  ]}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    setIsFollowing((prevValue) => !prevValue);
-                  }}
-                >
-                  <Typography
-                    variant="sm"
-                    fontWeight={600}
-                    color={isFollowing ? colors.text : colors.background}
+                  {isCurrentUser ? (
+                    <View
+                      style={[
+                        styles.header,
+                        {
+                          paddingTop: top + 12,
+                        },
+                      ]}
+                    >
+                      <TouchableOpacity activeOpacity={0.8}>
+                        <GlobeIcon size={24} color={colors.text} />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        activeOpacity={0.8}
+                        // onPress={() => userContext.dispatch({ type: "SIGN_OUT" })}
+                      >
+                        <HamburgerIcon size={24} color={colors.text} />
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <></>
+                  )}
+                  <View style={styles.details}>
+                    <View
+                      style={{
+                        flex: 1,
+                        paddingRight: 24,
+                      }}
+                    >
+                      <Typography
+                        variant="title"
+                        fontWeight={700}
+                        lineLimit={2}
+                      >
+                        {props.user.name}
+                      </Typography>
+                      <View
+                        style={[
+                          styles.row,
+                          {
+                            marginTop: 2,
+                          },
+                        ]}
+                      >
+                        <Typography variant="body" lineLimit={1}>
+                          {props.user.username}
+                        </Typography>
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          style={[
+                            styles.pill,
+                            {
+                              backgroundColor: isDarkMode
+                                ? "#1E1E1E"
+                                : "#F5F5F5",
+                            },
+                          ]}
+                          onPress={() => setIsThreadsBottomSheetOpen(true)}
+                        >
+                          <Typography
+                            variant="tiny"
+                            color={isDarkMode ? "#7A7A7A" : "#959595"}
+                            style={{
+                              lineHeight: undefined,
+                            }}
+                          >
+                            threads.net
+                          </Typography>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                    <Image
+                      source={
+                        props.user.profile?.profilePicture
+                          ? { uri: props.user.profile.profilePicture }
+                          : require("../assets/images/no-avatar.jpeg")
+                      }
+                      style={styles.avatar}
+                    />
+                  </View>
+                  {Boolean(props.user.profile?.bio) ? (
+                    <Typography
+                      variant="sm"
+                      style={{
+                        marginTop: 8,
+                      }}
+                    >
+                      {props.user.profile!.bio}
+                    </Typography>
+                  ) : (
+                    <></>
+                  )}
+                  <View
+                    style={[
+                      styles.row,
+                      {
+                        gap: 6,
+                      },
+                    ]}
                   >
-                    {isFollowing ? "Following" : "Follow"}
-                  </Typography>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  activeOpacity={0.8}
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onPress={() =>
+                        navigation.navigate("FollowsScreen", {
+                          userId: props.user.id,
+                          isModal: props.isModal || false,
+                        })
+                      }
+                      style={[
+                        styles.row,
+                        {
+                          marginVertical: 12,
+                          // gap: 12,
+                          alignSelf: "flex-start",
+                        },
+                      ]}
+                    >
+                      <Typography variant="sm" color="secondary">
+                        {followersCount === 1
+                          ? "1 follower"
+                          : `${formatNumber(followersCount)} followers`}
+                      </Typography>
+                    </TouchableOpacity>
+                  </View>
+                  <View
+                    style={[
+                      styles.row,
+                      {
+                        gap: 8,
+                        height: 36,
+                        marginTop: 8,
+                      },
+                    ]}
+                  >
+                    {isCurrentUser ? (
+                      <>
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          style={[
+                            styles.button,
+                            {
+                              borderColor: colors.border,
+                            },
+                          ]}
+                          onPress={() =>
+                            navigation.navigate("EditProfileScreen")
+                          }
+                        >
+                          <Typography variant="sm" fontWeight={600}>
+                            Edit profile
+                          </Typography>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          style={[
+                            styles.button,
+                            {
+                              borderColor: colors.border,
+                            },
+                          ]}
+                          onPress={() => {
+                            const url = `${process.env.EXPO_PUBLIC_CLIENT_URL}/@${props.user.username}`;
+                            Share.share({
+                              url,
+                            });
+                          }}
+                        >
+                          <Typography variant="sm" fontWeight={600}>
+                            Share profile
+                          </Typography>
+                        </TouchableOpacity>
+                      </>
+                    ) : (
+                      <>
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          style={[
+                            styles.button,
+                            {
+                              borderColor: isFollowing
+                                ? colors.border
+                                : colors.text,
+                              backgroundColor: isFollowing
+                                ? "transparent"
+                                : colors.text,
+                            },
+                          ]}
+                          onPress={() => {
+                            Haptics.impactAsync(
+                              Haptics.ImpactFeedbackStyle.Light
+                            );
+                            if (!props.user?.id) return;
+
+                            setIsFollowing((prevValue) => !prevValue);
+                            if (isFollowing) {
+                              setFollowersCount((prevValue) =>
+                                prevValue === 0 ? 0 : prevValue - 1
+                              );
+                            } else {
+                              setFollowersCount((prevValue) => prevValue + 1);
+                            }
+
+                            followUserMutation.mutate({
+                              userId: String(props.user.id),
+                            });
+                          }}
+                        >
+                          <Typography
+                            variant="sm"
+                            fontWeight={600}
+                            color={
+                              isFollowing ? colors.text : colors.background
+                            }
+                          >
+                            {isFollowing ? "Following" : "Follow"}
+                          </Typography>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          style={[
+                            styles.button,
+                            {
+                              borderColor: colors.border,
+                            },
+                          ]}
+                          onPress={() => {}}
+                        >
+                          <Typography variant="sm" fontWeight={600}>
+                            Mention
+                          </Typography>
+                        </TouchableOpacity>
+                      </>
+                    )}
+                  </View>
+                </View>
+                <Animated.View
                   style={[
-                    styles.button,
+                    styles.tabs,
                     {
-                      borderColor: colors.border,
+                      borderBottomColor: colors.border,
+                      backgroundColor: colors.background,
                     },
+                    tabsAnimatedStyle,
                   ]}
-                  onPress={() => {}}
                 >
-                  <Typography variant="sm" fontWeight={600}>
-                    Mention
-                  </Typography>
-                </TouchableOpacity>
+                  <Animated.View
+                    style={[
+                      styles.activeIndicator,
+                      {
+                        backgroundColor: colors.text,
+                      },
+                      activeTabIndicatorAnimatedStyle,
+                    ]}
+                  />
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    style={styles.tab}
+                    onPress={() => {
+                      scrollXRef.current?.scrollTo({ animated: true, x: 0 });
+                    }}
+                  >
+                    <Animated.Text
+                      style={[
+                        styles.text,
+                        {
+                          color: colors.text,
+                        },
+                        threadsTabTextnimatedStyle,
+                      ]}
+                    >
+                      Threads
+                    </Animated.Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    style={styles.tab}
+                    onPress={() => {
+                      scrollXRef.current?.scrollTo({
+                        animated: true,
+                        x: width,
+                      });
+                    }}
+                  >
+                    <Animated.Text
+                      style={[
+                        styles.text,
+                        {
+                          color: colors.text,
+                        },
+                        repliesTabTextAnimatedStyle,
+                      ]}
+                    >
+                      Replies
+                    </Animated.Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    style={styles.tab}
+                    onPress={() => {
+                      scrollXRef.current?.scrollToEnd({ animated: true });
+                    }}
+                  >
+                    <Animated.Text
+                      style={[
+                        styles.text,
+                        {
+                          color: colors.text,
+                        },
+                        repostsTabTextAnimatedStyle,
+                      ]}
+                    >
+                      Reposts
+                    </Animated.Text>
+                  </TouchableOpacity>
+                </Animated.View>
               </>
-            )}
-          </View>
-        </View>
-        <Animated.View
-          style={[
-            styles.tabs,
-            {
-              borderBottomColor: colors.border,
-              zIndex: 11,
-              backgroundColor: colors.background,
-            },
-            tabsAnimatedStyle,
-          ]}
-        >
-          <Animated.View
-            style={[
-              styles.activeIndicator,
-              {
-                backgroundColor: colors.text,
-              },
-              activeTabIndicatorAnimatedStyle,
-            ]}
-          />
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={styles.tab}
-            onPress={() => {
-              scrollXRef.current?.scrollTo({ animated: true, x: 0 });
-            }}
-          >
-            <Animated.Text
-              style={[
-                styles.text,
-                {
-                  color: colors.text,
-                },
-                threadsTabTextnimatedStyle,
-              ]}
-            >
-              Threads
-            </Animated.Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={styles.tab}
-            onPress={() => {
-              scrollXRef.current?.scrollTo({ animated: true, x: width });
-            }}
-          >
-            <Animated.Text
-              style={[
-                styles.text,
-                {
-                  color: colors.text,
-                },
-                repliesTabTextAnimatedStyle,
-              ]}
-            >
-              Replies
-            </Animated.Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={styles.tab}
-            onPress={() => {
-              scrollXRef.current?.scrollToEnd({ animated: true });
-            }}
-          >
-            <Animated.Text
-              style={[
-                styles.text,
-                {
-                  color: colors.text,
-                },
-                repostsTabTextAnimatedStyle,
-              ]}
-            >
-              Reposts
-            </Animated.Text>
-          </TouchableOpacity>
-        </Animated.View>
-        <AnimatedScrollView
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onScroll={onScrollX}
-          scrollEventThrottle={16}
-          ref={scrollXRef as any}
-          nestedScrollEnabled
-        >
-          <View style={{ width }}>
-            {true ? (
+            );
+          }}
+          ListHeaderComponentStyle={{
+            zIndex: 20,
+          }}
+          contentContainerStyle={{
+            zIndex: 12,
+          }}
+          renderItem={() => {
+            return (
               <View
                 style={{
-                  paddingTop: height * 0.2,
-                  alignItems: "center",
-                  paddingHorizontal: 16,
+                  height: height - top - 42,
                 }}
               >
-                <Typography
-                  variant="body"
-                  color={colors.textSecondary}
-                  textAlign="center"
-                >
-                  {isCurrentUser
-                    ? "You haven't posted any threads yet."
-                    : "No threads yet"}
-                </Typography>
+                <Animated.FlatList
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  pagingEnabled
+                  onScroll={onScrollX}
+                  scrollEventThrottle={16}
+                  ref={scrollXRef as any}
+                  nestedScrollEnabled
+                  data={[threadsTabQuery, repliesTabQuery, repostsTabQuery]}
+                  renderItem={({ item, index }) => {
+                    return (
+                      <View style={{ width, height: "100%" }}>
+                        <Tab
+                          emptyLabel={
+                            index === 0
+                              ? "No threads yet."
+                              : index === 1
+                              ? "No replies yet."
+                              : "No reposts yet"
+                          }
+                          query={item}
+                        />
+                      </View>
+                    );
+                  }}
+                />
               </View>
-            ) : (
-              <>
-                {/* {threads.map((thread) => (
-                  <ThreadView
-                    variant="list-thread"
-                    thread={thread}
-                    key={thread.id}
-                  />
-                ))} */}
-              </>
-            )}
-          </View>
-          <View style={{ width }}></View>
-          <View style={{ width }}></View>
-        </AnimatedScrollView>
-      </AnimatedScrollView>
+            );
+          }}
+        />
+      </View>
     </>
+  );
+}
+
+function Tab({
+  query,
+  emptyLabel,
+}: {
+  query: UseQueryResult<Array<Thread>>;
+  emptyLabel: string;
+}) {
+  const colors = useColors();
+  const { height } = useScreensize();
+
+  if (query.isLoading)
+    return (
+      <View
+        style={{
+          paddingTop: height * 0.2,
+          alignItems: "center",
+        }}
+      >
+        <ActivityIndicator size="small" color={colors.text} />
+      </View>
+    );
+
+  if (!query.data || query.data.length === 0) {
+    return (
+      <View
+        style={{
+          paddingTop: height * 0.2,
+          alignItems: "center",
+        }}
+      >
+        <Typography variant="body" color={colors.textSecondary}>
+          {emptyLabel}
+        </Typography>
+      </View>
+    );
+  }
+
+  return (
+    <FlatList
+      data={query.data}
+      keyExtractor={({ threadId }) => threadId}
+      renderItem={({ item }) => {
+        return <ThreadView thread={item} variant="list-thread" />;
+      }}
+    />
   );
 }
 
@@ -670,13 +697,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     gap: 16,
+    paddingBottom: 14,
   },
   details: {
     width: "100%",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingTop: 26,
+    paddingTop: 6,
   },
   row: {
     flexDirection: "row",

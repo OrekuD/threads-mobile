@@ -653,9 +653,8 @@ function PostOptionsBottomSheet(
                   {
                     borderRadius: 0,
                     backgroundColor: colors.bottomSheetButtonColor,
-                    borderBottomWidth:
-                      index === 0 ? StyleSheet.hairlineWidth : 0,
-                    borderBottomColor: colors.bottomSheetButtonBorderColor,
+                    borderTopWidth: index === 0 ? 0 : StyleSheet.hairlineWidth,
+                    borderColor: colors.bottomSheetButtonBorderColor,
                   },
                 ]}
               >
