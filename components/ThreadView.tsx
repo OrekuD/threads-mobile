@@ -20,6 +20,7 @@ import {
   MessageIcon,
   QuoteIcon,
   RepostIcon,
+  RepostedIcon,
   SendIcon,
   ShareIcon,
   ThreadLineIcon,
@@ -91,35 +92,11 @@ function ThreadViewComponent(props: Props) {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const containerRef = React.useRef<TouchableOpacity>(null);
   const likeThreadMutation = useLikeThreadMutation();
-  const repostThreadMutation = useRepostThreadMutation();
   const [isLikesHidden, setIsLikesHidden] = React.useState(
     props.thread.isLikesHidden
   );
   const [svgHeight, setSvgHeight] = React.useState(0);
   const [mount, setMount] = React.useState(false);
-
-  const buttons = React.useMemo(
-    () => [
-      {
-        icon: MessageIcon,
-        onPress: () => {
-          navigation.navigate("CreateThreadScreen", {
-            type: "reply",
-            thread: props.thread,
-          });
-        },
-      },
-      {
-        icon: RepostIcon,
-        onPress: () => setIsRepostBottomSheetVisible(true),
-      },
-      {
-        icon: SendIcon,
-        onPress: () => setIsSendPostBottomSheetVisible(true),
-      },
-    ],
-    [props.thread.id]
-  );
 
   React.useEffect(() => {
     if (!mount) return;
@@ -136,6 +113,8 @@ function ThreadViewComponent(props: Props) {
         isOpen={isRepostBottomSheetVisible}
         onClose={() => setIsRepostBottomSheetVisible(false)}
         thread={props.thread}
+        hasReposted={hasReposted}
+        setHasReposted={setHasReposted}
       />
       <ReportThreadBottomSheet
         isOpen={isReportThreadBottomSheetVisible}
@@ -388,6 +367,7 @@ function ThreadViewComponent(props: Props) {
                   threadId: props.thread.threadId,
                 });
               }}
+              // disabled={likeThreadMutation.isLoading}
             >
               {hasLiked ? (
                 <HeartFilledIcon size={24} color="#FF2735" />
@@ -395,18 +375,36 @@ function ThreadViewComponent(props: Props) {
                 <HeartIcon size={24} color={colors.text} />
               )}
             </TouchableOpacity>
-            {buttons.map(({ icon: Icon, onPress }, index) => {
-              return (
-                <TouchableOpacity
-                  style={styles.button}
-                  onPress={onPress}
-                  key={index}
-                  activeOpacity={0.5}
-                >
-                  <Icon size={24} color={colors.text} />
-                </TouchableOpacity>
-              );
-            })}
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => {
+                navigation.navigate("CreateThreadScreen", {
+                  type: "reply",
+                  thread: props.thread,
+                });
+              }}
+              activeOpacity={0.5}
+            >
+              <MessageIcon size={24} color={colors.text} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => setIsRepostBottomSheetVisible(true)}
+              activeOpacity={0.5}
+            >
+              {hasReposted ? (
+                <RepostedIcon size={22} color={colors.text} />
+              ) : (
+                <RepostIcon size={24} color={colors.text} />
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => setIsSendPostBottomSheetVisible(true)}
+              activeOpacity={0.5}
+            >
+              <SendIcon size={24} color={colors.text} />
+            </TouchableOpacity>
           </View>
           {(props.thread.replies.length === 0 && likesCount === 0) ||
           props.thread.isLikesHidden ? null : (
@@ -466,30 +464,19 @@ interface BottomSheetProps {
   thread: Thread;
 }
 
-function RepostBottomSheet(props: BottomSheetProps) {
+function RepostBottomSheet(
+  props: BottomSheetProps & {
+    hasReposted: boolean;
+    setHasReposted: React.Dispatch<React.SetStateAction<boolean>>;
+  }
+) {
   const colors = useColors();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { bottom } = useSafeAreaInsets();
-  const buttons = React.useMemo(
-    () => [
-      { label: "Repost", icon: RepostIcon, onPress: () => {} },
-      {
-        label: "Quote",
-        icon: QuoteIcon,
-        onPress: () => {
-          props.onClose();
-          setTimeout(() => {
-            navigation.navigate("CreateThreadScreen", {
-              thread: props.thread,
-              type: "quote",
-            });
-          }, 300);
-        },
-      },
-    ],
-    []
-  );
+  const repostThreadMutation = useRepostThreadMutation();
+  const toastsStore = useToastsStore();
+
   return (
     <BottomSheet
       isOpen={props.isOpen}
@@ -503,26 +490,62 @@ function RepostBottomSheet(props: BottomSheetProps) {
           paddingTop: 6,
         }}
       >
-        {buttons.map(({ label, icon: Icon, onPress }) => {
-          return (
-            <TouchableOpacity
-              activeOpacity={0.8}
-              key={label}
-              onPress={onPress}
-              style={[
-                styles.bottomSheetButton,
-                {
-                  backgroundColor: colors.bottomSheetButtonColor,
-                },
-              ]}
-            >
-              <Typography variant="sm" fontWeight={600} color={colors.text}>
-                {label}
-              </Typography>
-              <Icon size={24} color={colors.text} />
-            </TouchableOpacity>
-          );
-        })}
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => {
+            if (props.hasReposted) {
+              toastsStore.addToast("Removed");
+            } else {
+              toastsStore.addToast("Reposted");
+            }
+            props.setHasReposted((value) => !value);
+            repostThreadMutation.mutate({
+              threadId: props.thread.threadId,
+            });
+          }}
+          style={[
+            styles.bottomSheetButton,
+            {
+              backgroundColor: colors.bottomSheetButtonColor,
+            },
+          ]}
+          // disabled={repostThreadMutation.isLoading}
+        >
+          <Typography
+            variant="sm"
+            fontWeight={600}
+            color={props.hasReposted ? colors.destructive : colors.text}
+          >
+            {props.hasReposted ? "Remove" : "Repost"}
+          </Typography>
+          <RepostIcon
+            size={24}
+            color={props.hasReposted ? colors.destructive : colors.text}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => {
+            props.onClose();
+            setTimeout(() => {
+              navigation.navigate("CreateThreadScreen", {
+                thread: props.thread,
+                type: "quote",
+              });
+            }, 300);
+          }}
+          style={[
+            styles.bottomSheetButton,
+            {
+              backgroundColor: colors.bottomSheetButtonColor,
+            },
+          ]}
+        >
+          <Typography variant="sm" fontWeight={600} color={colors.text}>
+            Quote
+          </Typography>
+          <QuoteIcon size={24} color={colors.text} />
+        </TouchableOpacity>
       </View>
     </BottomSheet>
   );
