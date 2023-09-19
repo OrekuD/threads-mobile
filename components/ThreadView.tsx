@@ -7,6 +7,7 @@ import {
   ScrollView,
   Share,
   ActivityIndicator,
+  ViewStyle,
 } from "react-native";
 import {
   AddToStoryIcon,
@@ -21,6 +22,7 @@ import {
   RepostIcon,
   SendIcon,
   ShareIcon,
+  ThreadLineIcon,
   TwitterIcon,
   VerifiedIcon,
 } from "./Icons";
@@ -60,9 +62,12 @@ interface Props {
   variant: ThreadViewVariant;
   thread: Thread;
   pointerEvents?: "none" | "auto";
+  hideBorder?: boolean;
+  hideLoop?: boolean;
+  style?: ViewStyle;
 }
 
-function ThreadView(props: Props) {
+function ThreadViewComponent(props: Props) {
   const colors = useColors();
   const { width } = useScreensize();
   const [hasLiked, setHasLiked] = React.useState(
@@ -84,11 +89,14 @@ function ThreadView(props: Props) {
   ] = React.useState(false);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const containerRef = React.useRef<TouchableOpacity>(null);
   const likeThreadMutation = useLikeThreadMutation();
   const repostThreadMutation = useRepostThreadMutation();
   const [isLikesHidden, setIsLikesHidden] = React.useState(
     props.thread.isLikesHidden
   );
+  const [svgHeight, setSvgHeight] = React.useState(0);
+  const [mount, setMount] = React.useState(false);
 
   const buttons = React.useMemo(
     () => [
@@ -103,19 +111,24 @@ function ThreadView(props: Props) {
       },
       {
         icon: RepostIcon,
-        onPress: () => {
-          setIsRepostBottomSheetVisible(true);
-        },
+        onPress: () => setIsRepostBottomSheetVisible(true),
       },
       {
         icon: SendIcon,
-        onPress: () => {
-          setIsSendPostBottomSheetVisible(true);
-        },
+        onPress: () => setIsSendPostBottomSheetVisible(true),
       },
     ],
     [props.thread.id]
   );
+
+  React.useEffect(() => {
+    if (!mount) return;
+    if (containerRef?.current) {
+      containerRef.current.measure((_, __, ___, height) => {
+        setSvgHeight(Math.floor(height) - 36 - 16);
+      });
+    }
+  }, [containerRef?.current, mount]);
 
   return (
     <>
@@ -155,6 +168,7 @@ function ThreadView(props: Props) {
             thread: props.thread,
           });
         }}
+        ref={containerRef}
         style={[
           styles.container,
           {
@@ -163,8 +177,13 @@ function ThreadView(props: Props) {
             borderBottomWidth: props.variant === "reply-thread" ? 0 : 1,
             paddingLeft: props.variant === "thread" ? 16 : 0,
             pointerEvents: props.pointerEvents,
+            paddingBottom: props.variant === "reply-thread" ? 0 : 12,
           },
+          props.style,
         ]}
+        onLayout={() => {
+          setMount(true);
+        }}
       >
         {props.variant === "thread" ? (
           <></>
@@ -188,89 +207,27 @@ function ThreadView(props: Props) {
                 }
               />
             </TouchableOpacity>
-            <View
-              style={[
-                styles.line,
-                {
-                  backgroundColor: colors.border,
-                  marginBottom: props.variant === "reply-thread" ? 0 : 5,
-                  height: "100%",
-                },
-              ]}
-            />
-            {props.variant === "reply-thread" ? (
-              <></>
-            ) : (
-              <>
-                {[].length === 3 ? (
-                  <View style={styles.threeImages}>
-                    {[].map((image, index) => {
-                      return (
-                        <Image
-                          key={index}
-                          style={[
-                            styles.smallAvatar,
-                            {
-                              borderColor: colors.border,
-                              transform: [
-                                { scale: 1 - index * 0.15 },
-                                {
-                                  translateX:
-                                    index === 2 ? 0 : index === 0 ? 10 : -10,
-                                },
-                                {
-                                  translateY:
-                                    index === 2 ? -20 : index === 0 ? 3 : -10,
-                                },
-                              ],
-                            },
-                          ]}
-                          source={
-                            props.thread.user?.profile?.profilePicture
-                              ? {
-                                  uri: props.thread.user.profile.profilePicture,
-                                }
-                              : require("../assets/images/no-avatar.jpeg")
-                          }
-                        />
-                      );
-                    })}
-                  </View>
+            {props.hideLoop ? null : (
+              <View style={styles.lineContainer}>
+                {props.variant === "reply-thread" ? (
+                  <ThreadLineIcon
+                    height={svgHeight}
+                    color={colors.border}
+                    style={{
+                      marginRight: 12,
+                    }}
+                  />
                 ) : (
-                  <View style={styles.twoImages}>
-                    {[].map((_, index) => {
-                      return (
-                        <View
-                          key={index}
-                          style={[
-                            styles.smallAvatarContainer,
-                            {
-                              backgroundColor: colors.background,
-                            },
-                          ]}
-                        >
-                          <Image
-                            style={[
-                              styles.smallAvatar,
-                              {
-                                borderColor: colors.border,
-                              },
-                            ]}
-                            source={
-                              props.thread.user?.profile?.profilePicture
-                                ? {
-                                    uri: props.thread.user.profile
-                                      .profilePicture,
-                                  }
-                                : require("../assets/images/no-avatar.jpeg")
-                            }
-                          />
-                        </View>
-                      );
-                    })}
-                  </View>
+                  <View
+                    style={[
+                      styles.line,
+                      {
+                        backgroundColor: colors.border,
+                      },
+                    ]}
+                  />
                 )}
-              </>
+              </View>
             )}
           </View>
         )}
@@ -318,25 +275,21 @@ function ThreadView(props: Props) {
                 <VerifiedIcon size={12} />
               ) : null}
             </TouchableOpacity>
-            {props.variant === "reply-thread" ? null : (
-              <>
-                <Typography
-                  variant="sm"
-                  color="secondary"
-                  style={{
-                    marginLeft: "auto",
-                  }}
-                >
-                  {formatDistance(props.thread.createdAt)}
-                </Typography>
-                <TouchableOpacity
-                  activeOpacity={0.5}
-                  onPress={() => setIsPostOptionsBottomSheetVisible(true)}
-                >
-                  <MenuIcon size={24} color={colors.text} />
-                </TouchableOpacity>
-              </>
-            )}
+            <Typography
+              variant="sm"
+              color="secondary"
+              style={{
+                marginLeft: "auto",
+              }}
+            >
+              {formatDistance(props.thread.createdAt)}
+            </Typography>
+            <TouchableOpacity
+              activeOpacity={0.5}
+              onPress={() => setIsPostOptionsBottomSheetVisible(true)}
+            >
+              <MenuIcon size={24} color={colors.text} />
+            </TouchableOpacity>
           </View>
           <View style={styles.content}>
             <Typography variant="sm">{props.thread.text}</Typography>
@@ -413,75 +366,91 @@ function ThreadView(props: Props) {
           ) : (
             <></>
           )}
-          {
-            // TODO: check if this should be quote / reply
-          }
           {props.thread.quoteThead ? (
             <EmbeddedThreadView thread={props.thread.quoteThead} />
           ) : (
             <></>
           )}
-          {props.variant === "reply-thread" ? (
-            <></>
-          ) : (
-            <>
-              <View style={styles.buttons}>
+          <View style={styles.buttons}>
+            <TouchableOpacity
+              style={styles.button}
+              activeOpacity={0.5}
+              onPress={() => {
+                if (hasLiked) {
+                  setLikesCount((prevValue) =>
+                    prevValue === 0 ? 0 : prevValue - 1
+                  );
+                } else {
+                  setLikesCount((prevValue) => prevValue + 1);
+                }
+                setHasLiked((value) => !value);
+                likeThreadMutation.mutate({
+                  threadId: props.thread.threadId,
+                });
+              }}
+            >
+              {hasLiked ? (
+                <HeartFilledIcon size={24} color="#FF2735" />
+              ) : (
+                <HeartIcon size={24} color={colors.text} />
+              )}
+            </TouchableOpacity>
+            {buttons.map(({ icon: Icon, onPress }, index) => {
+              return (
                 <TouchableOpacity
                   style={styles.button}
+                  onPress={onPress}
+                  key={index}
                   activeOpacity={0.5}
-                  onPress={() => {
-                    if (hasLiked) {
-                      setLikesCount((prevValue) =>
-                        prevValue === 0 ? 0 : prevValue - 1
-                      );
-                    } else {
-                      setLikesCount((prevValue) => prevValue + 1);
-                    }
-                    setHasLiked((value) => !value);
-                    likeThreadMutation.mutate({
-                      threadId: props.thread.threadId,
-                    });
-                  }}
                 >
-                  {hasLiked ? (
-                    <HeartFilledIcon size={24} color="#FF2735" />
-                  ) : (
-                    <HeartIcon size={24} color={colors.text} />
-                  )}
+                  <Icon size={24} color={colors.text} />
                 </TouchableOpacity>
-                {buttons.map(({ icon: Icon, onPress }, index) => {
-                  return (
-                    <TouchableOpacity
-                      style={styles.button}
-                      onPress={onPress}
-                      key={index}
-                      activeOpacity={0.5}
-                    >
-                      <Icon size={24} color={colors.text} />
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-              {(props.thread.replies.length === 0 && likesCount === 0) ||
-              props.thread.isLikesHidden ? null : (
-                <Typography
-                  variant="sm"
-                  color="secondary"
-                  style={{
-                    marginTop: 5,
-                  }}
-                >
-                  {`${
-                    props.thread.replies.length === 1
-                      ? "1 reply"
-                      : `${props.thread.replies.length} replies`
-                  } • ${likesCount === 1 ? "1 like" : `${likesCount} likes`}`}
-                </Typography>
-              )}
-            </>
+              );
+            })}
+          </View>
+          {(props.thread.replies.length === 0 && likesCount === 0) ||
+          props.thread.isLikesHidden ? null : (
+            <Typography
+              variant="sm"
+              color="secondary"
+              style={{
+                marginTop: 5,
+              }}
+            >
+              {`${
+                props.thread.replies.length === 1
+                  ? "1 reply"
+                  : `${props.thread.replies.length} replies`
+              } • ${likesCount === 1 ? "1 like" : `${likesCount} likes`}`}
+            </Typography>
           )}
         </View>
       </TouchableOpacity>
+    </>
+  );
+}
+
+function ThreadView(props: Props) {
+  return (
+    <>
+      {props.thread.replyThead ? (
+        <ThreadViewComponent
+          thread={props.thread.replyThead}
+          variant="reply-thread"
+          hideBorder
+        />
+      ) : null}
+      <ThreadViewComponent
+        {...props}
+        hideLoop={Boolean(props.thread.replyThead)}
+        style={{
+          marginTop: props.thread.replyThead
+            ? props.variant === "thread"
+              ? -4
+              : -10
+            : undefined,
+        }}
+      />
     </>
   );
 }
@@ -770,7 +739,7 @@ function SendPostOptionsBottomSheet(props: BottomSheetProps) {
     <BottomSheet
       isOpen={props.isOpen}
       onClose={props.onClose}
-      height={54 * 2 + (bottom || 20) + 44 + 24}
+      height={54 * 2 + (bottom || 20) + 44}
     >
       <View
         style={{
@@ -956,7 +925,7 @@ const styles = StyleSheet.create({
     width: "100%",
     borderBottomWidth: StyleSheet.hairlineWidth,
     paddingRight: 12,
-    paddingVertical: 14,
+    paddingVertical: 12,
     flexDirection: "row",
   },
   buttons: {
@@ -997,10 +966,15 @@ const styles = StyleSheet.create({
   content: {
     paddingVertical: 4,
   },
+  lineContainer: {
+    flex: 1,
+    width: "100%",
+    marginVertical: 5,
+    alignItems: "center",
+  },
   line: {
     flex: 1,
     width: 2,
-    marginVertical: 5,
   },
   twoImages: {
     flexDirection: "row",

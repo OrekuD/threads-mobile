@@ -587,6 +587,50 @@ export const VerifiedIcon = ({ size, style }: BaseSvgProps) => (
   </Svg>
 );
 
+export const ThreadLineIcon = ({
+  color,
+  height,
+  style,
+}: {
+  color: string;
+  height: number;
+  style?: ViewStyle;
+}) => {
+  const lineHeight = height - 25;
+  const loopHeight = height - 11;
+  const loopWidth = height - 18;
+
+  return (
+    <Svg
+      fill="none"
+      height={height}
+      viewBox={`0 0 21 ${height}`}
+      width={21}
+      style={style}
+    >
+      <Path
+        d={`M18 1L18 ${lineHeight}`}
+        stroke={color}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      ></Path>
+      <Path
+        d={`M18 ${loopHeight}C18 ${lineHeight} 4 ${lineHeight} 4 ${loopWidth}.12777C4 ${loopHeight}.2555 18 ${loopHeight}.9513 18 ${lineHeight}`}
+        stroke={color}
+        strokeLinecap="round"
+        strokeWidth="2"
+      ></Path>
+      <Path
+        d={`M18 ${loopHeight}L18 ${height - 1}`}
+        stroke={color}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      ></Path>
+    </Svg>
+  );
+};
 // export const Icon = ({color, size, style}: SvgProps) => ()
 // export const Icon = ({color, size, style}: SvgProps) => ()
 // export const Icon = ({color, size, style}: SvgProps) => ()

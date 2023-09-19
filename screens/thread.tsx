@@ -28,6 +28,26 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "@/types";
 import useGetThreadQuery from "@/hooks/queries/useGetThreadQuery";
+import Thread from "@/models/Thread";
+
+const placeholder: Thread = {
+  id: 0,
+  threadId: "",
+  text: "",
+  media: [],
+  user: null,
+  replyTheadId: null,
+  quoteTheadId: null,
+  replyThead: null,
+  quoteThead: null,
+  replies: [],
+  quotes: [],
+  likesCount: 0,
+  isLikesHidden: false,
+  hasCurrentUserLiked: false,
+  hasCurrentUserReposted: false,
+  createdAt: "",
+};
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -141,7 +161,7 @@ export default function ThreadScreen(props: Props) {
         )}
         scrollEventThrottle={16}
         onScroll={onScroll}
-        data={threadQuery?.data?.replies || []}
+        data={threadQuery?.data?.replies || [placeholder]}
         renderItem={({ item }) => {
           if (threadQuery.isLoading) {
             return (

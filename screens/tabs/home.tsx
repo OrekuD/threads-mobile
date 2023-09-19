@@ -1,33 +1,39 @@
 import { Logo } from "@/components/Icons";
 import useColors from "@/hooks/useColors";
 import React from "react";
-import { ActivityIndicator, FlatList, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, {
   useSharedValue,
   useAnimatedScrollHandler,
   useAnimatedStyle,
   interpolate,
+  Extrapolate,
 } from "react-native-reanimated";
 import ThreadView from "@/components/ThreadView";
 import useGetForYouTimelineQuery from "@/hooks/queries/useGetForYouTimelineQuery";
 import useGetFollowingTimelineQuery from "@/hooks/queries/useGetFollowingTimelineQuery";
 import useTimelineStore from "@/store/timelineStore";
+import useScreensize from "@/hooks/useScreensize";
 
 export default function HomeScreen() {
   const colors = useColors();
   const [isFetchingMoreThreads, setIsFetchingMoreThreads] =
     React.useState(false);
-  const scrollRef = React.useRef<FlatList>(null);
+  const scrollXRef = React.useRef<ScrollView>(null);
   const { top } = useSafeAreaInsets();
-  const scrollY = useSharedValue(0);
+  const scrollX = useSharedValue(0);
   const followingTimelineQuery = useGetFollowingTimelineQuery();
   const forYouTimelineQuery = useGetForYouTimelineQuery();
   const timelineStore = useTimelineStore();
-
-  // React.useEffect(() => {
-  //   scrollRef.current?.scrollToOffset({ offset: 0, animated: true });
-  // }, [uiStateContext.state.updatedAt]);
+  const { width } = useScreensize();
 
   const isLoading = React.useMemo(() => {
     if (timelineStore.isForYou) {
@@ -40,26 +46,45 @@ export default function HomeScreen() {
     timelineStore.isForYou,
   ]);
 
-  const threads = React.useMemo(() => {
-    if (timelineStore.isForYou) {
-      return forYouTimelineQuery.data || [];
-    }
-    return followingTimelineQuery.data || [];
-  }, [
-    followingTimelineQuery.data,
-    forYouTimelineQuery.data,
-    timelineStore.isForYou,
-  ]);
-
-  const onScroll = useAnimatedScrollHandler({
+  const onScrollX = useAnimatedScrollHandler({
     onScroll: (event) => {
-      scrollY.value = event.contentOffset.y;
+      scrollX.value = event.contentOffset.x;
     },
   });
 
-  const headerAnimatedStyle = useAnimatedStyle(() => {
+  const activeTabIndicatorAnimatedStyle = useAnimatedStyle(() => {
     return {
-      opacity: interpolate(scrollY.value, [0, 60], [1, 0]),
+      transform: [
+        {
+          translateX: interpolate(
+            scrollX.value,
+            [0, width],
+            [0, (width - 32) / 2]
+          ),
+        },
+      ],
+    };
+  });
+
+  const forYouTabTextAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(
+        scrollX.value,
+        [0, width],
+        [1, 0.5],
+        Extrapolate.CLAMP
+      ),
+    };
+  });
+
+  const followingTabTextAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(
+        scrollX.value,
+        [0, width],
+        [0.5, 1],
+        Extrapolate.CLAMP
+      ),
     };
   });
 
@@ -93,49 +118,108 @@ export default function HomeScreen() {
       }}
     >
       <View style={{ width: "100%", height: top }} />
-      <Animated.FlatList
-        ListHeaderComponent={() => (
-          <Animated.View
+      <View
+        style={{
+          flex: 1,
+        }}
+      >
+        <View
+          style={{
+            width: "100%",
+            alignItems: "center",
+          }}
+        >
+          <Logo size={30} color={colors.text} />
+          <View
             style={[
-              styles.header,
+              styles.tabs,
               {
-                paddingTop: 12,
+                borderBottomColor: colors.border,
               },
-              headerAnimatedStyle,
             ]}
           >
-            <Logo size={30} color={colors.text} />
-          </Animated.View>
-        )}
-        ref={scrollRef as any}
-        data={threads}
-        scrollEventThrottle={16}
-        onScroll={onScroll}
-        keyExtractor={({ id }) => id.toString()}
-        onEndReached={() => {
-          setIsFetchingMoreThreads(false);
-          // setTimeout(() => {
-          //   threadsContext.dispatch({ type: "ADD_THREADS" });
-          // }, 500);
-        }}
-        renderItem={({ item }) => {
-          return <ThreadView variant="list-thread" thread={item} />;
-        }}
-        ListFooterComponent={
-          isFetchingMoreThreads
-            ? () => (
-                <View
-                  style={{
-                    paddingVertical: 32,
-                    alignItems: "center",
+            <Animated.View
+              style={[
+                styles.activeIndicator,
+                {
+                  backgroundColor: colors.text,
+                },
+                activeTabIndicatorAnimatedStyle,
+              ]}
+            />
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={styles.tab}
+              onPress={() => {
+                // scrollXRef.current?.scrollTo({ animated: true, x: 0 });
+              }}
+            >
+              <Animated.Text
+                style={[
+                  styles.text,
+                  {
+                    color: colors.text,
+                  },
+                  forYouTabTextAnimatedStyle,
+                ]}
+              >
+                For you
+              </Animated.Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={styles.tab}
+              onPress={() => {
+                scrollXRef.current?.scrollToEnd({ animated: true });
+              }}
+            >
+              <Animated.Text
+                style={[
+                  styles.text,
+                  {
+                    color: colors.text,
+                  },
+                  followingTabTextAnimatedStyle,
+                ]}
+              >
+                Following
+              </Animated.Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        <Animated.FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          data={[
+            forYouTimelineQuery.data || [],
+            followingTimelineQuery.data || [],
+          ]}
+          pagingEnabled
+          scrollEventThrottle={16}
+          onScroll={onScrollX}
+          ref={scrollXRef as any}
+          keyExtractor={(_, index) => index.toString()}
+          renderItem={({ item }) => {
+            return (
+              <View
+                style={{
+                  width,
+                  height: "100%",
+                }}
+              >
+                <FlatList
+                  data={item}
+                  scrollEventThrottle={16}
+                  keyExtractor={({ threadId }) => threadId}
+                  renderItem={({ item }) => {
+                    return <ThreadView thread={item} variant="list-thread" />;
                   }}
-                >
-                  <ActivityIndicator size="small" color={colors.text} />
-                </View>
-              )
-            : undefined
-        }
-      />
+                />
+              </View>
+            );
+          }}
+        />
+      </View>
     </View>
   );
 }
@@ -146,5 +230,31 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 8,
+  },
+  tabs: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    borderBottomWidth: 1,
+    position: "relative",
+    paddingHorizontal: 16,
+    marginTop: 8,
+  },
+  tab: {
+    flex: 1,
+    height: 42,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  text: {
+    fontSize: 14,
+    fontFamily: "InterSemiBold",
+  },
+  activeIndicator: {
+    position: "absolute",
+    left: 16,
+    bottom: -1,
+    width: "50%",
+    height: 1.64,
   },
 });
