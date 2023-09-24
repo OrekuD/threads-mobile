@@ -133,17 +133,16 @@ export default function CreateThreadScreen(props: Props) {
     embeddedThread?.id,
   ]);
 
-  const menuOptions = React.useMemo(
-    () =>
-      isPrivateAccount ? privateProfileMenuOptions : publicProfileMenuOptions,
-    [isPrivateAccount]
-  );
+  const menuOptions = isPrivateAccount
+    ? privateProfileMenuOptions
+    : publicProfileMenuOptions;
 
   const title = React.useMemo(() => {
     switch (props.route.params.type) {
       case "reply":
         return "Reply";
-
+      case "quote":
+        return "Quote";
       default:
         return "New Thread";
     }
@@ -171,7 +170,7 @@ export default function CreateThreadScreen(props: Props) {
     });
   }, [showPopupMenu]);
 
-  const toolbarHeight = React.useMemo(() => 16 + 32, [bottom]);
+  const toolbarHeight = 16 + 32;
 
   const toolbarAnimatedStyle = useAnimatedStyle(() => {
     return {

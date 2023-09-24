@@ -35,16 +35,9 @@ export default function HomeScreen() {
   const timelineStore = useTimelineStore();
   const { width } = useScreensize();
 
-  const isLoading = React.useMemo(() => {
-    if (timelineStore.isForYou) {
-      return forYouTimelineQuery.isLoading;
-    }
-    return followingTimelineQuery.isLoading;
-  }, [
-    followingTimelineQuery.isLoading,
-    forYouTimelineQuery.isLoading,
-    timelineStore.isForYou,
-  ]);
+  const isLoading = timelineStore.isForYou
+    ? forYouTimelineQuery.isLoading
+    : followingTimelineQuery.isLoading;
 
   const onScrollX = useAnimatedScrollHandler({
     onScroll: (event) => {

@@ -7,19 +7,19 @@ import NotificationTypes from "@/namespaces/NotificationTypes";
 import React from "react";
 import {
   ActivityIndicator,
-  FlatList,
+  // FlatList,
   RefreshControl,
   StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { FlashList } from "@shopify/flash-list";
 
 const tabs = [-1].concat(NotificationTypes.list());
 
 export default function ActivityScreen() {
   const { top } = useSafeAreaInsets();
-  const scrollRef = React.useRef<FlatList>(null);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const colors = useColors();
   const [selectedTab, setSelectedTab] = React.useState(-1);
@@ -63,16 +63,15 @@ export default function ActivityScreen() {
             <></>
           )}
         </View>
-
         <View style={[styles.tabsContainer]}>
-          <FlatList
+          <FlashList
             data={tabs}
             horizontal
             keyExtractor={(key) => key.toString()}
             contentContainerStyle={{
               paddingHorizontal: 16,
-              gap: 6,
             }}
+            estimatedItemSize={90}
             showsHorizontalScrollIndicator={false}
             renderItem={({ item }) => {
               const isActiveTab = item === selectedTab;
@@ -103,10 +102,10 @@ export default function ActivityScreen() {
           />
         </View>
       </View>
-      <FlatList
+      <FlashList
         data={notifications}
-        ref={scrollRef as any}
         keyExtractor={({ id }) => id}
+        estimatedItemSize={82}
         ListEmptyComponent={() => (
           <View
             style={{

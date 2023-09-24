@@ -38,21 +38,13 @@ export default function Switch(props: Props) {
     setIsChecked(props.isChecked || false);
   }, [props.isChecked]);
 
-  const inActiveContainerBackgroundColor = React.useMemo(
-    () =>
-      isDarkMode
-        ? darkModeInActiveContainerBackgroundColor
-        : lightModeInActiveContainerBackgroundColor,
-    [isDarkMode]
-  );
+  const inActiveContainerBackgroundColor = isDarkMode
+    ? darkModeInActiveContainerBackgroundColor
+    : lightModeInActiveContainerBackgroundColor;
 
-  const activeContainerBackgroundColor = React.useMemo(
-    () =>
-      isDarkMode
-        ? darkModeActiveContainerBackgroundColor
-        : lightModeActiveContainerBackgroundColor,
-    [isDarkMode]
-  );
+  const activeContainerBackgroundColor = isDarkMode
+    ? darkModeActiveContainerBackgroundColor
+    : lightModeActiveContainerBackgroundColor;
 
   const knobAnimatedStyle = useAnimatedStyle(() => {
     return {

@@ -78,7 +78,7 @@ export default function SearchScreen() {
     },
   });
 
-  const headerHeight = React.useMemo(() => top + 12 + 36 + 45, [top]);
+  const headerHeight = top + 12 + 36 + 45;
 
   const headerAnimatedStyle = useAnimatedStyle(() => {
     return {

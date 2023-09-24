@@ -11,6 +11,7 @@ import User from "@/models/User";
 import AlgoliaUser from "@/models/AlgoliaUser";
 import useUserFollowsStore from "@/store/userFollowsStore";
 import useFollowUserMutation from "@/hooks/mutations/useFollowUserMutation";
+import useUserStore from "@/store/userStore";
 
 interface Props {
   user: User | AlgoliaUser;
@@ -23,6 +24,7 @@ function Profile(props: Props) {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const following = useUserFollowsStore((state) => state.following);
+  const user = useUserStore((state) => state.user);
   const followUserMutation = useFollowUserMutation();
   const [isFollowing, setIsFollowing] = React.useState(() => {
     if ("isFollowedByCurrentUser" in props.user) {
@@ -59,14 +61,20 @@ function Profile(props: Props) {
     <TouchableOpacity
       style={styles.container}
       activeOpacity={0.8}
-      onPress={() =>
-        navigation.navigate(
-          props.isModal ? "UserProfileModalScreen" : "UserProfileScreen",
-          {
-            username: data.username,
-          }
-        )
-      }
+      onPress={() => {
+        if (user?.id === data.id) {
+          navigation.navigate("MainScreen", {
+            screen: "ProfileScreen",
+          });
+        } else {
+          navigation.navigate(
+            props.isModal ? "UserProfileModalScreen" : "UserProfileScreen",
+            {
+              username: data.username,
+            }
+          );
+        }
+      }}
     >
       <Image
         source={

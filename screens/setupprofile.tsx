@@ -74,7 +74,9 @@ export default function SetupProfileScreen(props: Props) {
     >
       <SetupHeader
         onNext={() => {
-          props.navigation.navigate("MainScreen");
+          props.navigation.navigate("MainScreen", {
+            screen: "HomeScreen",
+          });
         }}
       />
       <View style={styles.container}>

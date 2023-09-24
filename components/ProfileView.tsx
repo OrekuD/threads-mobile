@@ -1,10 +1,7 @@
 import React from "react";
 import {
   ActivityIndicator,
-  Alert,
-  FlatList,
   Image,
-  Linking,
   ScrollView,
   Share,
   StyleSheet,
@@ -17,9 +14,7 @@ import {
   ChevronLeftIcon,
   GlobeIcon,
   HamburgerIcon,
-  InstagramIcon,
   Logo,
-  MoreIcon,
 } from "@/components/Icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Typography from "@/components/Typography";
@@ -53,8 +48,6 @@ import useGetUserRepostsQuery from "@/hooks/queries/useGetUserRepostsQuery";
 import formatLink from "@/utils/formatLink";
 import useToastsStore from "@/store/toastsStore";
 
-const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
-
 interface Props {
   user: User;
   isModal?: boolean;
@@ -71,9 +64,6 @@ export default function ProfileView(props: Props) {
   const following = useUserFollowsStore((state) => state.following);
   const followUserMutation = useFollowUserMutation();
   const [isFollowing, setIsFollowing] = React.useState(() => {
-    if ("isFollowedByCurrentUser" in props.user) {
-      return props.user.isFollowedByCurrentUser;
-    }
     const index = following.findIndex(
       (user) => Number(user.id) === Number(props.user.id)
     );
@@ -93,10 +83,7 @@ export default function ProfileView(props: Props) {
   const repostsTabQuery = useGetUserRepostsQuery(props.user.username);
   const toastsStore = useToastsStore();
 
-  const isCurrentUser = React.useMemo(
-    () => props.user.id === user?.id,
-    [user?.id, props.user.id]
-  );
+  const isCurrentUser = props.user.id === user?.id;
 
   const onScrollY = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -244,9 +231,9 @@ export default function ProfileView(props: Props) {
               </>
             )}
           </TouchableOpacity>
-          <TouchableOpacity activeOpacity={0.8} onPress={() => {}}>
+          {/* <TouchableOpacity activeOpacity={0.8} onPress={() => {}}>
             <MoreIcon size={24} color={colors.text} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       )}
       <View
@@ -439,100 +426,80 @@ export default function ProfileView(props: Props) {
                 ]}
               >
                 {isCurrentUser ? (
-                  <>
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      style={[
-                        styles.button,
-                        {
-                          borderColor: colors.border,
-                        },
-                      ]}
-                      onPress={() => {
-                        navigation.navigate("EditProfileScreen");
-                      }}
-                    >
-                      <Typography variant="sm" fontWeight={600}>
-                        Edit profile
-                      </Typography>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      style={[
-                        styles.button,
-                        {
-                          borderColor: colors.border,
-                        },
-                      ]}
-                      onPress={() => {
-                        const url = `${process.env.EXPO_PUBLIC_CLIENT_URL}/@${props.user.username}`;
-                        Share.share({
-                          url,
-                        });
-                      }}
-                    >
-                      <Typography variant="sm" fontWeight={600}>
-                        Share profile
-                      </Typography>
-                    </TouchableOpacity>
-                  </>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    style={[
+                      styles.button,
+                      {
+                        borderColor: colors.border,
+                      },
+                    ]}
+                    onPress={() => {
+                      navigation.navigate("EditProfileScreen");
+                    }}
+                  >
+                    <Typography variant="sm" fontWeight={600}>
+                      Edit profile
+                    </Typography>
+                  </TouchableOpacity>
                 ) : (
-                  <>
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      style={[
-                        styles.button,
-                        {
-                          borderColor: isFollowing
-                            ? colors.border
-                            : colors.text,
-                          backgroundColor: isFollowing
-                            ? "transparent"
-                            : colors.text,
-                        },
-                      ]}
-                      onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        if (!props.user?.id) return;
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    style={[
+                      styles.button,
+                      {
+                        borderColor: isFollowing ? colors.border : colors.text,
+                        backgroundColor: isFollowing
+                          ? "transparent"
+                          : colors.text,
+                      },
+                    ]}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      if (!props.user?.id) return;
 
-                        setIsFollowing((prevValue) => !prevValue);
-                        if (isFollowing) {
-                          setFollowersCount((prevValue) =>
-                            prevValue === 0 ? 0 : prevValue - 1
-                          );
-                        } else {
-                          setFollowersCount((prevValue) => prevValue + 1);
-                        }
+                      setIsFollowing((prevValue) => !prevValue);
+                      if (isFollowing) {
+                        setFollowersCount((prevValue) =>
+                          prevValue === 0 ? 0 : prevValue - 1
+                        );
+                      } else {
+                        setFollowersCount((prevValue) => prevValue + 1);
+                      }
 
-                        followUserMutation.mutate({
-                          userId: String(props.user.id),
-                        });
-                      }}
+                      followUserMutation.mutate({
+                        userId: String(props.user.id),
+                      });
+                    }}
+                  >
+                    <Typography
+                      variant="sm"
+                      fontWeight={600}
+                      color={isFollowing ? colors.text : colors.background}
                     >
-                      <Typography
-                        variant="sm"
-                        fontWeight={600}
-                        color={isFollowing ? colors.text : colors.background}
-                      >
-                        {isFollowing ? "Following" : "Follow"}
-                      </Typography>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      style={[
-                        styles.button,
-                        {
-                          borderColor: colors.border,
-                        },
-                      ]}
-                      onPress={() => {}}
-                    >
-                      <Typography variant="sm" fontWeight={600}>
-                        Mention
-                      </Typography>
-                    </TouchableOpacity>
-                  </>
+                      {isFollowing ? "Following" : "Follow"}
+                    </Typography>
+                  </TouchableOpacity>
                 )}
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  style={[
+                    styles.button,
+                    {
+                      borderColor: colors.border,
+                    },
+                  ]}
+                  onPress={() => {
+                    const url = `${process.env.EXPO_PUBLIC_CLIENT_URL}/@${props.user.username}`;
+                    Share.share({
+                      url,
+                    });
+                  }}
+                >
+                  <Typography variant="sm" fontWeight={600}>
+                    Share profile
+                  </Typography>
+                </TouchableOpacity>
               </View>
             </View>
             <Animated.View

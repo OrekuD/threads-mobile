@@ -16,6 +16,7 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "@/types";
 import Thread from "@/models/Thread";
+import useUserStore from "@/store/userStore";
 
 interface Props {
   thread: Thread;
@@ -25,6 +26,7 @@ interface Props {
 function EmbeddedThreadView(props: Props) {
   const colors = useColors();
   const { width } = useWindowDimensions();
+  const user = useUserStore((state) => state.user);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -55,9 +57,15 @@ function EmbeddedThreadView(props: Props) {
           },
         ]}
         onPress={() => {
-          navigation.navigate("UserProfileScreen", {
-            username: props.thread.user?.username || "",
-          });
+          if (user?.id === props.thread.user?.id) {
+            navigation.navigate("MainScreen", {
+              screen: "ProfileScreen",
+            });
+          } else {
+            navigation.navigate("UserProfileScreen", {
+              username: props.thread.user?.username || "",
+            });
+          }
         }}
       >
         <View

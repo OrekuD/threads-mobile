@@ -3,7 +3,9 @@ import { Dispatch } from "react";
 import Thread from "./models/Thread";
 
 export type RootStackParamList = {
-  MainScreen: undefined;
+  MainScreen: {
+    screen: keyof BottomTabParamList;
+  };
   SetupProfileScreen: undefined;
   LogInScreen: undefined;
   SignUpScreen: undefined;

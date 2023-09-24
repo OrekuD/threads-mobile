@@ -17,7 +17,7 @@ interface Props {
   notification: Notification;
 }
 
-export default function ActivityView(props: Props) {
+function ActivityView(props: Props) {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const colors = useColors();
@@ -33,10 +33,7 @@ export default function ActivityView(props: Props) {
 
   const toastsStore = useToastsStore();
 
-  const Icon = React.useMemo(
-    () => NotificationTypes.icon(props.notification.notificationType),
-    [props.notification.notificationType]
-  );
+  const Icon = NotificationTypes.icon(props.notification.notificationType);
 
   return (
     <TouchableOpacity
@@ -47,9 +44,15 @@ export default function ActivityView(props: Props) {
           props.notification.notificationType ===
           NotificationTypes.State.FOLLOWED_YOU
         ) {
-          navigation.navigate("UserProfileScreen", {
-            username: props.notification.fromUser!.username,
-          });
+          if (user?.id === props.notification.fromUser?.id) {
+            navigation.navigate("MainScreen", {
+              screen: "ProfileScreen",
+            });
+          } else {
+            navigation.navigate("UserProfileScreen", {
+              username: props.notification.fromUser!.username,
+            });
+          }
         } else {
           if (props.notification.thread === undefined) return;
           navigation.navigate("ThreadScreen", {
@@ -151,6 +154,10 @@ export default function ActivityView(props: Props) {
                 userId: String(props.notification.fromUser.id),
               });
 
+              if (isFollowing) {
+                toastsStore.addToast("Unfollowed");
+              }
+
               setIsFollowing((prevValue) => !prevValue);
             }}
           >
@@ -163,6 +170,12 @@ export default function ActivityView(props: Props) {
     </TouchableOpacity>
   );
 }
+
+export default React.memo(
+  ActivityView,
+  (prevProps, nextProps) =>
+    prevProps.notification.id === nextProps.notification.id
+);
 
 const styles = StyleSheet.create({
   container: {

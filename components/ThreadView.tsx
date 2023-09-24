@@ -10,11 +10,9 @@ import {
   ViewStyle,
 } from "react-native";
 import {
-  AddToStoryIcon,
   ChevronLeftIcon,
   HeartFilledIcon,
   HeartIcon,
-  InstagramIcon,
   LinkIcon,
   MenuIcon,
   MessageIcon,
@@ -24,7 +22,6 @@ import {
   SendIcon,
   ShareIcon,
   ThreadLineIcon,
-  TwitterIcon,
   VerifiedIcon,
 } from "./Icons";
 import useColors from "@/hooks/useColors";
@@ -108,17 +105,11 @@ function ThreadViewComponent(props: Props) {
     }
   }, [containerRef?.current, mount]);
 
-  const belongsToCurrentUser = React.useMemo(
-    () => user?.id === props.thread.user?.id,
-    [user?.id, props.thread.user?.id]
-  );
+  const belongsToCurrentUser = user?.id === props.thread.user?.id;
 
   // this way I don't have to invalidate the threads query if a user updates their profile
   const threadCreator = React.useMemo(() => {
-    if (belongsToCurrentUser) {
-      return user;
-    }
-    return props.thread.user;
+    return belongsToCurrentUser ? user : props.thread.user;
   }, [belongsToCurrentUser, user, props.thread.user]);
 
   return (
@@ -185,11 +176,17 @@ function ThreadViewComponent(props: Props) {
             <TouchableOpacity
               activeOpacity={0.8}
               style={styles.avatarContainer}
-              onPress={() =>
-                navigation.navigate("UserProfileScreen", {
-                  username: threadCreator?.username || "",
-                })
-              }
+              onPress={() => {
+                if (user?.id === threadCreator?.id) {
+                  navigation.navigate("MainScreen", {
+                    screen: "ProfileScreen",
+                  });
+                } else {
+                  navigation.navigate("UserProfileScreen", {
+                    username: threadCreator?.username || "",
+                  });
+                }
+              }}
             >
               <Image
                 style={styles.avatar}
@@ -255,11 +252,17 @@ function ThreadViewComponent(props: Props) {
                   gap: 4,
                 },
               ]}
-              onPress={() =>
-                navigation.navigate("UserProfileScreen", {
-                  username: threadCreator?.username || "",
-                })
-              }
+              onPress={() => {
+                if (user?.id === threadCreator?.id) {
+                  navigation.navigate("MainScreen", {
+                    screen: "ProfileScreen",
+                  });
+                } else {
+                  navigation.navigate("UserProfileScreen", {
+                    username: threadCreator?.username || "",
+                  });
+                }
+              }}
             >
               <Typography variant="sm" fontWeight={600}>
                 {threadCreator?.username}
@@ -582,10 +585,7 @@ function PostOptionsBottomSheet(
     useToggleThreadLikesVisibilityMutation();
   const toastsStore = useToastsStore();
 
-  const isCurrentUserCreator = React.useMemo(
-    () => user?.id === props.thread.user?.id,
-    [user?.id, props.thread.user?.id]
-  );
+  const isCurrentUserCreator = user?.id === props.thread.user?.id;
 
   const optionsList1 = React.useMemo(() => {
     if (isCurrentUserCreator) {
@@ -621,7 +621,7 @@ function PostOptionsBottomSheet(
         },
       },
     ];
-  }, [isCurrentUserCreator, props.isLikesHidden]);
+  }, [isCurrentUserCreator, props.isLikesHidden, props.thread.threadId]);
 
   const optionsList2 = React.useMemo(() => {
     if (isCurrentUserCreator) {
@@ -719,17 +719,11 @@ function SendPostOptionsBottomSheet(props: BottomSheetProps) {
   const colors = useColors();
   const { bottom } = useSafeAreaInsets();
   const user = useUserStore((state) => state.user);
-  const belongsToCurrentUser = React.useMemo(
-    () => user?.id === props.thread.user?.id,
-    [user?.id, props.thread.user?.id]
-  );
+  const belongsToCurrentUser = user?.id === props.thread.user?.id;
 
   // this way I don't have to invalidate the threads query if a user updates their profile
   const threadCreator = React.useMemo(() => {
-    if (belongsToCurrentUser) {
-      return user;
-    }
-    return props.thread.user;
+    return belongsToCurrentUser ? user : props.thread.user;
   }, [belongsToCurrentUser, user, props.thread.user]);
 
   const optionsList2 = React.useMemo(
