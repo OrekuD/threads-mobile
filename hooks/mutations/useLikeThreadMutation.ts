@@ -41,9 +41,9 @@ export default function useLikeThreadMutation() {
   const mutation = useMutation({
     mutationFn: likeThread,
     onSuccess: () => {
-      // queryClient.invalidateQueries({
-      //   queryKey: ["user", "timeline"],
-      // });
+      queryClient.invalidateQueries({
+        queryKey: ["user", "likes"],
+      });
     },
   });
 

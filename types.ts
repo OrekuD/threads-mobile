@@ -27,12 +27,14 @@ export type RootStackParamList = {
     isModal: boolean;
   };
   EditProfileScreen: undefined;
+  SettingsScreen: undefined;
+  YourLikesScreen: undefined;
+  AboutTheAppScreen: undefined;
   ReportAProblemScreen: undefined;
   ThreadScreen: { thread: Thread };
   ThreadImagesScreen: { thread: Thread };
   UserProfileScreen: { username: string };
   UserProfileModalScreen: { username: string };
-  WebViewScreen: { url: string };
 };
 
 export type BottomTabParamList = {

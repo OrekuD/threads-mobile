@@ -14,6 +14,7 @@ import {
   ChevronLeftIcon,
   GlobeIcon,
   HamburgerIcon,
+  LockIcon,
   Logo,
 } from "@/components/Icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -275,11 +276,15 @@ export default function ProfileView(props: Props) {
                   ]}
                 >
                   <TouchableOpacity activeOpacity={0.8}>
-                    <GlobeIcon size={24} color={colors.text} />
+                    {props.user.profile?.isPrivate ? (
+                      <LockIcon size={24} color={colors.text} />
+                    ) : (
+                      <GlobeIcon size={24} color={colors.text} />
+                    )}
                   </TouchableOpacity>
                   <TouchableOpacity
                     activeOpacity={0.8}
-                    // onPress={() => userContext.dispatch({ type: "SIGN_OUT" })}
+                    onPress={() => navigation.navigate("SettingsScreen")}
                   >
                     <HamburgerIcon size={24} color={colors.text} />
                   </TouchableOpacity>

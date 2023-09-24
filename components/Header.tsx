@@ -6,7 +6,7 @@ import {
 } from "react-native";
 import Typography from "./Typography";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ArrowLeftIcon, CancelIcon, CheckIcon } from "./Icons";
+import { ArrowLeftIcon, CancelIcon, CheckIcon, ChevronLeftIcon } from "./Icons";
 import useColors from "@/hooks/useColors";
 import { isAndroid } from "@/constants/Platform";
 import { useNavigation } from "@react-navigation/native";
@@ -23,6 +23,7 @@ interface Props {
   onDoneButtonPressed?: () => void;
   isDoneButtonDisabled?: boolean;
   isDoneButtonLoading?: boolean;
+  noPaddingTop?: boolean;
 }
 
 export default function Header(props: Props) {
@@ -36,7 +37,7 @@ export default function Header(props: Props) {
         style={[
           styles.androidHeader,
           {
-            paddingTop: top + 14,
+            paddingTop: props.noPaddingTop ? 0 : top + 14,
             paddingBottom: 16,
             borderColor: colors.border,
             borderBottomWidth: props.hasBorder ? 1 : 0,
@@ -97,6 +98,8 @@ export default function Header(props: Props) {
         styles.iosHeader,
         {
           backgroundColor: props.backgroundColor || "transparent",
+          borderColor: colors.border,
+          borderBottomWidth: props.hasBorder ? 1 : 0,
         },
       ]}
     >
@@ -106,11 +109,19 @@ export default function Header(props: Props) {
           styles.iosButton,
           {
             left: 16,
+            bottom: props.hasArrowIcon ? 17 : 15,
           },
         ]}
         onPress={props.onCancelButtonPressed || navigation.goBack}
       >
-        <Typography variant="body2">Cancel</Typography>
+        {props.hasArrowIcon ? (
+          <>
+            <ChevronLeftIcon size={12} color={colors.text} />
+            <Typography variant="body">Back</Typography>
+          </>
+        ) : (
+          <Typography variant="body2">Cancel</Typography>
+        )}
       </TouchableOpacity>
       <Typography variant="body2" fontWeight={600} style={{ marginBottom: 2 }}>
         {props.title}
@@ -154,6 +165,9 @@ const styles = StyleSheet.create({
   iosButton: {
     position: "absolute",
     bottom: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
   androidHeader: {
     width: "100%",

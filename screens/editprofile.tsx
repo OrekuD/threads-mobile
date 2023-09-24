@@ -274,6 +274,7 @@ export default function EditProfileScreen(props: Props) {
               value={updateUserStore.values.link}
               borderColor={borderColor}
               editable={false}
+              textColor="#008AF5"
             />
           </TouchableOpacity>
           <View

@@ -9,6 +9,7 @@ interface Props {
   placeholder: string;
   value?: string;
   borderColor?: string;
+  textColor?: string;
   editable?: boolean;
   noBorder?: boolean;
 }
@@ -36,7 +37,7 @@ export default function TextInput(props: Props) {
         style={[
           styles.textInput,
           {
-            color: colors.text,
+            color: props.textColor || colors.text,
           },
         ]}
         editable={props.editable}
@@ -44,7 +45,9 @@ export default function TextInput(props: Props) {
       <View style={styles.textInput}>
         <Typography
           variant="sm"
-          color={props.value ? colors.text : colors.textSecondary}
+          color={
+            props.value ? props.textColor || colors.text : colors.textSecondary
+          }
         >
           {props.value || props.placeholder}
         </Typography>

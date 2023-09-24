@@ -18,7 +18,6 @@ import ThreadScreen from "@/screens/thread";
 import { ActivityIndicator, View } from "react-native";
 import useColors from "@/hooks/useColors";
 import UserProfileScreen from "@/screens/userprofile";
-import WebViewScreen from "@/screens/webview";
 import UserProfileModalScreen from "@/screens/userprofilemodal";
 import useUserStore from "@/store/userStore";
 import useCurrentUserQuery from "@/hooks/queries/useCurrentUserQuery";
@@ -33,6 +32,9 @@ import EditUsernameScreen from "@/screens/editusername";
 import EditEmailScreen from "@/screens/editemail";
 import EditNameScreen from "@/screens/editname";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import SettingsScreen from "@/screens/settings";
+import AboutTheAppScreen from "@/screens/abouttheapp";
+import YourLikesScreen from "@/screens/yourlikes";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -159,8 +161,17 @@ export default function RootNavigation() {
                   options={modalNavigationOptions}
                 />
                 <Stack.Screen
-                  name="WebViewScreen"
-                  component={WebViewScreen}
+                  name="SettingsScreen"
+                  component={SettingsScreen}
+                />
+                <Stack.Screen
+                  name="YourLikesScreen"
+                  component={YourLikesScreen}
+                  // options={modalNavigationOptions}
+                />
+                <Stack.Screen
+                  name="AboutTheAppScreen"
+                  component={AboutTheAppScreen}
                   options={modalNavigationOptions}
                 />
                 <Stack.Screen

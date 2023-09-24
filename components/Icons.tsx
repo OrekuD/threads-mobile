@@ -275,6 +275,18 @@ export const HeartIcon = ({ color, size, style }: SvgProps) => (
   </Svg>
 );
 
+export const LockIcon = ({ color, size, style }: SvgProps) => (
+  <Svg width={size} height={size} style={style} viewBox="0 0 24 24" fill="none">
+    <Path
+      d="M17 10V8C17 5.23858 14.7614 3 12 3C9.23858 3 7 5.23858 7 8V10M12 14.5V16.5M8.8 21H15.2C16.8802 21 17.7202 21 18.362 20.673C18.9265 20.3854 19.3854 19.9265 19.673 19.362C20 18.7202 20 17.8802 20 16.2V14.8C20 13.1198 20 12.2798 19.673 11.638C19.3854 11.0735 18.9265 10.6146 18.362 10.327C17.7202 10 16.8802 10 15.2 10H8.8C7.11984 10 6.27976 10 5.63803 10.327C5.07354 10.6146 4.6146 11.0735 4.32698 11.638C4 12.2798 4 13.1198 4 14.8V16.2C4 17.8802 4 18.7202 4.32698 19.362C4.6146 19.9265 5.07354 20.3854 5.63803 20.673C6.27976 21 7.11984 21 8.8 21Z"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
+
 export const ArrowLeftIcon = ({ color, size, style }: SvgProps) => (
   <Svg
     width={size}
@@ -626,7 +638,7 @@ export const RetweetIcon = ({ color, size, style }: SvgProps) => (
   <Svg
     width={size}
     height={size}
-    style={{ ...style, transform: [{ rotateY: "180deg" }] }}
+    style={[style, { transform: [{ rotateY: "180deg" }] }]}
     viewBox="0 0 24 24"
   >
     <Path
@@ -680,6 +692,41 @@ export const ThreadLineIcon = ({
     </Svg>
   );
 };
-// export const Icon = ({color, size, style}: SvgProps) => ()
-// export const Icon = ({color, size, style}: SvgProps) => ()
+
+export const InfoIcon = ({ color, size, style }: SvgProps) => (
+  <Svg
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={2}
+    width={size}
+    height={size}
+    stroke={color}
+    style={style}
+  >
+    <Path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
+    />
+  </Svg>
+);
+
+export const FlagIcon = ({ color, size, style }: SvgProps) => (
+  <Svg
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={2}
+    width={size}
+    height={size}
+    stroke={color}
+    style={style}
+  >
+    <Path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M3 3v1.5M3 21v-6m0 0l2.77-.693a9 9 0 016.208.682l.108.054a9 9 0 006.086.71l3.114-.732a48.524 48.524 0 01-.005-10.499l-3.11.732a9 9 0 01-6.085-.711l-.108-.054a9 9 0 00-6.208-.682L3 4.5M3 15V4.5"
+    />
+  </Svg>
+);
+
 // export const Icon = ({color, size, style}: SvgProps) => ()

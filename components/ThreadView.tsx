@@ -62,6 +62,7 @@ interface Props {
   pointerEvents?: "none" | "auto";
   hideBorder?: boolean;
   hideLoop?: boolean;
+  showReplyingTo?: boolean;
   style?: ViewStyle;
 }
 
@@ -287,6 +288,11 @@ function ThreadViewComponent(props: Props) {
               <MenuIcon size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
+          {props.showReplyingTo && props.thread.replyThead ? (
+            <Typography variant="sm" color="secondary">
+              Replying to @{props.thread.replyThead.user?.username}
+            </Typography>
+          ) : null}
           <View style={styles.content}>
             <Typography variant="sm">{props.thread.text}</Typography>
           </View>
@@ -448,7 +454,7 @@ function ThreadViewComponent(props: Props) {
 function ThreadView(props: Props) {
   return (
     <>
-      {props.thread.replyThead ? (
+      {props.thread.replyThead && !props.showReplyingTo ? (
         <ThreadViewComponent
           thread={props.thread.replyThead}
           variant="reply-thread"
