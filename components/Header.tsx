@@ -22,7 +22,7 @@ interface Props {
   onCancelButtonPressed?: () => void;
   onDoneButtonPressed?: () => void;
   isDoneButtonDisabled?: boolean;
-  isDoneButtonDLoading?: boolean;
+  isDoneButtonLoading?: boolean;
 }
 
 export default function Header(props: Props) {
@@ -72,7 +72,7 @@ export default function Header(props: Props) {
             onPress={props.onDoneButtonPressed}
             disabled={props.isDoneButtonDisabled}
           >
-            {props.isDoneButtonDLoading ? (
+            {props.isDoneButtonLoading ? (
               <ActivityIndicator size="small" color={colors.text} />
             ) : (
               <>
@@ -130,7 +130,7 @@ export default function Header(props: Props) {
           onPress={props.onDoneButtonPressed}
           disabled={props.isDoneButtonDisabled}
         >
-          {props.isDoneButtonDLoading ? (
+          {props.isDoneButtonLoading ? (
             <ActivityIndicator size="small" color="#16A1FB" />
           ) : (
             <Typography variant="body2" fontWeight={600} color="#16A1FB">

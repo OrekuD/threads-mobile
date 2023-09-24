@@ -27,11 +27,11 @@ function Toast(props: { toast: string }) {
   const toastsStore = useToastsStore();
   const { height } = useScreensize();
 
-  React.useEffect(() => {
-    setTimeout(() => {
-      toastsStore.removeOldest();
-    }, 1500);
-  }, []);
+  // React.useEffect(() => {
+  //   setTimeout(() => {
+  //     toastsStore.removeOldest();
+  //   }, 1500);
+  // }, []);
 
   return (
     <View
@@ -64,6 +64,7 @@ const styles = StyleSheet.create({
     top: 0,
     width: "100%",
     alignItems: "center",
+    zIndex: 100,
   },
   toast: {
     height: 48,

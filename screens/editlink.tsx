@@ -1,49 +1,30 @@
 import Header from "@/components/Header";
-import { CancelIcon, ImportIcon } from "@/components/Icons";
+import { CancelIcon } from "@/components/Icons";
 import Typography from "@/components/Typography";
 import { isAndroid } from "@/constants/Platform";
 import useColors from "@/hooks/useColors";
 import useIsDarkMode from "@/hooks/useIsDarkMode";
-import useKeyboard from "@/hooks/useKeyboard";
+import useUpdateUserStore from "@/store/updateUserStore";
 import { RootStackParamList } from "@/types";
+import validateUrl from "@/utils/validateUrl";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import React from "react";
-import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
-import Animated, {
-  Easing,
-  interpolate,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  Alert,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 interface Props
   extends NativeStackScreenProps<RootStackParamList, "EditLinkScreen"> {}
 
-export default function EditLinkScreen() {
+export default function EditLinkScreen(props: Props) {
   const colors = useColors();
   const isDarkMode = useIsDarkMode();
-  const [value, setValue] = React.useState("");
-  const { bottom } = useSafeAreaInsets();
-  const { keyboardHeight } = useKeyboard();
-  const animation = useSharedValue(0);
-
-  React.useEffect(() => {
-    animation.value = withTiming(keyboardHeight === 0 ? 0 : 1, {
-      easing: Easing.bezier(0.25, 0.1, 0.25, 1),
-    });
-  }, [keyboardHeight]);
-
-  const importButtonAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      bottom: interpolate(
-        animation.value,
-        [0, 1],
-        [(bottom || 20) + 6, isAndroid ? 0 : keyboardHeight]
-      ),
-    };
-  }, [keyboardHeight, bottom]);
+  const updateUserStore = useUpdateUserStore();
+  const [value, setValue] = React.useState(updateUserStore.values.link || "");
 
   return (
     <View
@@ -52,7 +33,20 @@ export default function EditLinkScreen() {
         backgroundColor: isAndroid ? colors.background : colors.modalBackground,
       }}
     >
-      <Header title="Edit link" centerTitle hasCheckIcon />
+      <Header
+        title="Edit link"
+        centerTitle
+        hasCheckIcon
+        isDoneButtonDisabled={!value.trim()}
+        onDoneButtonPressed={() => {
+          if (!validateUrl(value)) {
+            Alert.alert("Please enter a valid link");
+            return;
+          }
+          updateUserStore.updateValue("link", value);
+          props.navigation.goBack();
+        }}
+      />
       <View style={styles.container}>
         <View
           style={[
@@ -64,7 +58,7 @@ export default function EditLinkScreen() {
         >
           <View style={styles.top}>
             <Typography variant="sm" fontWeight={600}>
-              Bio
+              Link
             </Typography>
             {value.trim().length > 0 ? (
               <TouchableOpacity
@@ -98,14 +92,6 @@ export default function EditLinkScreen() {
             multiline
           />
         </View>
-        <Animated.View style={[styles.importButton, importButtonAnimatedStyle]}>
-          <TouchableOpacity style={styles.row} activeOpacity={0.8}>
-            <ImportIcon size={18} color={colors.text} />
-            <Typography variant="body" color={colors.text} fontWeight={500}>
-              Import bio from Instagram
-            </Typography>
-          </TouchableOpacity>
-        </Animated.View>
       </View>
     </View>
   );
@@ -141,19 +127,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     flex: 1,
     fontFamily: "Inter",
-  },
-  importButton: {
-    position: "absolute",
-    left: 16,
-    width: "100%",
-    alignItems: "center",
-    zIndex: 10,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingVertical: 14,
-    paddingHorizontal: 8,
   },
 });

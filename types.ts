@@ -9,6 +9,9 @@ export type RootStackParamList = {
   SignUpScreen: undefined;
   EditBioScreen: undefined;
   EditLinkScreen: undefined;
+  EditNameScreen: undefined;
+  EditUsernameScreen: undefined;
+  EditEmailScreen: undefined;
   CreateThreadScreen:
     | {
         type: "new";

@@ -91,6 +91,7 @@ function ThreadViewComponent(props: Props) {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const containerRef = React.useRef<TouchableOpacity>(null);
+  const user = useUserStore((state) => state.user);
   const likeThreadMutation = useLikeThreadMutation();
   const [isLikesHidden, setIsLikesHidden] = React.useState(
     props.thread.isLikesHidden
@@ -106,6 +107,19 @@ function ThreadViewComponent(props: Props) {
       });
     }
   }, [containerRef?.current, mount]);
+
+  const belongsToCurrentUser = React.useMemo(
+    () => user?.id === props.thread.user?.id,
+    [user?.id, props.thread.user?.id]
+  );
+
+  // this way I don't have to invalidate the threads query if a user updates their profile
+  const threadCreator = React.useMemo(() => {
+    if (belongsToCurrentUser) {
+      return user;
+    }
+    return props.thread.user;
+  }, [belongsToCurrentUser, user, props.thread.user]);
 
   return (
     <>
@@ -173,15 +187,15 @@ function ThreadViewComponent(props: Props) {
               style={styles.avatarContainer}
               onPress={() =>
                 navigation.navigate("UserProfileScreen", {
-                  username: props.thread.user?.username || "",
+                  username: threadCreator?.username || "",
                 })
               }
             >
               <Image
                 style={styles.avatar}
                 source={
-                  props.thread.user?.profile?.profilePicture
-                    ? { uri: props.thread.user.profile.profilePicture }
+                  threadCreator?.profile?.profilePicture
+                    ? { uri: threadCreator.profile.profilePicture }
                     : require("../assets/images/no-avatar.jpeg")
                 }
               />
@@ -224,8 +238,8 @@ function ThreadViewComponent(props: Props) {
                 <Image
                   style={styles.avatar}
                   source={
-                    props.thread.user?.profile?.profilePicture
-                      ? { uri: props.thread.user.profile.profilePicture }
+                    threadCreator?.profile?.profilePicture
+                      ? { uri: threadCreator.profile.profilePicture }
                       : require("../assets/images/no-avatar.jpeg")
                   }
                 />
@@ -243,14 +257,14 @@ function ThreadViewComponent(props: Props) {
               ]}
               onPress={() =>
                 navigation.navigate("UserProfileScreen", {
-                  username: props.thread.user?.username || "",
+                  username: threadCreator?.username || "",
                 })
               }
             >
               <Typography variant="sm" fontWeight={600}>
-                {props.thread.user?.username}
+                {threadCreator?.username}
               </Typography>
-              {props.thread.user?.profile?.isVerified ? (
+              {threadCreator?.profile?.isVerified ? (
                 <VerifiedIcon size={12} />
               ) : null}
             </TouchableOpacity>
@@ -322,7 +336,7 @@ function ThreadViewComponent(props: Props) {
                         // });
                       }}
                       onLongPress={() => {
-                        const url = `${process.env.EXPO_PUBLIC_CLIENT_URL}/@${props.thread.user?.username}/post/${props.thread.threadId}`;
+                        const url = `${process.env.EXPO_PUBLIC_CLIENT_URL}/@${threadCreator?.username}/post/${props.thread.threadId}`;
                         Share.share({
                           url,
                         });
@@ -704,35 +718,19 @@ function PostOptionsBottomSheet(
 function SendPostOptionsBottomSheet(props: BottomSheetProps) {
   const colors = useColors();
   const { bottom } = useSafeAreaInsets();
-  // const optionsList1 = React.useMemo(
-  //   () => [
-  //     {
-  //       label: "Send on Instagram",
-  //       icon: SendIcon,
-  //       onPress: () => {},
-  //       iconSize: 26,
-  //     },
-  //     {
-  //       label: "Add to story",
-  //       icon: AddToStoryIcon,
-  //       onPress: () => {},
-  //       iconSize: 24,
-  //     },
-  //     {
-  //       label: "Post to feed",
-  //       icon: InstagramIcon,
-  //       onPress: () => {},
-  //       iconSize: 20,
-  //     },
-  //     {
-  //       label: "Post to",
-  //       icon: TwitterIcon,
-  //       onPress: () => {},
-  //       iconSize: 16,
-  //     },
-  //   ],
-  //   []
-  // );
+  const user = useUserStore((state) => state.user);
+  const belongsToCurrentUser = React.useMemo(
+    () => user?.id === props.thread.user?.id,
+    [user?.id, props.thread.user?.id]
+  );
+
+  // this way I don't have to invalidate the threads query if a user updates their profile
+  const threadCreator = React.useMemo(() => {
+    if (belongsToCurrentUser) {
+      return user;
+    }
+    return props.thread.user;
+  }, [belongsToCurrentUser, user, props.thread.user]);
 
   const optionsList2 = React.useMemo(
     () => [
@@ -740,7 +738,7 @@ function SendPostOptionsBottomSheet(props: BottomSheetProps) {
         label: "Copy link",
         icon: LinkIcon,
         onPress: async () => {
-          const url = `${process.env.EXPO_PUBLIC_CLIENT_URL}/@${props.thread.user?.username}/post/${props.thread.threadId}`;
+          const url = `${process.env.EXPO_PUBLIC_CLIENT_URL}/@${threadCreator?.username}/post/${props.thread.threadId}`;
           await Clipboard.setStringAsync(url);
         },
       },
@@ -748,7 +746,7 @@ function SendPostOptionsBottomSheet(props: BottomSheetProps) {
         label: "Share via...",
         icon: ShareIcon,
         onPress: () => {
-          const url = `${process.env.EXPO_PUBLIC_CLIENT_URL}/@${props.thread.user?.username}/post/${props.thread.threadId}`;
+          const url = `${process.env.EXPO_PUBLIC_CLIENT_URL}/@${threadCreator?.username}/post/${props.thread.threadId}`;
           Share.share({
             url,
           });
@@ -771,41 +769,6 @@ function SendPostOptionsBottomSheet(props: BottomSheetProps) {
           paddingTop: 6,
         }}
       >
-        {/* <View
-          style={{
-            backgroundColor: colors.bottomSheetButtonColor,
-            borderRadius: 14,
-            overflow: "hidden",
-          }}
-        >
-          {optionsList1.map(
-            ({ label, onPress, icon: Icon, iconSize }, index) => {
-              return (
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  key={label}
-                  onPress={onPress}
-                  style={[
-                    styles.bottomSheetButton,
-
-                    {
-                      borderRadius: 0,
-                      backgroundColor: colors.bottomSheetButtonColor,
-                      borderTopWidth:
-                        index === 0 ? 0 : StyleSheet.hairlineWidth,
-                      borderColor: colors.bottomSheetButtonBorderColor,
-                    },
-                  ]}
-                >
-                  <Typography variant="sm" fontWeight={600} color={colors.text}>
-                    {label}
-                  </Typography>
-                  <Icon size={iconSize} color={colors.text} />
-                </TouchableOpacity>
-              );
-            }
-          )}
-        </View> */}
         <View
           style={{
             backgroundColor: colors.bottomSheetButtonColor,

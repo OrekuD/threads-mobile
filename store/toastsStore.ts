@@ -8,7 +8,12 @@ interface ToastsStore {
 
 const useToastsStore = create<ToastsStore>((set) => ({
   list: [],
-  addToast: (message) => set((state) => ({ list: [...state.list, message] })),
+  addToast: (message) => {
+    set((state) => ({ list: [...state.list, message] }));
+    setTimeout(() => {
+      set((state) => ({ list: state.list.slice(1) }));
+    }, 1500);
+  },
   removeOldest: () => set((state) => ({ list: state.list.slice(1) })),
 }));
 

@@ -11,13 +11,13 @@ import React from "react";
 import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
 
 interface Props
-  extends NativeStackScreenProps<RootStackParamList, "EditBioScreen"> {}
+  extends NativeStackScreenProps<RootStackParamList, "EditNameScreen"> {}
 
-export default function EditBioScreen(props: Props) {
+export default function EditNameScreen(props: Props) {
   const colors = useColors();
   const isDarkMode = useIsDarkMode();
   const updateUserStore = useUpdateUserStore();
-  const [value, setValue] = React.useState(updateUserStore.values.bio || "");
+  const [value, setValue] = React.useState(updateUserStore.values.name || "");
 
   return (
     <View
@@ -27,11 +27,13 @@ export default function EditBioScreen(props: Props) {
       }}
     >
       <Header
-        title="Edit bio"
+        title="Edit name"
         centerTitle
         hasCheckIcon
+        isDoneButtonDisabled={!value.trim()}
         onDoneButtonPressed={() => {
-          updateUserStore.updateValue("bio", value);
+          if (!value.trim()) return;
+          updateUserStore.updateValue("name", value);
           props.navigation.goBack();
         }}
       />
@@ -46,7 +48,7 @@ export default function EditBioScreen(props: Props) {
         >
           <View style={styles.top}>
             <Typography variant="sm" fontWeight={600}>
-              Bio
+              Name
             </Typography>
             {value.trim().length > 0 ? (
               <TouchableOpacity
@@ -70,14 +72,12 @@ export default function EditBioScreen(props: Props) {
               styles.textInput,
               {
                 color: colors.text,
-                verticalAlign: "top",
               },
             ]}
             value={value}
             onChangeText={setValue}
             placeholderTextColor={colors.textSecondary}
-            placeholder="Write a bio..."
-            multiline
+            placeholder="Your account name"
           />
         </View>
       </View>
@@ -93,10 +93,10 @@ const styles = StyleSheet.create({
   },
   textInputContainer: {
     width: "100%",
-    height: 140,
     borderWidth: 1,
     borderRadius: 14,
     padding: 14,
+    paddingBottom: 6,
   },
   top: {
     width: "100%",
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     fontSize: 14,
-    flex: 1,
     fontFamily: "Inter",
+    height: 40,
   },
 });

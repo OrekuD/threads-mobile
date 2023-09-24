@@ -115,8 +115,4 @@ const styles = StyleSheet.create({
     borderRadius: 24 / 2,
     backgroundColor: "#fff",
   },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
 });

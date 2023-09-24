@@ -50,6 +50,8 @@ import ThreadView from "./ThreadView";
 import useGetUserThreadsQuery from "@/hooks/queries/useGetUserThreadsQuery";
 import useGetUserRepliesQuery from "@/hooks/queries/useGetUserRepliesQuery";
 import useGetUserRepostsQuery from "@/hooks/queries/useGetUserRepostsQuery";
+import formatLink from "@/utils/formatLink";
+import useToastsStore from "@/store/toastsStore";
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
@@ -83,12 +85,13 @@ export default function ProfileView(props: Props) {
   const scrollY = useSharedValue(0);
   const scrollX = useSharedValue(0);
   const user = useUserStore((state) => state.user);
-  const { width, height } = useScreensize();
+  const { width } = useScreensize();
   const scrollXRef = React.useRef<ScrollView>(null);
   const [headerHeight, setHeaderHeight] = React.useState(0);
   const threadsTabQuery = useGetUserThreadsQuery(props.user.username);
   const repliesTabQuery = useGetUserRepliesQuery(props.user.username);
   const repostsTabQuery = useGetUserRepostsQuery(props.user.username);
+  const toastsStore = useToastsStore();
 
   const isCurrentUser = React.useMemo(
     () => props.user.id === user?.id,
@@ -392,6 +395,38 @@ export default function ProfileView(props: Props) {
                       : `${formatNumber(followersCount)} followers`}
                   </Typography>
                 </TouchableOpacity>
+                {props.user.profile?.link ? (
+                  <View
+                    style={[
+                      styles.row,
+                      {
+                        gap: 6,
+                      },
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.dot,
+                        {
+                          backgroundColor: colors.textSecondary,
+                        },
+                      ]}
+                    />
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onPress={() => {
+                        WebBrowser.openBrowserAsync(props.user.profile!.link, {
+                          presentationStyle:
+                            WebBrowser.WebBrowserPresentationStyle.FORM_SHEET,
+                        });
+                      }}
+                    >
+                      <Typography variant="sm" color="secondary">
+                        {formatLink(props.user.profile.link)}
+                      </Typography>
+                    </TouchableOpacity>
+                  </View>
+                ) : null}
               </View>
               <View
                 style={[
@@ -413,7 +448,9 @@ export default function ProfileView(props: Props) {
                           borderColor: colors.border,
                         },
                       ]}
-                      onPress={() => navigation.navigate("EditProfileScreen")}
+                      onPress={() => {
+                        navigation.navigate("EditProfileScreen");
+                      }}
                     >
                       <Typography variant="sm" fontWeight={600}>
                         Edit profile

@@ -144,15 +144,26 @@ function EmbeddedThreadView(props: Props) {
           <></>
         )}
       </View>
-      <Typography
-        variant="sm"
-        color="secondary"
-        style={{
-          paddingHorizontal: 16,
-        }}
-      >
-        {`${props.thread.replies.length} replies • ${props.thread.likesCount} likes`}
-      </Typography>
+      {(props.thread.replies.length === 0 && props.thread.likesCount === 0) ||
+      props.thread.isLikesHidden ? null : (
+        <Typography
+          variant="sm"
+          color="secondary"
+          style={{
+            paddingHorizontal: 16,
+          }}
+        >
+          {`${
+            props.thread.replies.length === 1
+              ? "1 reply"
+              : `${props.thread.replies.length} replies`
+          } • ${
+            props.thread.likesCount === 1
+              ? "1 like"
+              : `${props.thread.likesCount} likes`
+          }`}
+        </Typography>
+      )}
     </TouchableOpacity>
   );
 }

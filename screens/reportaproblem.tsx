@@ -49,7 +49,7 @@ export default function ReportAProblemScreen(props: Props) {
         centerTitle
         isDoneButtonDisabled={!description}
         onDoneButtonPressed={handleSubmit}
-        isDoneButtonDLoading={submitReportMutation.isLoading}
+        isDoneButtonLoading={submitReportMutation.isLoading}
       />
       <View style={styles.container}>
         <View

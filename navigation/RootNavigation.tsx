@@ -29,6 +29,10 @@ import useGetFollowersQuery from "@/hooks/queries/useGetFollowersQuery";
 import useGetFollowingQuery from "@/hooks/queries/useGetFollowingQuery";
 import useUserFollowsStore from "@/store/userFollowsStore";
 import Toasts from "@/components/Toasts";
+import EditUsernameScreen from "@/screens/editusername";
+import EditEmailScreen from "@/screens/editemail";
+import EditNameScreen from "@/screens/editname";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -46,6 +50,8 @@ export default function RootNavigation() {
   const followingQuery = useGetFollowingQuery(userStore?.user?.id || -1);
 
   React.useEffect(() => {
+    // AsyncStorage.clear();
+    // console.log(process.env.EXPO_PUBLIC_API_URL);
     if (currentUserQuery.isSuccess) {
       userStore.setUser(currentUserQuery.data);
       followersQuery.refetch();
@@ -133,13 +139,28 @@ export default function RootNavigation() {
                   options={modalNavigationOptions}
                 />
                 <Stack.Screen
-                  name="WebViewScreen"
-                  component={WebViewScreen}
+                  name="EditLinkScreen"
+                  component={EditLinkScreen}
                   options={modalNavigationOptions}
                 />
                 <Stack.Screen
-                  name="EditLinkScreen"
-                  component={EditLinkScreen}
+                  name="EditNameScreen"
+                  component={EditNameScreen}
+                  options={modalNavigationOptions}
+                />
+                <Stack.Screen
+                  name="EditUsernameScreen"
+                  component={EditUsernameScreen}
+                  options={modalNavigationOptions}
+                />
+                <Stack.Screen
+                  name="EditEmailScreen"
+                  component={EditEmailScreen}
+                  options={modalNavigationOptions}
+                />
+                <Stack.Screen
+                  name="WebViewScreen"
+                  component={WebViewScreen}
                   options={modalNavigationOptions}
                 />
                 <Stack.Screen

@@ -13,6 +13,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
+  Image,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import Header from "@/components/Header";
@@ -20,6 +21,11 @@ import { isAndroid } from "@/constants/Platform";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "@/types";
 import useUserStore from "@/store/userStore";
+import useToastsStore from "@/store/toastsStore";
+import useUpdateUserProfileMutation from "@/hooks/mutations/useUpdateUserProfileMutation";
+import validateUrl from "@/utils/validateUrl";
+import validateEmail from "@/utils/validateEmail";
+import useUpdateUserStore from "@/store/updateUserStore";
 
 interface Props
   extends NativeStackScreenProps<RootStackParamList, "EditProfileScreen"> {}
@@ -27,30 +33,64 @@ interface Props
 export default function EditProfileScreen(props: Props) {
   const colors = useColors();
   const isDarkMode = useIsDarkMode();
-  const [isLoading, setIsLoading] = React.useState(true);
   const user = useUserStore((state) => state.user);
+  const [profilePicture, setProfilePicture] = React.useState(
+    user?.profile?.profilePicture || ""
+  );
+  const [uploadedProfilePicture, setUploadedProfilePicture] =
+    React.useState("");
+  const updateUserStore = useUpdateUserStore();
+  const [isPrivateProfile, setIsPrivateProfile] = React.useState(
+    user?.profile?.isPrivate || false
+  );
+  const updateUserProfileMutation = useUpdateUserProfileMutation();
+  const toastsStore = useToastsStore();
+
+  React.useEffect(() => {
+    updateUserStore.updateValues({
+      name: user?.name || "",
+      username: user?.username || "",
+      email: user?.email || "",
+      bio: user?.profile?.bio || "",
+      link: user?.profile?.link || "",
+    });
+  }, []);
 
   const borderColor = isDarkMode ? "#343535" : "#D6D6D6";
 
-  React.useEffect(() => {
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-  }, []);
+  const cannotUpdate = React.useMemo(() => {
+    return (
+      !updateUserStore.values.username.trim() ||
+      !updateUserStore.values.email.trim() ||
+      !updateUserStore.values.name.trim()
+    );
+  }, [
+    updateUserStore.values.name,
+    updateUserStore.values.username,
+    updateUserStore.values.email,
+  ]);
 
   const openActionSheet = React.useCallback(() => {
+    if (isAndroid) {
+      // TODO: Add android action sheet
+      return;
+    }
     ActionSheetIOS.showActionSheetWithOptions(
       {
-        options: ["Cancel", "Choose from library", "Import from Instagram"],
+        options: ["Cancel", "Choose from library"],
         cancelButtonIndex: 0,
       },
       async (buttonIndex) => {
         if (buttonIndex === 1) {
-          await ImagePicker.launchImageLibraryAsync({
+          const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: false,
             quality: 1,
           });
+
+          if (result?.assets && result.assets.length > 0) {
+            setUploadedProfilePicture(result.assets[0].uri);
+          }
         }
       }
     );
@@ -74,122 +114,187 @@ export default function EditProfileScreen(props: Props) {
           : "#F9F9F9",
       }}
     >
-      <Header backgroundColor={colors.modalBackground} title="Edit profile" />
+      <Header
+        backgroundColor={colors.modalBackground}
+        title="Edit profile"
+        onDoneButtonPressed={() => {
+          updateUserProfileMutation.mutate({
+            email: updateUserStore.values.email,
+            name: updateUserStore.values.name,
+            username: updateUserStore.values.username,
+            bio: updateUserStore.values.bio.trim(),
+            link: updateUserStore.values.link.trim(),
+            isPrivate: isPrivateProfile,
+            profilePicture: uploadedProfilePicture,
+          });
+        }}
+        isDoneButtonDisabled={
+          cannotUpdate || updateUserProfileMutation.isLoading
+        }
+        isDoneButtonLoading={updateUserProfileMutation.isLoading}
+      />
       <View style={styles.container}>
-        {isLoading ? (
-          <ActivityIndicator size="large" color={colors.text} />
-        ) : (
+        <View
+          style={[
+            styles.content,
+            {
+              borderColor: borderColor,
+              backgroundColor,
+            },
+          ]}
+        >
           <View
             style={[
-              styles.content,
+              styles.row,
               {
-                borderColor: borderColor,
-                backgroundColor,
+                gap: 16,
               },
             ]}
           >
-            <View
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={{ flex: 1 }}
+              onPress={() => {
+                props.navigation.navigate("EditNameScreen");
+              }}
+            >
+              <TextInput
+                label="Name"
+                placeholder="Your account name"
+                borderColor={borderColor}
+                editable={false}
+                value={updateUserStore.values.name}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={openActionSheet}
               style={[
-                styles.row,
+                styles.avatarContainer,
                 {
-                  gap: 16,
+                  backgroundColor: isDarkMode ? "#252525" : "#F1F1F1",
                 },
               ]}
             >
-              <View style={{ flex: 1 }}>
-                <TextInput
-                  label="Name"
-                  placeholder="+ Add username"
-                  borderColor={borderColor}
-                  editable={false}
-                  value={`@${user?.username}`}
+              {Boolean(profilePicture) || Boolean(uploadedProfilePicture) ? (
+                <Image
+                  source={{
+                    uri: uploadedProfilePicture || profilePicture,
+                  }}
+                  resizeMode="cover"
+                  style={styles.avatar}
                 />
-              </View>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={openActionSheet}
-                style={[
-                  styles.avatarContainer,
-                  {
-                    backgroundColor: isDarkMode ? "#252525" : "#F1F1F1",
-                  },
-                ]}
-              >
-                <View
-                  style={[
-                    styles.plusIcon,
-                    {
-                      backgroundColor: isDarkMode ? "#252525" : "#F1F1F1",
-                    },
-                  ]}
-                >
+              ) : (
+                <>
                   <View
                     style={[
-                      styles.plusIconInner,
+                      styles.plusIcon,
                       {
-                        backgroundColor: colors.text,
+                        backgroundColor: isDarkMode ? "#252525" : "#F1F1F1",
                       },
                     ]}
                   >
-                    <PlusIcon
-                      color={isDarkMode ? "#252525" : "#FFFFFF"}
-                      size={12}
-                    />
+                    <View
+                      style={[
+                        styles.plusIconInner,
+                        {
+                          backgroundColor: colors.text,
+                        },
+                      ]}
+                    >
+                      <PlusIcon
+                        color={isDarkMode ? "#252525" : "#FFFFFF"}
+                        size={12}
+                      />
+                    </View>
                   </View>
-                </View>
-                <ProfileActiveIcon
-                  size={34}
-                  color={colors.text}
-                  style={{
-                    marginLeft: 6,
-                    marginBottom: 4,
-                  }}
-                />
-              </TouchableOpacity>
-            </View>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => {
-                props.navigation.navigate("EditBioScreen");
-              }}
-            >
-              <TextInput
-                label="Bio"
-                placeholder="+ Write bio"
-                borderColor={borderColor}
-                editable={false}
-              />
+                  <ProfileActiveIcon
+                    size={34}
+                    color={colors.text}
+                    style={{
+                      marginLeft: 6,
+                      marginBottom: 4,
+                    }}
+                  />
+                </>
+              )}
             </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={() => {
-                props.navigation.navigate("EditLinkScreen");
-              }}
-            >
-              <TextInput
-                label="Link"
-                placeholder="+ Add link"
-                borderColor={borderColor}
-                editable={false}
-              />
-            </TouchableOpacity>
-            <View
-              style={[
-                styles.row,
-                {
-                  justifyContent: "space-between",
-                  paddingTop: 14,
-                  paddingBottom: 8,
-                },
-              ]}
-            >
-              <Typography variant="sm" fontWeight={600}>
-                Private profile
-              </Typography>
-              <Switch />
-            </View>
           </View>
-        )}
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => {
+              props.navigation.navigate("EditUsernameScreen");
+            }}
+          >
+            <TextInput
+              label="Username"
+              placeholder="Your account username"
+              value={`@${updateUserStore.values.username}`}
+              borderColor={borderColor}
+              editable={false}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => {
+              props.navigation.navigate("EditEmailScreen");
+            }}
+          >
+            <TextInput
+              label="Email"
+              placeholder="Your account email"
+              value={updateUserStore.values.email}
+              borderColor={borderColor}
+              editable={false}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => {
+              props.navigation.navigate("EditBioScreen");
+            }}
+          >
+            <TextInput
+              label="Bio"
+              placeholder="Your bio"
+              value={updateUserStore.values.bio}
+              borderColor={borderColor}
+              editable={false}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => {
+              props.navigation.navigate("EditLinkScreen");
+            }}
+          >
+            <TextInput
+              label="Link"
+              placeholder="Add a link"
+              value={updateUserStore.values.link}
+              borderColor={borderColor}
+              editable={false}
+            />
+          </TouchableOpacity>
+          <View
+            style={[
+              styles.row,
+              {
+                justifyContent: "space-between",
+                paddingTop: 14,
+                paddingBottom: 8,
+              },
+            ]}
+          >
+            <Typography variant="sm" fontWeight={600}>
+              Private profile
+            </Typography>
+            <Switch
+              isChecked={isPrivateProfile}
+              onChange={setIsPrivateProfile}
+            />
+          </View>
+        </View>
       </View>
     </View>
   );
@@ -208,7 +313,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     gap: 6,
-    marginBottom: 28,
+    marginBottom: 64,
   },
   row: {
     flexDirection: "row",
@@ -220,6 +325,11 @@ const styles = StyleSheet.create({
     borderRadius: 52 / 2,
     alignItems: "center",
     justifyContent: "center",
+  },
+  avatar: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 52,
   },
   plusIcon: {
     position: "absolute",
