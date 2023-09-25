@@ -160,6 +160,14 @@ export default function RootNavigation() {
                     }),
                     gestureEnabled: false,
                   }}
+                  // sharedElements={(route) => {
+                  //   const { images, index } = route.params as {
+                  //     images: Array<string>;
+                  //     index: number;
+                  //   };
+                  //   const item = images[index];
+                  //   return [item];
+                  // }}
                 />
                 <Stack.Screen
                   name="UserProfileModalScreen"

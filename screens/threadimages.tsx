@@ -1,25 +1,39 @@
 import React from "react";
-import { View, StyleSheet, StatusBar } from "react-native";
+import { View, StyleSheet, Image } from "react-native";
 import AwesomeGallery, {
   GalleryRef,
   RenderItemInfo,
 } from "react-native-awesome-gallery";
-import { Image } from "expo-image";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "@/types";
 import { useIsFocused } from "@react-navigation/native";
+import Animated, {
+  withSpring,
+  SharedTransition,
+} from "react-native-reanimated";
+import * as StatusBar from "expo-status-bar";
+
+const transition = SharedTransition.custom((values) => {
+  "worklet";
+  return {
+    height: withSpring(values.targetHeight),
+    width: withSpring(values.targetWidth),
+  };
+});
 
 const renderItem = ({
   item,
   setImageDimensions,
 }: RenderItemInfo<{ uri: string }>) => {
   return (
-    <Image
+    <Animated.Image
       source={{ uri: item.uri }}
       style={StyleSheet.absoluteFillObject}
-      contentFit="contain"
+      sharedTransitionStyle={transition}
+      sharedTransitionTag={item.uri}
+      resizeMode="contain"
       onLoad={(e) => {
-        const { width, height } = e.source;
+        const { width, height } = e.nativeEvent.source;
         setImageDimensions({ width, height });
       }}
     />
@@ -33,16 +47,21 @@ export default function ThreadImagesScreen(props: Props) {
   const isFocused = useIsFocused();
   const gallery = React.useRef<GalleryRef>(null);
   const [infoVisible, setInfoVisible] = React.useState(true);
+  const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
-    StatusBar.setBarStyle(isFocused ? "light-content" : "dark-content", true);
+    setMounted(true);
+  }, []);
+
+  React.useEffect(() => {
+    StatusBar.setStatusBarStyle(isFocused ? "light" : "dark");
     if (!isFocused) {
-      StatusBar.setHidden(false, "fade");
+      StatusBar.setStatusBarHidden(false, "fade");
     }
   }, [isFocused]);
 
   const onTap = () => {
-    StatusBar.setHidden(infoVisible, "slide");
+    StatusBar.setStatusBarHidden(infoVisible, "slide");
     setInfoVisible(!infoVisible);
   };
 

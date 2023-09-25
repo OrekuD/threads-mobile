@@ -48,6 +48,18 @@ import {
   TouchableOpacity as BottomSheetTouchableOpacity,
 } from "@gorhom/bottom-sheet";
 import useCreateThreadReportMutation from "@/hooks/mutations/useCreateThreadReportMutation";
+import Animated, {
+  withSpring,
+  SharedTransition,
+} from "react-native-reanimated";
+
+const transition = SharedTransition.custom((values) => {
+  "worklet";
+  return {
+    height: withSpring(values.targetHeight),
+    width: withSpring(values.targetWidth),
+  };
+});
 
 type ThreadViewVariant =
   | "reply"
@@ -354,8 +366,10 @@ function ThreadViewComponent(props: Props) {
                         });
                       }}
                     >
-                      <Image
+                      <Animated.Image
                         source={{ uri: url }}
+                        sharedTransitionStyle={transition}
+                        sharedTransitionTag={url}
                         style={{
                           borderRadius: 8,
                           width: "100%",

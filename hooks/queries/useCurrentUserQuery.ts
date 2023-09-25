@@ -23,7 +23,7 @@ async function getCurrentUser() {
     "Something went wrong.";
 
   if (error === "invalid_token") {
-    useAccessTokenStore.getState().setAccessToken(null);
+    // useAccessTokenStore.getState().setAccessToken(null);
   }
 
   return Promise.reject(error);
