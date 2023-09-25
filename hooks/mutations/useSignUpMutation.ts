@@ -1,8 +1,7 @@
-import AsyncStorageKeys from "@/constants/AsyncStorageKeys";
 import ErrorResponse from "@/network/responses/ErrorResponse";
+import useAccessTokenStore from "@/store/accessTokenStore";
 import useToastsStore from "@/store/toastsStore";
 import useUserStore from "@/store/userStore";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface SignUpRequest {
@@ -36,16 +35,14 @@ async function signUp(payload: SignUpRequest) {
 export default function useSignUpMutation() {
   const userStore = useUserStore();
   const toastsStore = useToastsStore();
+  const accessTokenStore = useAccessTokenStore();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: signUp,
-    onSuccess: async (data) => {
+    onSuccess: (data) => {
+      accessTokenStore.setAccessToken(data.accessToken);
       // navigate("/suggested-accounts"); TODO:
-      await AsyncStorage.setItem(
-        AsyncStorageKeys.AUTHENTICATION,
-        data.accessToken
-      );
       userStore.setUser(data.user);
     },
     onError: (error: string) => {

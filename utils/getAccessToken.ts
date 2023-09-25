@@ -1,8 +1,5 @@
+import useAccessTokenStore from "@/store/accessTokenStore";
 
-import AsyncStorageKeys from "@/constants/AsyncStorageKeys";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-export default async function getAccessToken() {
-    const value = await AsyncStorage.getItem(AsyncStorageKeys.AUTHENTICATION);
-    return value || ""
+export default function getAccessToken() {
+  return useAccessTokenStore.getState().accessToken || "";
 }

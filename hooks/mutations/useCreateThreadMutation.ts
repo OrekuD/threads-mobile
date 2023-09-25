@@ -2,10 +2,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import useUserStore from "@/store/userStore";
 import getAccessToken from "@/utils/getAccessToken";
 import ErrorResponse from "@/network/responses/ErrorResponse";
-import AsyncStorageKeys from "@/constants/AsyncStorageKeys";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import useToastsStore from "@/store/toastsStore";
 import { isAndroid } from "@/constants/Platform";
+import useAccessTokenStore from "@/store/accessTokenStore";
 
 interface CreateThreadRequest {
   payload: CreateThreadPayloadRequest;
@@ -22,7 +21,7 @@ interface CreateThreadPayloadRequest {
 
 async function createThread({ payload }: CreateThreadRequest) {
   const url = `${process.env.EXPO_PUBLIC_API_URL}/threads`;
-  const accessToken = await getAccessToken();
+  const accessToken = getAccessToken();
 
   const formData = new FormData();
 
@@ -55,7 +54,7 @@ async function createThread({ payload }: CreateThreadRequest) {
     "Something went wrong.";
 
   if (error === "invalid_token") {
-    await AsyncStorage.removeItem(AsyncStorageKeys.AUTHENTICATION);
+    // useAccessTokenStore.getState().setAccessToken(null);
   }
 
   return Promise.reject(error);

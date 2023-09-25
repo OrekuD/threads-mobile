@@ -1,8 +1,12 @@
 import { NavigationContainer } from "@react-navigation/native";
 import {
-  NativeStackNavigationOptions,
+  // NativeStackNavigationOptions,
   createNativeStackNavigator,
 } from "@react-navigation/native-stack";
+import {
+  createStackNavigator,
+  StackNavigationOptions,
+} from "@react-navigation/stack";
 import { RootStackParamList } from "../types";
 import React from "react";
 import EditBioScreen from "../screens/editbio";
@@ -31,16 +35,36 @@ import Toasts from "@/components/Toasts";
 import EditUsernameScreen from "@/screens/editusername";
 import EditEmailScreen from "@/screens/editemail";
 import EditNameScreen from "@/screens/editname";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import SettingsScreen from "@/screens/settings";
 import AboutTheAppScreen from "@/screens/abouttheapp";
 import YourLikesScreen from "@/screens/yourlikes";
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
+// const Stack = createNativeStackNavigator<RootStackParamList>();
+const Stack = createStackNavigator<RootStackParamList>();
 
-const modalNavigationOptions: NativeStackNavigationOptions = {
+// const modalNavigationOptions: NativeStackNavigationOptions = {
+//   presentation: isAndroid ? undefined : "modal",
+//   animation: isAndroid ? "fade_from_bottom" : undefined,
+// };
+
+const modalNavigationOptions: StackNavigationOptions = {
   presentation: isAndroid ? undefined : "modal",
-  animation: isAndroid ? "fade_from_bottom" : undefined,
+  transitionSpec: isAndroid
+    ? {
+        open: {
+          animation: "timing",
+          config: {
+            duration: 300,
+          },
+        },
+        close: {
+          animation: "timing",
+          config: {
+            duration: 300,
+          },
+        },
+      }
+    : undefined,
 };
 
 export default function RootNavigation() {
@@ -128,6 +152,14 @@ export default function RootNavigation() {
                   listeners={({ navigation }) => ({
                     blur: () => navigation.setParams({ params: undefined }),
                   })}
+                  options={{
+                    cardStyleInterpolator: ({ current }) => ({
+                      cardStyle: {
+                        opacity: current.progress,
+                      },
+                    }),
+                    gestureEnabled: false,
+                  }}
                 />
                 <Stack.Screen
                   name="UserProfileModalScreen"
@@ -167,7 +199,6 @@ export default function RootNavigation() {
                 <Stack.Screen
                   name="YourLikesScreen"
                   component={YourLikesScreen}
-                  // options={modalNavigationOptions}
                 />
                 <Stack.Screen
                   name="AboutTheAppScreen"

@@ -9,7 +9,7 @@ interface ReportAProblemRequest {
 
 async function submitReport(payload: ReportAProblemRequest) {
   const url = `${process.env.EXPO_PUBLIC_API_URL}/reports`;
-  const accessToken = await getAccessToken();
+  const accessToken = getAccessToken();
 
   const response = await fetch(url, {
     method: "POST",

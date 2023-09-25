@@ -94,14 +94,16 @@ function EmbeddedThreadView(props: Props) {
       </TouchableOpacity>
 
       <View style={styles.content}>
-        <Typography
-          variant="sm"
-          style={{
-            paddingHorizontal: 16,
-          }}
-        >
-          {props.thread.text}
-        </Typography>
+        {props.thread.text.trim().length > 0 ? (
+          <Typography
+            variant="sm"
+            style={{
+              paddingHorizontal: 16,
+            }}
+          >
+            {props.thread.text}
+          </Typography>
+        ) : null}
         {props.thread.media.length > 0 ? (
           <View style={styles.imageContainer}>
             <ScrollView
@@ -127,7 +129,12 @@ function EmbeddedThreadView(props: Props) {
                         imageWidth *
                         (props.thread.media.length === 1 ? 1.1 : 1.3),
                     }}
-                    onPress={() => {}}
+                    onPress={() => {
+                      navigation.navigate("ThreadImagesScreen", {
+                        images: props.thread.media,
+                        index,
+                      });
+                    }}
                     onLongPress={() => {
                       Share.share({
                         message: "",

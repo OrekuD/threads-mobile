@@ -1,9 +1,8 @@
-import AsyncStorageKeys from "@/constants/AsyncStorageKeys";
 import User from "@/models/User";
 import ErrorResponse from "@/network/responses/ErrorResponse";
+import useAccessTokenStore from "@/store/accessTokenStore";
 import useUserStore from "@/store/userStore";
 import getAccessToken from "@/utils/getAccessToken";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface FollowUserRequest {
@@ -12,7 +11,7 @@ interface FollowUserRequest {
 
 async function followUser(payload: FollowUserRequest) {
   const url = `${process.env.EXPO_PUBLIC_API_URL}/follow/toggle`;
-  const accessToken = await getAccessToken();
+  const accessToken = getAccessToken();
 
   const response = await fetch(url, {
     method: "POST",
@@ -32,7 +31,7 @@ async function followUser(payload: FollowUserRequest) {
     "Something went wrong.";
 
   if (error === "invalid_token") {
-    await AsyncStorage.removeItem(AsyncStorageKeys.AUTHENTICATION);
+    // useAccessTokenStore.getState().setAccessToken(null);
   }
 
   return Promise.reject(error);

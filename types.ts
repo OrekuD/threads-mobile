@@ -32,7 +32,7 @@ export type RootStackParamList = {
   AboutTheAppScreen: undefined;
   ReportAProblemScreen: undefined;
   ThreadScreen: { thread: Thread };
-  ThreadImagesScreen: { thread: Thread };
+  ThreadImagesScreen: { images: Array<string>; index: number };
   UserProfileScreen: { username: string };
   UserProfileModalScreen: { username: string };
 };

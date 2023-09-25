@@ -4,7 +4,6 @@ import React from "react";
 import {
   ActivityIndicator,
   FlatList,
-  ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -25,9 +24,7 @@ import useScreensize from "@/hooks/useScreensize";
 
 export default function HomeScreen() {
   const colors = useColors();
-  const [isFetchingMoreThreads, setIsFetchingMoreThreads] =
-    React.useState(false);
-  const scrollXRef = React.useRef<ScrollView>(null);
+  const scrollXRef = React.useRef<Animated.ScrollView>(null);
   const { top } = useSafeAreaInsets();
   const scrollX = useSharedValue(0);
   const followingTimelineQuery = useGetFollowingTimelineQuery();
@@ -144,7 +141,7 @@ export default function HomeScreen() {
               activeOpacity={0.8}
               style={styles.tab}
               onPress={() => {
-                // scrollXRef.current?.scrollTo({ animated: true, x: 0 });
+                scrollXRef.current?.scrollTo({ x: 0, animated: true });
               }}
             >
               <Animated.Text
@@ -180,38 +177,45 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
         </View>
-        <Animated.FlatList
+        <Animated.ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          data={[
-            forYouTimelineQuery.data || [],
-            followingTimelineQuery.data || [],
-          ]}
           pagingEnabled
           scrollEventThrottle={16}
           onScroll={onScrollX}
-          ref={scrollXRef as any}
-          keyExtractor={(_, index) => index.toString()}
-          renderItem={({ item }) => {
-            return (
-              <View
-                style={{
-                  width,
-                  height: "100%",
-                }}
-              >
-                <FlatList
-                  data={item}
-                  scrollEventThrottle={16}
-                  keyExtractor={({ threadId }) => threadId}
-                  renderItem={({ item }) => {
-                    return <ThreadView thread={item} variant="list-thread" />;
-                  }}
-                />
-              </View>
-            );
-          }}
-        />
+          ref={scrollXRef}
+        >
+          <View
+            style={{
+              width,
+              height: "100%",
+            }}
+          >
+            <FlatList
+              data={forYouTimelineQuery.data || []}
+              scrollEventThrottle={16}
+              keyExtractor={({ threadId }) => threadId}
+              renderItem={({ item }) => {
+                return <ThreadView thread={item} variant="list-thread" />;
+              }}
+            />
+          </View>
+          <View
+            style={{
+              width,
+              height: "100%",
+            }}
+          >
+            <FlatList
+              data={followingTimelineQuery.data || []}
+              scrollEventThrottle={16}
+              keyExtractor={({ threadId }) => threadId}
+              renderItem={({ item }) => {
+                return <ThreadView thread={item} variant="list-thread" />;
+              }}
+            />
+          </View>
+        </Animated.ScrollView>
       </View>
     </View>
   );

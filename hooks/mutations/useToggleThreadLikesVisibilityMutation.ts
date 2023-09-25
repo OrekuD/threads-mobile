@@ -1,8 +1,7 @@
-import AsyncStorageKeys from "@/constants/AsyncStorageKeys";
 import ErrorResponse from "@/network/responses/ErrorResponse";
+import useAccessTokenStore from "@/store/accessTokenStore";
 import useUserStore from "@/store/userStore";
 import getAccessToken from "@/utils/getAccessToken";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface ToggleThreadLikesVisibilityRequest {
@@ -13,7 +12,7 @@ async function toggleThreadLikesVisibility(
   payload: ToggleThreadLikesVisibilityRequest
 ) {
   const url = `${process.env.EXPO_PUBLIC_API_URL}/threads/${payload.threadId}/likes-visibility`;
-  const accessToken = await getAccessToken();
+  const accessToken = getAccessToken();
 
   const response = await fetch(url, {
     method: "POST",
@@ -32,7 +31,7 @@ async function toggleThreadLikesVisibility(
     "Something went wrong.";
 
   if (error === "invalid_token") {
-    await AsyncStorage.removeItem(AsyncStorageKeys.AUTHENTICATION);
+    // useAccessTokenStore.getState().setAccessToken(null);
   }
 
   return Promise.reject(error);

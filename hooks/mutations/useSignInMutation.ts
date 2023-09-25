@@ -1,8 +1,7 @@
-import AsyncStorageKeys from "@/constants/AsyncStorageKeys";
 import ErrorResponse from "@/network/responses/ErrorResponse";
+import useAccessTokenStore from "@/store/accessTokenStore";
 import useToastsStore from "@/store/toastsStore";
 import useUserStore from "@/store/userStore";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface SignInRequest {
@@ -34,17 +33,16 @@ async function signIn(payload: SignInRequest) {
 export default function useSignInMutation() {
   const userStore = useUserStore();
   const toastsStore = useToastsStore();
+  const accessTokenStore = useAccessTokenStore();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: signIn,
-    onSuccess: async (data) => {
+    onSuccess: (data) => {
       userStore.setUser(data.user);
+      accessTokenStore.setAccessToken(data.accessToken);
+      // console.log("useSignInMutation: ", data.accessToken);
       // queryClient.invalidateQueries({ queryKey: ["user", "index"] });
-      await AsyncStorage.setItem(
-        AsyncStorageKeys.AUTHENTICATION,
-        data.accessToken
-      );
     },
     onError: () => {
       toastsStore.addToast("Incorrect password");

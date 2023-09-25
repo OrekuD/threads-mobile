@@ -1,13 +1,12 @@
-import AsyncStorageKeys from "@/constants/AsyncStorageKeys";
 import Thread from "@/models/Thread";
 import ErrorResponse from "@/network/responses/ErrorResponse";
+import useAccessTokenStore from "@/store/accessTokenStore";
 import getAccessToken from "@/utils/getAccessToken";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery } from "@tanstack/react-query";
 
 async function getFollowingTimeline() {
   const url = `${process.env.EXPO_PUBLIC_API_URL}/user/timeline/following`;
-  const accessToken = await getAccessToken();
+  const accessToken = getAccessToken();
 
   const response = await fetch(url, {
     method: "GET",
@@ -25,7 +24,7 @@ async function getFollowingTimeline() {
     "Something went wrong.";
 
   if (error === "invalid_token") {
-    await AsyncStorage.removeItem(AsyncStorageKeys.AUTHENTICATION);
+    // useAccessTokenStore.getState().setAccessToken(null);
   }
 
   return Promise.reject(error);

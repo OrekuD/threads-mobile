@@ -1,13 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import AsyncStorageKeys from "@/constants/AsyncStorageKeys";
 import User from "@/models/User";
 import ErrorResponse from "@/network/responses/ErrorResponse";
 import getAccessToken from "@/utils/getAccessToken";
+import useAccessTokenStore from "@/store/accessTokenStore";
 
 async function getFollowing(userId: number) {
   const url = `${process.env.EXPO_PUBLIC_API_URL}/user/${userId}/following`;
-  const accessToken = await getAccessToken();
+  const accessToken = getAccessToken();
 
   const response = await fetch(url, {
     headers: {
@@ -24,7 +23,7 @@ async function getFollowing(userId: number) {
     "Something went wrong.";
 
   if (error === "invalid_token") {
-    await AsyncStorage.removeItem(AsyncStorageKeys.AUTHENTICATION);
+    // useAccessTokenStore.getState().setAccessToken(null);
   }
 
   return Promise.reject(error);

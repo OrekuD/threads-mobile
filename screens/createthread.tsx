@@ -209,7 +209,7 @@ export default function CreateThreadScreen(props: Props) {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: false,
-      quality: 0.7,
+      quality: 0.2,
       allowsMultipleSelection: true,
       selectionLimit: 4,
     });
@@ -292,28 +292,19 @@ export default function CreateThreadScreen(props: Props) {
         style={[
           styles.toolbar,
           {
-            // height: toolbarHeight,
             backgroundColor: isAndroid
               ? colors.background
               : colors.modalBackground,
-            paddingTop: 14,
           },
           toolbarAnimatedStyle,
         ]}
       >
-        {/* <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() => setShowPopupMenu((prevValue) => !prevValue)}
-        >
-          <Typography variant="body" color="secondary">
-            {scope}
-          </Typography>
-        </TouchableOpacity> */}
         <TouchableOpacity
           activeOpacity={0.5}
           style={{
             opacity: cannotPost || createThreadMutation.isLoading ? 0.5 : 1,
-            marginLeft: "auto",
+            paddingVertical: 8,
+            paddingHorizontal: 8,
           }}
           onPress={handlePost}
           disabled={cannotPost || createThreadMutation.isLoading}
@@ -501,10 +492,11 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 0,
     width: "100%",
-    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingHorizontal: 6,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
     zIndex: 10,
   },
   menu: {

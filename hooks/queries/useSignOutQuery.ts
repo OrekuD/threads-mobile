@@ -1,14 +1,13 @@
-import AsyncStorageKeys from "@/constants/AsyncStorageKeys";
 import User from "@/models/User";
 import ErrorResponse from "@/network/responses/ErrorResponse";
+import useAccessTokenStore from "@/store/accessTokenStore";
 import useUserStore from "@/store/userStore";
 import getAccessToken from "@/utils/getAccessToken";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery } from "@tanstack/react-query";
 
 async function signOut() {
   const url = `${process.env.EXPO_PUBLIC_API_URL}/auth/sign-out`;
-  const accessToken = await getAccessToken();
+  const accessToken = getAccessToken();
 
   const response = await fetch(url, {
     headers: {
@@ -17,7 +16,7 @@ async function signOut() {
     },
   });
 
-  await AsyncStorage.removeItem(AsyncStorageKeys.AUTHENTICATION);
+  // useAccessTokenStore.getState().setAccessToken(null);
   useUserStore.setState({ user: null });
 
   if (response.status === 200) {

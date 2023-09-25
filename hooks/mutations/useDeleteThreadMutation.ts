@@ -1,9 +1,8 @@
-import AsyncStorageKeys from "@/constants/AsyncStorageKeys";
 import ErrorResponse from "@/network/responses/ErrorResponse";
+import useAccessTokenStore from "@/store/accessTokenStore";
 import useToastsStore from "@/store/toastsStore";
 import useUserStore from "@/store/userStore";
 import getAccessToken from "@/utils/getAccessToken";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface DeleteThreadRequest {
@@ -12,7 +11,7 @@ interface DeleteThreadRequest {
 
 async function deleteThread(payload: DeleteThreadRequest) {
   const url = `${process.env.EXPO_PUBLIC_API_URL}/threads/${payload.threadId}`;
-  const accessToken = await getAccessToken();
+  const accessToken = getAccessToken();
 
   const response = await fetch(url, {
     method: "DELETE",
@@ -31,7 +30,7 @@ async function deleteThread(payload: DeleteThreadRequest) {
     "Something went wrong.";
 
   if (error === "invalid_token") {
-    await AsyncStorage.removeItem(AsyncStorageKeys.AUTHENTICATION);
+    // useAccessTokenStore.getState().setAccessToken(null);
   }
 
   return Promise.reject(error);

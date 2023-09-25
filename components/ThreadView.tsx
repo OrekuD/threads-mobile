@@ -293,9 +293,11 @@ function ThreadViewComponent(props: Props) {
               Replying to @{props.thread.replyThead.user?.username}
             </Typography>
           ) : null}
-          <View style={styles.content}>
-            <Typography variant="sm">{props.thread.text}</Typography>
-          </View>
+          {props.thread.text.length > 0 ? (
+            <View style={styles.content}>
+              <Typography variant="sm">{props.thread.text}</Typography>
+            </View>
+          ) : null}
           {props.thread.media.length > 0 ? (
             <View
               style={[
@@ -340,9 +342,10 @@ function ThreadViewComponent(props: Props) {
                           (props.thread.media.length === 1 ? 1.1 : 1.3),
                       }}
                       onPress={() => {
-                        // navigation.navigate("ThreadImagesScreen", {
-                        //   threadId: "8",
-                        // });
+                        navigation.navigate("ThreadImagesScreen", {
+                          images: props.thread.media,
+                          index,
+                        });
                       }}
                       onLongPress={() => {
                         const url = `${process.env.EXPO_PUBLIC_CLIENT_URL}/@${threadCreator?.username}/post/${props.thread.threadId}`;

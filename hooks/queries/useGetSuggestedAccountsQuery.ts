@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 
 async function getSuggestedAccounts() {
   const url = `${process.env.EXPO_PUBLIC_API_URL}/follow/suggested-accounts`;
-  const accessToken = await getAccessToken();
+  const accessToken = getAccessToken();
 
   const response = await fetch(url, {
     headers: {

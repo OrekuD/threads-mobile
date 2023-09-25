@@ -3,11 +3,10 @@ import ErrorResponse from "../../network/responses/ErrorResponse";
 import getAccessToken from "../../utils/getAccessToken";
 import useUserStore from "../../store/userStore";
 import useToastsStore from "../../store/toastsStore";
-import AsyncStorageKeys from "@/constants/AsyncStorageKeys";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { isAndroid } from "@/constants/Platform";
 import { Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import useAccessTokenStore from "@/store/accessTokenStore";
 
 interface UpdateUserProfileRequest {
   username: string;
@@ -21,7 +20,7 @@ interface UpdateUserProfileRequest {
 
 async function updateUserProfile(payload: UpdateUserProfileRequest) {
   const url = `${process.env.EXPO_PUBLIC_API_URL}/user`;
-  const accessToken = await getAccessToken();
+  const accessToken = getAccessToken();
 
   const formData = new FormData();
 
@@ -63,7 +62,7 @@ async function updateUserProfile(payload: UpdateUserProfileRequest) {
     "Something went wrong.";
 
   if (error === "invalid_token") {
-    await AsyncStorage.removeItem(AsyncStorageKeys.AUTHENTICATION);
+    // useAccessTokenStore.getState().setAccessToken(null);
   }
 
   return Promise.reject(error);

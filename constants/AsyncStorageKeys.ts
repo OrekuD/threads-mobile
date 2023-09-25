@@ -1,7 +1,6 @@
 const AsyncStorageKeys = {
-  AUTHENTICATION: "authentication",
+  ACCESS_TOKEN: "accessToken",
   TIMELINE: "timeline",
-  USER: "user"
 };
 
 export default AsyncStorageKeys;

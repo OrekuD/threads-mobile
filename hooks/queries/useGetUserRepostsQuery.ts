@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 async function getUserReposts(username: string) {
   const url = `${process.env.EXPO_PUBLIC_API_URL}/user/${username}/reposts`;
 
-  const accessToken = await getAccessToken();
+  const accessToken = getAccessToken();
 
   const response = await fetch(url, {
     headers: {
