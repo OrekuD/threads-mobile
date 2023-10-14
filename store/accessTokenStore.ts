@@ -1,4 +1,5 @@
 import AsyncStorageKeys from "@/constants/AsyncStorageKeys";
+import axiosInstance from "@/network/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
@@ -17,7 +18,12 @@ const useAccessTokenStore = create<AccessTokenStore>()(
     {
       name: AsyncStorageKeys.ACCESS_TOKEN,
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({ accessToken: state.accessToken }),
+      partialize: (state) => {
+        if (state.accessToken) {
+          axiosInstance.defaults.headers.common.Authorization = `Bearer ${state.accessToken}`;
+        }
+        return { accessToken: state.accessToken };
+      },
     }
   )
 );

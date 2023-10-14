@@ -1,8 +1,6 @@
 import ThreadReport from "@/namespaces/ThreadReport";
-import ErrorResponse from "@/network/responses/ErrorResponse";
-import useAccessTokenStore from "@/store/accessTokenStore";
+import axiosInstance from "@/network/api";
 import useToastsStore from "@/store/toastsStore";
-import getAccessToken from "@/utils/getAccessToken";
 import { useMutation } from "@tanstack/react-query";
 
 interface CreateThreadReportRequest {
@@ -14,25 +12,15 @@ async function createThreadReport({
   threadId,
   descriptionId,
 }: CreateThreadReportRequest) {
-  const url = `${process.env.EXPO_PUBLIC_API_URL}/threads/${threadId}/reports`;
-  const accessToken = getAccessToken();
+  const url = `/threads/${threadId}/reports`;
 
-  const response = await fetch(url, {
-    method: "POST",
-    body: JSON.stringify({ descriptionId }),
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  const response = await axiosInstance.post(url, { descriptionId });
 
   if (response.status === 200) {
-    return response.json();
+    return response.data;
   }
 
-  const error =
-    ((await response.json()) as ErrorResponse)?.errors?.[0] ||
-    "Something went wrong.";
+  const error = response.data?.errors?.[0] || "Something went wrong.";
 
   if (error === "invalid_token") {
     // useAccessTokenStore.getState().setAccessToken(null);

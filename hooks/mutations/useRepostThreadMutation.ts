@@ -1,7 +1,5 @@
-import ErrorResponse from "@/network/responses/ErrorResponse";
-import useAccessTokenStore from "@/store/accessTokenStore";
+import axiosInstance from "@/network/api";
 import useUserStore from "@/store/userStore";
-import getAccessToken from "@/utils/getAccessToken";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface RepostThreadRequest {
@@ -9,24 +7,15 @@ interface RepostThreadRequest {
 }
 
 async function repostThread(payload: RepostThreadRequest) {
-  const url = `${process.env.EXPO_PUBLIC_API_URL}/threads/${payload.threadId}/reposts`;
-  const accessToken = getAccessToken();
+  const url = `/threads/${payload.threadId}/reposts`;
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  const response = await axiosInstance.post(url);
 
   if (response.status === 200) {
-    return response.json();
+    return response.data;
   }
 
-  const error =
-    ((await response.json()) as ErrorResponse)?.errors?.[0] ||
-    "Something went wrong.";
+  const error = response.data?.errors?.[0] || "Something went wrong.";
 
   if (error === "invalid_token") {
     // useAccessTokenStore.getState().setAccessToken(null);

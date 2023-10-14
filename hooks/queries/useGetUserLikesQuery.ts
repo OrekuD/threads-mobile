@@ -1,26 +1,16 @@
 import Thread from "@/models/Thread";
-import ErrorResponse from "@/network/responses/ErrorResponse";
-import useAccessTokenStore from "@/store/accessTokenStore";
-import getAccessToken from "@/utils/getAccessToken";
+import axiosInstance from "@/network/api";
 import { useQuery } from "@tanstack/react-query";
 
 async function getUserLikes() {
-  const url = `${process.env.EXPO_PUBLIC_API_URL}/user/likes`;
-  const accessToken = getAccessToken();
+  const url = `/user/likes`;
 
-  const response = await fetch(url, {
-    headers: {
-      accept: "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  const response = await axiosInstance.get(url);
 
   if (response.status === 200) {
-    return response.json();
+    return response.data;
   }
-  const error =
-    ((await response.json()) as ErrorResponse)?.errors?.[0] ||
-    "Something went wrong.";
+  const error = response.data?.errors?.[0] || "Something went wrong.";
 
   if (error === "invalid_token") {
     // useAccessTokenStore.getState().setAccessToken(null);

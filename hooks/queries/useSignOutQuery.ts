@@ -1,31 +1,21 @@
 import User from "@/models/User";
-import ErrorResponse from "@/network/responses/ErrorResponse";
-import useAccessTokenStore from "@/store/accessTokenStore";
+import axiosInstance from "@/network/api";
 import useUserStore from "@/store/userStore";
-import getAccessToken from "@/utils/getAccessToken";
 import { useQuery } from "@tanstack/react-query";
 
 async function signOut() {
-  const url = `${process.env.EXPO_PUBLIC_API_URL}/auth/sign-out`;
-  const accessToken = getAccessToken();
+  const url = `/auth/sign-out`;
 
-  const response = await fetch(url, {
-    headers: {
-      accept: "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  const response = await axiosInstance.get(url);
 
   // useAccessTokenStore.getState().setAccessToken(null);
   useUserStore.setState({ user: null });
 
   if (response.status === 200) {
-    return response.json();
+    return response.data;
   }
 
-  const error =
-    ((await response.json()) as ErrorResponse)?.errors?.[0] ||
-    "Something went wrong.";
+  const error = response.data?.errors?.[0] || "Something went wrong.";
 
   return Promise.reject(error);
 }

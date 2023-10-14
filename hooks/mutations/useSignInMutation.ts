@@ -1,4 +1,4 @@
-import ErrorResponse from "@/network/responses/ErrorResponse";
+import axiosInstance from "@/network/api";
 import useAccessTokenStore from "@/store/accessTokenStore";
 import useToastsStore from "@/store/toastsStore";
 import useUserStore from "@/store/userStore";
@@ -10,22 +10,14 @@ interface SignInRequest {
 }
 
 async function signIn(payload: SignInRequest) {
-  const url = `${process.env.EXPO_PUBLIC_API_URL}/auth/sign-in`;
+  const url = `/auth/sign-in`;
 
-  const response = await fetch(url, {
-    method: "POST",
-    body: JSON.stringify(payload),
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+  const response = await axiosInstance.post(url, payload);
 
   if (response.status === 200) {
-    return response.json();
+    return response.data;
   }
-  const error =
-    ((await response.json()) as ErrorResponse)?.errors?.[0] ||
-    "Something went wrong.";
+  const error = response.data?.errors?.[0] || "Something went wrong.";
 
   return Promise.reject(error);
 }

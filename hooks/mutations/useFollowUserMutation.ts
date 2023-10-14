@@ -1,8 +1,6 @@
 import User from "@/models/User";
-import ErrorResponse from "@/network/responses/ErrorResponse";
-import useAccessTokenStore from "@/store/accessTokenStore";
+import axiosInstance from "@/network/api";
 import useUserStore from "@/store/userStore";
-import getAccessToken from "@/utils/getAccessToken";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface FollowUserRequest {
@@ -10,25 +8,15 @@ interface FollowUserRequest {
 }
 
 async function followUser(payload: FollowUserRequest) {
-  const url = `${process.env.EXPO_PUBLIC_API_URL}/follow/toggle`;
-  const accessToken = getAccessToken();
+  const url = `/follow/toggle`;
 
-  const response = await fetch(url, {
-    method: "POST",
-    body: JSON.stringify(payload),
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  const response = await axiosInstance.post(url, payload);
 
   if (response.status === 200) {
-    return response.json();
+    return response.data;
   }
 
-  const error =
-    ((await response.json()) as ErrorResponse)?.errors?.[0] ||
-    "Something went wrong.";
+  const error = response.data?.errors?.[0] || "Something went wrong.";
 
   if (error === "invalid_token") {
     // useAccessTokenStore.getState().setAccessToken(null);

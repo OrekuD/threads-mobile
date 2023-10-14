@@ -1,12 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
-import ErrorResponse from "../../network/responses/ErrorResponse";
-import getAccessToken from "../../utils/getAccessToken";
 import useUserStore from "../../store/userStore";
 import useToastsStore from "../../store/toastsStore";
 import { isAndroid } from "@/constants/Platform";
 import { Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import useAccessTokenStore from "@/store/accessTokenStore";
+import axiosInstance from "@/network/api";
 
 interface UpdateUserProfileRequest {
   username: string;
@@ -19,8 +17,7 @@ interface UpdateUserProfileRequest {
 }
 
 async function updateUserProfile(payload: UpdateUserProfileRequest) {
-  const url = `${process.env.EXPO_PUBLIC_API_URL}/user`;
-  const accessToken = getAccessToken();
+  const url = `/user`;
 
   const formData = new FormData();
 
@@ -45,21 +42,15 @@ async function updateUserProfile(payload: UpdateUserProfileRequest) {
   }
   formData.append("isPrivate", payload.isPrivate ? "true" : "false");
 
-  const response = await fetch(url, {
-    method: "PUT",
-    body: formData,
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
+  const response = await axiosInstance.put(url, formData, {
+    transformRequest: () => formData,
   });
 
   if (response.status === 200) {
-    return response.json();
+    return response.data;
   }
 
-  const error =
-    ((await response.json()) as ErrorResponse)?.errors?.[0] ||
-    "Something went wrong.";
+  const error = response.data?.errors?.[0] || "Something went wrong.";
 
   if (error === "invalid_token") {
     // useAccessTokenStore.getState().setAccessToken(null);

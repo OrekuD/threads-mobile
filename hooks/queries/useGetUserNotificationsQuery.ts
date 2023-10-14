@@ -1,26 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import ErrorResponse from "../../network/responses/ErrorResponse";
-import getAccessToken from "../../utils/getAccessToken";
 import Notification from "../../models/Notification";
-import useAccessTokenStore from "@/store/accessTokenStore";
+import axiosInstance from "@/network/api";
 
 async function getUserNotifications() {
-  const url = `${process.env.EXPO_PUBLIC_API_URL}/user/notifications`;
-  const accessToken = getAccessToken();
+  const url = `/user/notifications`;
 
-  const response = await fetch(url, {
-    headers: {
-      accept: "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  const response = await axiosInstance.get(url);
 
-  if (response.status === 200 || response.status === 201) {
-    return response.json();
+  if (response.status === 200) {
+    return response.data;
   }
-  const error =
-    ((await response.json()) as ErrorResponse)?.errors?.[0] ||
-    "Something went wrong.";
+  const error = response.data?.errors?.[0] || "Something went wrong.";
 
   if (error === "invalid_token") {
     // useAccessTokenStore.getState().setAccessToken(null);

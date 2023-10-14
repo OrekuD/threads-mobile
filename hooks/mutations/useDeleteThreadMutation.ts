@@ -1,8 +1,6 @@
-import ErrorResponse from "@/network/responses/ErrorResponse";
-import useAccessTokenStore from "@/store/accessTokenStore";
+import axiosInstance from "@/network/api";
 import useToastsStore from "@/store/toastsStore";
 import useUserStore from "@/store/userStore";
-import getAccessToken from "@/utils/getAccessToken";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface DeleteThreadRequest {
@@ -10,24 +8,15 @@ interface DeleteThreadRequest {
 }
 
 async function deleteThread(payload: DeleteThreadRequest) {
-  const url = `${process.env.EXPO_PUBLIC_API_URL}/threads/${payload.threadId}`;
-  const accessToken = getAccessToken();
+  const url = `/threads/${payload.threadId}`;
 
-  const response = await fetch(url, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  const response = await axiosInstance.delete(url);
 
   if (response.status === 200) {
-    return response.json();
+    return response.data;
   }
 
-  const error =
-    ((await response.json()) as ErrorResponse)?.errors?.[0] ||
-    "Something went wrong.";
+  const error = response.data?.errors?.[0] || "Something went wrong.";
 
   if (error === "invalid_token") {
     // useAccessTokenStore.getState().setAccessToken(null);

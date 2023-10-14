@@ -1,18 +1,16 @@
 import User from "@/models/User";
-import ErrorResponse from "@/network/responses/ErrorResponse";
+import axiosInstance from "@/network/api";
 import { useQuery } from "@tanstack/react-query";
 
 async function getUser(username: string) {
-  const url = `${process.env.EXPO_PUBLIC_API_URL}/user/${username}`;
+  const url = `/user/${username}`;
 
-  const response = await fetch(url);
+  const response = await axiosInstance.get(url);
 
   if (response.status === 200) {
-    return response.json();
+    return response.data;
   }
-  const error =
-    ((await response.json()) as ErrorResponse)?.errors?.[0] ||
-    "Something went wrong.";
+  const error = response.data?.errors?.[0] || "Something went wrong.";
 
   return Promise.reject(error);
 }

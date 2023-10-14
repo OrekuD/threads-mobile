@@ -1,10 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import useUserStore from "@/store/userStore";
-import getAccessToken from "@/utils/getAccessToken";
-import ErrorResponse from "@/network/responses/ErrorResponse";
 import useToastsStore from "@/store/toastsStore";
 import { isAndroid } from "@/constants/Platform";
-import useAccessTokenStore from "@/store/accessTokenStore";
+import axiosInstance from "@/network/api";
 
 interface CreateThreadRequest {
   payload: CreateThreadPayloadRequest;
@@ -20,8 +18,7 @@ interface CreateThreadPayloadRequest {
 }
 
 async function createThread({ payload }: CreateThreadRequest) {
-  const url = `${process.env.EXPO_PUBLIC_API_URL}/threads`;
-  const accessToken = getAccessToken();
+  const url = `/threads`;
 
   const formData = new FormData();
 
@@ -37,21 +34,15 @@ async function createThread({ payload }: CreateThreadRequest) {
   formData.append("replyThreadId", payload.replyThreadId || "");
   formData.append("quoteThreadId", payload.quoteThreadId || "");
 
-  const response = await fetch(url, {
-    method: "POST",
-    body: formData,
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
+  const response = await axiosInstance.post(url, formData, {
+    transformRequest: () => formData,
   });
 
   if (response.status === 200) {
-    return response.json();
+    return response.data;
   }
 
-  const error =
-    ((await response.json()) as ErrorResponse)?.errors?.[0] ||
-    "Something went wrong.";
+  const error = response.data?.errors?.[0] || "Something went wrong.";
 
   if (error === "invalid_token") {
     // useAccessTokenStore.getState().setAccessToken(null);

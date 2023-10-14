@@ -1,6 +1,4 @@
-import ErrorResponse from "@/network/responses/ErrorResponse";
-import useAccessTokenStore from "@/store/accessTokenStore";
-import getAccessToken from "@/utils/getAccessToken";
+import axiosInstance from "@/network/api";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface LikeThreadRequest {
@@ -8,24 +6,15 @@ interface LikeThreadRequest {
 }
 
 async function likeThread(payload: LikeThreadRequest) {
-  const url = `${process.env.EXPO_PUBLIC_API_URL}/threads/${payload.threadId}/likes`;
-  const accessToken = getAccessToken();
+  const url = `/threads/${payload.threadId}/likes`;
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  const response = await axiosInstance.post(url);
 
   if (response.status === 200) {
-    return response.json();
+    return response.data;
   }
 
-  const error =
-    ((await response.json()) as ErrorResponse)?.errors?.[0] ||
-    "Something went wrong.";
+  const error = response.data?.errors?.[0] || "Something went wrong.";
 
   if (error === "invalid_token") {
     // useAccessTokenStore.getState().setAccessToken(null);
